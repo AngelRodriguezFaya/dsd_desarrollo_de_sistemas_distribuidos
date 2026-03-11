@@ -11,9 +11,8 @@ suma_1_svc(int arg1, int arg2,  struct svc_req *rqstp)
 {
 	static int  result;
 
-	/*
-	 * insert server code here
-	 */
+	printf("Operación a realizar: Sumar %d + %d\n",arg1,arg2);
+	result = arg1 + arg2;
 
 	return &result;
 }
@@ -23,9 +22,8 @@ resta_1_svc(int arg1, int arg2,  struct svc_req *rqstp)
 {
 	static int  result;
 
-	/*
-	 * insert server code here
-	 */
+	printf("Operación a realizar: Restar %d - %d\n",arg1,arg2);
+	result = arg1 - arg2;
 
 	return &result;
 }
@@ -35,9 +33,8 @@ multiplicacion_1_svc(int arg1, int arg2,  struct svc_req *rqstp)
 {
 	static int  result;
 
-	/*
-	 * insert server code here
-	 */
+	printf("Operación a realizar: Multiplicar %d * %d\n",arg1,arg2);
+	result = arg1 * arg2;
 
 	return &result;
 }
@@ -47,9 +44,14 @@ division_1_svc(int arg1, int arg2,  struct svc_req *rqstp)
 {
 	static int  result;
 
-	/*
-	 * insert server code here
-	 */
+	if(arg2 == 0){
+		printf("ERROR, no se ha podido realizar la operación : Dividir %d / %d (dividir entre cero!!!)\n",arg1,arg2);
+		result = 0;
+
+	} else {
+		printf("Operación a realizar: Dividir %d / %d",arg1,arg2);
+		result = arg1 / arg2;
+	}
 
 	return &result;
 }

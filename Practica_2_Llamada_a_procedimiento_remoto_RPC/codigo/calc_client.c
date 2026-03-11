@@ -6,64 +6,109 @@
 
 #include "calc.h"
 
+void calcprog_1(char *host, int op1, char operador, int op2){
 
-void
-calcprog_1(char *host)
-{
 	CLIENT *clnt;
-	int  *result_1;
+	int *result; /* Lo utilizaremos para el resultado de las operacion solicitada*/
+	/*
+	int *result_1;
 	int suma_1_arg1;
 	int suma_1_arg2;
-	int  *result_2;
+	int *result_2;
 	int resta_1_arg1;
 	int resta_1_arg2;
-	int  *result_3;
+	int *result_3;
 	int multiplicacion_1_arg1;
 	int multiplicacion_1_arg2;
-	int  *result_4;
+	int *result_4;
 	int division_1_arg1;
 	int division_1_arg2;
+	*/
 
-#ifndef	DEBUG
-	clnt = clnt_create (host, CALCPROG, CALCVER, "udp");
-	if (clnt == NULL) {
-		clnt_pcreateerror (host);
-		exit (1);
-	}
-#endif	/* DEBUG */
+	#ifndef DEBUG
+		clnt = clnt_create(host, CALCPROG, CALCVER, "udp");
+		if (clnt == NULL)
+		{
+			clnt_pcreateerror(host);
+			exit(1);
+		}
+	#endif /* DEBUG */
 
-	result_1 = suma_1(suma_1_arg1, suma_1_arg2, clnt);
-	if (result_1 == (int *) NULL) {
-		clnt_perror (clnt, "call failed");
+	/* Este código es generado por rpcgen, se llaman a todas las funciones de golpe
+		result_1 = suma_1(suma_1_arg1, suma_1_arg2, clnt);
+		if (result_1 == (int *) NULL) {
+			clnt_perror (clnt, "call failed");
+		}
+		result_2 = resta_1(resta_1_arg1, resta_1_arg2, clnt);
+		if (result_2 == (int *) NULL) {
+			clnt_perror (clnt, "call failed");
+		}
+		result_3 = multiplicacion_1(multiplicacion_1_arg1, multiplicacion_1_arg2, clnt);
+		if (result_3 == (int *) NULL) {
+			clnt_perror (clnt, "call failed");
+		}
+		result_4 = division_1(division_1_arg1, division_1_arg2, clnt);
+		if (result_4 == (int *) NULL) {
+			clnt_perror (clnt, "call failed");
+		}
+	*/
+
+	/* Hacemos un switch-case para identificar la operación que ha pedido el usuario*/
+
+	switch (operador){
+		case '+':
+			result = suma_1(op1, op2, clnt);
+			break;
+
+		case '-':
+			result = resta_1(op1, op2, clnt);
+			break;
+		
+		case 'x': /* Se utiiza x en lugar de * porque si no, al leer desde la terminal puede dar fallo*/
+			result = multiplicacion_1(op1, op2, clnt);
+			break;
+		
+		case '/':
+			result = division_1(op1, op2, clnt);
+			break;
+
+		default:
+			printf("Error: El operador '%c' no es válido.", operador);
+			exit(1);
 	}
-	result_2 = resta_1(resta_1_arg1, resta_1_arg2, clnt);
-	if (result_2 == (int *) NULL) {
-		clnt_perror (clnt, "call failed");
-	}
-	result_3 = multiplicacion_1(multiplicacion_1_arg1, multiplicacion_1_arg2, clnt);
-	if (result_3 == (int *) NULL) {
-		clnt_perror (clnt, "call failed");
-	}
-	result_4 = division_1(division_1_arg1, division_1_arg2, clnt);
-	if (result_4 == (int *) NULL) {
-		clnt_perror (clnt, "call failed");
-	}
-#ifndef	DEBUG
-	clnt_destroy (clnt);
-#endif	 /* DEBUG */
+
+	/* Comprobamos que se ha realizado las oepracion correctamente*/
+	if (result == (int *) NULL) {
+        clnt_perror (clnt, "Error en la llamada al servidor");
+    } else {
+        printf("El resultado de la operación es: %d\n", *result);
+    }
+
+	#ifndef DEBUG
+		clnt_destroy(clnt);
+	#endif /* DEBUG */
 }
 
-
-int
-main (int argc, char *argv[])
+int main(int argc, char *argv[])
 {
 	char *host;
+	int op1, op2; /* Operandos para las operaciones */
+	char operador;
 
-	if (argc < 2) {
-		printf ("usage: %s server_host\n", argv[0]);
-		exit (1);
+	if (argc < 5)
+	{
+		printf("usage: %s <maquina> <entero> <operador> <entero>\n", argv[0]);
+		exit(1);
 	}
-	host = argv[1];
-	calcprog_1 (host);
-exit (0);
+
+	/* Extraemos los parámetros */
+	host = argv[1]; /* Sería host = máquina */
+	op1 = atoi(argv[2]);
+	operador = argv[3];
+	op2 = atoi(argv[4]);
+
+	/* Llamamos a nuestra función con los parámetros correspondientes*/
+	calcprog_1(host, op1, operador, op2);
+
+	exit(0);
 }
