@@ -5,6 +5,8 @@
  */
 
 #include "calc.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 void calcprog_1(char *host, int op1, char operador, int op2){
 
@@ -73,7 +75,7 @@ void calcprog_1(char *host, int op1, char operador, int op2){
 			break;
 
 		default:
-			printf("Error: El operador '%c' no es válido.", operador);
+			printf("Error: El operador %c no es válido.\n", operador);
 			exit(1);
 	}
 
@@ -89,23 +91,88 @@ void calcprog_1(char *host, int op1, char operador, int op2){
 	#endif /* DEBUG */
 }
 
+int mostrar_menu(){
+
+	int opcion = 0;
+
+	printf("==== CALCULADORA DISTRIBUIDA ====\n");
+	printf("Opciones: \n");
+	printf("1. Sumar \n");
+	printf("2. Restar \n");
+	printf("3. Multiplicar\n");
+	printf("4. Dividir\n");
+	printf("===================================");
+	do{
+		printf("\nElige una opción (1-4): ");
+		scanf("%d", &opcion);
+	} while (opcion < 1 || opcion > 4 );	
+
+	return opcion;
+}
+
+char procesar_menu(int opcion){ /* Devuelve el operador deseado*/
+	char operando;
+
+	switch (opcion){
+		case 1: /* Suma */
+			operando = '+';
+		break;
+
+		case 2: /* Resta */
+			operando = '-';
+		break;
+
+		case 3: /* Multiplicación */
+			operando = 'x';
+		break;
+
+		case 4: /* División */
+			operando = '/';
+		break;
+	
+	default:
+		printf("Error. La opción %d no es válida", opcion);
+		exit(1);
+	}
+
+	return operando;
+}
+
 int main(int argc, char *argv[])
 {
 	char *host;
 	int op1, op2; /* Operandos para las operaciones */
 	char operador;
 
-	if (argc < 5)
-	{
-		printf("usage: %s <maquina> <entero> <operador> <entero>\n", argv[0]);
+	if (argc == 5){ /* El usuario ha pasado los operandos por la terminal. */
+
+		/* Extraemos los parámetros */
+		host = argv[1]; /* Sería host = máquina */
+		op1 = atoi(argv[2]);
+		operador = argv[3][0]; /*Se añade el [0] para que sólo se quede con el primer carácter (ya que argv[3] es un char *)*/
+		op2 = atoi(argv[4]);
+
+	} else if (argc == 2){ /* El usuario quiere que se le muestre el menú de opciones.*/ 
+
+		host = argv[1];
+
+		int opcion;
+
+		opcion = mostrar_menu();
+		operador = procesar_menu(opcion);
+
+		printf("\nIntroduzca el 1er operando: ");
+		scanf("%d", &op1);
+
+		printf("\nIntroduzca el 2o operando: ");
+		scanf("%d", &op2);
+
+	} else { /* El número de parámetros es incorrecto*/
+		printf("Error al pasar los parámetros\n.");
+		printf("Uso por terminal: %s <maquina> <entero> <operador> <entero>\n", argv[0]);
+		printf("Uso por menú: %s <maquina>\n", argv[0]);
 		exit(1);
 	}
-
-	/* Extraemos los parámetros */
-	host = argv[1]; /* Sería host = máquina */
-	op1 = atoi(argv[2]);
-	operador = argv[3];
-	op2 = atoi(argv[4]);
 
 	/* Llamamos a nuestra función con los parámetros correspondientes*/
 	calcprog_1(host, op1, operador, op2);
