@@ -6,6 +6,42 @@
 #include "calc.h"
 
 bool_t
+xdr_operacion (XDR *xdrs, operacion *objp)
+{
+	register int32_t *buf;
+
+	 if (!xdr_int (xdrs, &objp->op1))
+		 return FALSE;
+	 if (!xdr_char (xdrs, &objp->operador))
+		 return FALSE;
+	 if (!xdr_int (xdrs, &objp->op2))
+		 return FALSE;
+	return TRUE;
+}
+
+bool_t
+xdr_operaciones (XDR *xdrs, operaciones *objp)
+{
+	register int32_t *buf;
+
+	 if (!xdr_array (xdrs, (char **)&objp->operaciones_val, (u_int *) &objp->operaciones_len, MAX,
+		sizeof (operacion), (xdrproc_t) xdr_operacion))
+		 return FALSE;
+	return TRUE;
+}
+
+bool_t
+xdr_resultados (XDR *xdrs, resultados *objp)
+{
+	register int32_t *buf;
+
+	 if (!xdr_array (xdrs, (char **)&objp->resultados_val, (u_int *) &objp->resultados_len, MAX,
+		sizeof (int), (xdrproc_t) xdr_int))
+		 return FALSE;
+	return TRUE;
+}
+
+bool_t
 xdr_suma_1_argument (XDR *xdrs, suma_1_argument *objp)
 {
 	 if (!xdr_int (xdrs, &objp->arg1))

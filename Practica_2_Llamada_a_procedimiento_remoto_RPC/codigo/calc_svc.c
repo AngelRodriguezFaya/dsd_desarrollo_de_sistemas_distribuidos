@@ -40,6 +40,12 @@ _division_1 (division_1_argument *argp, struct svc_req *rqstp)
 	return (division_1_svc(argp->arg1, argp->arg2, rqstp));
 }
 
+static resultados *
+_calcular_lotes_1 (operaciones  *argp, struct svc_req *rqstp)
+{
+	return (calcular_lotes_1_svc(*argp, rqstp));
+}
+
 static void
 calcprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 {
@@ -48,6 +54,7 @@ calcprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		resta_1_argument resta_1_arg;
 		multiplicacion_1_argument multiplicacion_1_arg;
 		division_1_argument division_1_arg;
+		operaciones calcular_lotes_1_arg;
 	} argument;
 	char *result;
 	xdrproc_t _xdr_argument, _xdr_result;
@@ -80,6 +87,12 @@ calcprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		_xdr_argument = (xdrproc_t) xdr_division_1_argument;
 		_xdr_result = (xdrproc_t) xdr_int;
 		local = (char *(*)(char *, struct svc_req *)) _division_1;
+		break;
+
+	case CALCULAR_LOTES:
+		_xdr_argument = (xdrproc_t) xdr_operaciones;
+		_xdr_result = (xdrproc_t) xdr_resultados;
+		local = (char *(*)(char *, struct svc_req *)) _calcular_lotes_1;
 		break;
 
 	default:

@@ -6,52 +6,116 @@
 
 #include "calc.h"
 
-int *
-suma_1_svc(int arg1, int arg2,  struct svc_req *rqstp)
+int realizar_operacion(operacion oper)
 {
-	static int  result;
 
-	printf("Operación a realizar: Sumar %d + %d\n",arg1,arg2);
+	/* Extraemos los operandos */
+
+	int op1 = oper.op1;
+	int op2 = oper.op2;
+
+	/* Extraemos el operador */
+	char operador = oper.operador;
+
+	int resultado;
+
+	switch (operador)
+	{
+	case '+':
+		printf("Operación a realizar: Sumar %d + %d\n", op1, op2);
+		resultado = op1 + op2;
+		break;
+
+	case '-':
+		printf("Operación a realizar: Restar %d - %d\n", op1, op2);
+		resultado = op1 - op2;
+		break;
+
+	case 'x':
+		printf("Operación a realizar: Multiplicar %d * %d\n", op1, op2);
+		resultado = op1 * op2;
+		break;
+
+	case '/':
+		if (op2 == 0){
+			printf("ERROR, no se ha podido realizar la operación : Dividir %d / %d (dividir entre cero!!!)\n", op1, op2);
+			resultado = 0;
+		} else {
+			printf("Operación a realizar: Dividir %d / %d\n", op1, op2);
+			resultado = op1 / op2;
+		}
+		break;
+
+	default:
+		printf("Error: El operador %c no es válido.\n", operador);
+		resultado = 0;
+		break;
+	}
+
+	return resultado;
+}
+
+int *suma_1_svc(int arg1, int arg2, struct svc_req *rqstp)
+{
+	static int result;
+
+	printf("Operación a realizar: Sumar %d + %d\n", arg1, arg2);
 	result = arg1 + arg2;
 
 	return &result;
 }
 
-int *
-resta_1_svc(int arg1, int arg2,  struct svc_req *rqstp)
+int *resta_1_svc(int arg1, int arg2, struct svc_req *rqstp)
 {
-	static int  result;
+	static int result;
 
-	printf("Operación a realizar: Restar %d - %d\n",arg1,arg2);
+	printf("Operación a realizar: Restar %d - %d\n", arg1, arg2);
 	result = arg1 - arg2;
 
 	return &result;
 }
 
-int *
-multiplicacion_1_svc(int arg1, int arg2,  struct svc_req *rqstp)
+int *multiplicacion_1_svc(int arg1, int arg2, struct svc_req *rqstp)
 {
-	static int  result;
+	static int result;
 
-	printf("Operación a realizar: Multiplicar %d * %d\n",arg1,arg2);
+	printf("Operación a realizar: Multiplicar %d * %d\n", arg1, arg2);
 	result = arg1 * arg2;
 
 	return &result;
 }
 
-int *
-division_1_svc(int arg1, int arg2,  struct svc_req *rqstp)
+int *division_1_svc(int arg1, int arg2, struct svc_req *rqstp)
 {
-	static int  result;
+	static int result;
 
-	if(arg2 == 0){
-		printf("ERROR, no se ha podido realizar la operación : Dividir %d / %d (dividir entre cero!!!)\n",arg1,arg2);
+	if (arg2 == 0)
+	{
+		printf("ERROR, no se ha podido realizar la operación : Dividir %d / %d (dividir entre cero!!!)\n", arg1, arg2);
 		result = 0;
-
-	} else {
-		printf("Operación a realizar: Dividir %d / %d",arg1,arg2);
+	}
+	else
+	{
+		printf("Operación a realizar: Dividir %d / %d\n", arg1, arg2);
 		result = arg1 / arg2;
 	}
+
+	return &result;
+}
+
+resultados *
+calcular_lotes_1_svc(operaciones arg1, struct svc_req *rqstp)
+{
+	static resultados result;
+
+	static int resultados_aux[MAX]; /*Array estático auxiliar para almacenar los resultados*/
+
+	for (int i = 0; i < arg1.operaciones_len; i++)
+		resultados_aux[i] = realizar_operacion(arg1.operaciones_val[i]);
+
+	/* Ahora hacemos que result apunte al array auxiliar de resultados*/
+	result.resultados_val = resultados_aux;
+	result.resultados_len = arg1.operaciones_len; /* Ya que hay el mismo nro de operaciones (y resultados) en resultados_aux que en arg1*/
 
 	return &result;
 }

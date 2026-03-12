@@ -13,6 +13,24 @@
 extern "C" {
 #endif
 
+#define MAX 30
+
+struct operacion {
+	int op1;
+	char operador;
+	int op2;
+};
+typedef struct operacion operacion;
+
+typedef struct {
+	u_int operaciones_len;
+	operacion *operaciones_val;
+} operaciones;
+
+typedef struct {
+	u_int resultados_len;
+	int *resultados_val;
+} resultados;
 
 struct suma_1_argument {
 	int arg1;
@@ -54,6 +72,9 @@ extern  int * multiplicacion_1_svc(int , int , struct svc_req *);
 #define DIVISION 4
 extern  int * division_1(int , int , CLIENT *);
 extern  int * division_1_svc(int , int , struct svc_req *);
+#define CALCULAR_LOTES 5
+extern  resultados * calcular_lotes_1(operaciones , CLIENT *);
+extern  resultados * calcular_lotes_1_svc(operaciones , struct svc_req *);
 extern int calcprog_1_freeresult (SVCXPRT *, xdrproc_t, caddr_t);
 
 #else /* K&R C */
@@ -69,18 +90,27 @@ extern  int * multiplicacion_1_svc();
 #define DIVISION 4
 extern  int * division_1();
 extern  int * division_1_svc();
+#define CALCULAR_LOTES 5
+extern  resultados * calcular_lotes_1();
+extern  resultados * calcular_lotes_1_svc();
 extern int calcprog_1_freeresult ();
 #endif /* K&R C */
 
 /* the xdr functions */
 
 #if defined(__STDC__) || defined(__cplusplus)
+extern  bool_t xdr_operacion (XDR *, operacion*);
+extern  bool_t xdr_operaciones (XDR *, operaciones*);
+extern  bool_t xdr_resultados (XDR *, resultados*);
 extern  bool_t xdr_suma_1_argument (XDR *, suma_1_argument*);
 extern  bool_t xdr_resta_1_argument (XDR *, resta_1_argument*);
 extern  bool_t xdr_multiplicacion_1_argument (XDR *, multiplicacion_1_argument*);
 extern  bool_t xdr_division_1_argument (XDR *, division_1_argument*);
 
 #else /* K&R C */
+extern bool_t xdr_operacion ();
+extern bool_t xdr_operaciones ();
+extern bool_t xdr_resultados ();
 extern bool_t xdr_suma_1_argument ();
 extern bool_t xdr_resta_1_argument ();
 extern bool_t xdr_multiplicacion_1_argument ();

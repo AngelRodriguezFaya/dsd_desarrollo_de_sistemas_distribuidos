@@ -12,20 +12,6 @@ void calcprog_1(char *host, int op1, char operador, int op2){
 
 	CLIENT *clnt;
 	int *result; /* Lo utilizaremos para el resultado de las operacion solicitada*/
-	/*
-	int *result_1;
-	int suma_1_arg1;
-	int suma_1_arg2;
-	int *result_2;
-	int resta_1_arg1;
-	int resta_1_arg2;
-	int *result_3;
-	int multiplicacion_1_arg1;
-	int multiplicacion_1_arg2;
-	int *result_4;
-	int division_1_arg1;
-	int division_1_arg2;
-	*/
 
 	#ifndef DEBUG
 		clnt = clnt_create(host, CALCPROG, CALCVER, "udp");
@@ -35,25 +21,6 @@ void calcprog_1(char *host, int op1, char operador, int op2){
 			exit(1);
 		}
 	#endif /* DEBUG */
-
-	/* Este código es generado por rpcgen, se llaman a todas las funciones de golpe
-		result_1 = suma_1(suma_1_arg1, suma_1_arg2, clnt);
-		if (result_1 == (int *) NULL) {
-			clnt_perror (clnt, "call failed");
-		}
-		result_2 = resta_1(resta_1_arg1, resta_1_arg2, clnt);
-		if (result_2 == (int *) NULL) {
-			clnt_perror (clnt, "call failed");
-		}
-		result_3 = multiplicacion_1(multiplicacion_1_arg1, multiplicacion_1_arg2, clnt);
-		if (result_3 == (int *) NULL) {
-			clnt_perror (clnt, "call failed");
-		}
-		result_4 = division_1(division_1_arg1, division_1_arg2, clnt);
-		if (result_4 == (int *) NULL) {
-			clnt_perror (clnt, "call failed");
-		}
-	*/
 
 	/* Hacemos un switch-case para identificar la operación que ha pedido el usuario*/
 
@@ -83,7 +50,7 @@ void calcprog_1(char *host, int op1, char operador, int op2){
 	if (result == (int *) NULL) {
         clnt_perror (clnt, "Error en la llamada al servidor");
     } else {
-        printf("El resultado de la operación es: %d\n", *result);
+        printf("\nEl resultado de la operación es: %d\n", *result);
     }
 
 	#ifndef DEBUG
@@ -91,21 +58,104 @@ void calcprog_1(char *host, int op1, char operador, int op2){
 	#endif /* DEBUG */
 }
 
+void calcproglotes_1(char *host, operaciones lote){
+
+	CLIENT *clnt;
+	resultados *result; /* Puntero a un array de tipo resultados para ir almacenando los resultados */
+
+	#ifndef DEBUG
+		clnt = clnt_create(host, CALCPROG, CALCVER, "udp");
+		if (clnt == NULL)
+		{
+			clnt_pcreateerror(host);
+			exit(1);
+		}
+	#endif /* DEBUG */
+
+	/* Llamamos a la función correspondiente apra que nos calcule el lote */
+	result = calcular_lotes_1(lote, clnt);
+
+	/* Comprobamos que se ha realizado las operaciones correctamente*/
+	if (result == (resultados *) NULL) {
+        clnt_perror (clnt, "Error en la llamada al servidor");
+    } else {
+        printf("\n=== RESULTADOS DEL CÁLCULO DEL LOTE ======\n");
+		
+		for(int i = 0; i < result->resultados_len; i++){
+			/* lote y el array  de resultados (al que apunta result) tienen los mismos tamaños */
+			int op1 = lote.operaciones_val[i].op1;
+			char operador = lote.operaciones_val[i].operador;
+			int op2 = lote.operaciones_val[i].op2;
+			int resultado = result->resultados_val[i];
+
+			printf("%d %c %d = %d\n", op1, operador, op2, resultado);
+		}
+
+		printf("===========================================\n");
+    }
+
+	#ifndef DEBUG
+		clnt_destroy(clnt);
+	#endif /* DEBUG */
+}
+
+void leer_lote(operaciones *lote, operacion *array_aux){
+
+	int num_oper;
+	operacion oper;
+
+	printf("\nIndique cuántas operaciones desea realizar por lote (máx %d): ", MAX);
+	scanf("%d", &num_oper);
+
+	/* Comprobamos que ha introducido un nro de veces correcto */
+	if(num_oper > MAX) num_oper = MAX;
+	if(num_oper < 1) num_oper = 1;
+
+	
+	for(int i = 0; i < num_oper; i++){
+
+		printf("\n----- Introduzca la operación nro %d -------", i+1);
+
+		/* Leemos los operandos y el operador. */
+		printf("\nIntroduzca el 1er operando (debe ser entero): ");
+		scanf("%d", &oper.op1);
+
+		printf("Introduzca el operador (+ - x /): ");
+		scanf(" %c", &oper.operador); /* Importante dejar un espacio para que nos e trague el '\n' de la entrada anterior*/
+			
+		printf("Introduzca el 2o operando (debe ser entero): ");
+		scanf("%d", &oper.op2);
+
+		/* Lo guardamos en el array auxiliar */
+		array_aux[i] = oper;
+
+		printf("------ Operación nro %d leida.--------------\n", i+1);
+	}
+
+	printf("\n-----> El lote se ha leído correctamente <------\n");
+
+
+	/* Asignamos la memoria y el tamaño al lote,*/
+	lote->operaciones_val = array_aux;
+	lote->operaciones_len = num_oper;
+}
+
 int mostrar_menu(){
 
 	int opcion = 0;
 
-	printf("==== CALCULADORA DISTRIBUIDA ====\n");
+	printf("\n==== CALCULADORA DISTRIBUIDA =======\n");
 	printf("Opciones: \n");
 	printf("1. Sumar \n");
 	printf("2. Restar \n");
 	printf("3. Multiplicar\n");
 	printf("4. Dividir\n");
-	printf("===================================");
+	printf("5. Calcular un lote de operaciones.\n");
+	printf("======================================");
 	do{
-		printf("\nElige una opción (1-4): ");
+		printf("\nElige una opción (1-5): ");
 		scanf("%d", &opcion);
-	} while (opcion < 1 || opcion > 4 );	
+	} while (opcion < 1 || opcion > 5 );	
 
 	return opcion;
 }
@@ -138,8 +188,7 @@ char procesar_menu(int opcion){ /* Devuelve el operador deseado*/
 	return operando;
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]){
 	char *host;
 	int op1, op2; /* Operandos para las operaciones */
 	char operador;
@@ -152,30 +201,40 @@ int main(int argc, char *argv[])
 		operador = argv[3][0]; /*Se añade el [0] para que sólo se quede con el primer carácter (ya que argv[3] es un char *)*/
 		op2 = atoi(argv[4]);
 
+		/* Realizamos la operación simple */
+		calcprog_1(host, op1, operador, op2);
+
 	} else if (argc == 2){ /* El usuario quiere que se le muestre el menú de opciones.*/ 
 
 		host = argv[1];
 
-		int opcion;
+		int opcion = mostrar_menu();
 
-		opcion = mostrar_menu();
-		operador = procesar_menu(opcion);
+		if (opcion == 5){
+			operaciones lote;
+			operacion array_aux[MAX]; /* Array estático y auxiliar para almacenar las operaciones leidas. */
+			leer_lote(&lote, array_aux);
+			calcproglotes_1(host, lote);
 
-		printf("\nIntroduzca el 1er operando: ");
-		scanf("%d", &op1);
+		} else { /* El usuario desea realizar alguna operación simple. */
+			operador = procesar_menu(opcion);
 
-		printf("\nIntroduzca el 2o operando: ");
-		scanf("%d", &op2);
+			printf("\nIntroduzca el 1er operando (debe ser entero): ");
+			scanf("%d", &op1);
+
+			printf("Introduzca el 2o operando (debe ser entero): ");
+			scanf("%d", &op2);	
+
+			/* Realizamos la operación simple */
+			calcprog_1(host, op1, operador, op2);
+		}
 
 	} else { /* El número de parámetros es incorrecto*/
-		printf("Error al pasar los parámetros\n.");
+		printf("Error al pasar los parámetros.\n");
 		printf("Uso por terminal: %s <maquina> <entero> <operador> <entero>\n", argv[0]);
-		printf("Uso por menú: %s <maquina>\n", argv[0]);
+		printf("Uso por menú:     %s <maquina>\n", argv[0]);
 		exit(1);
-	}
+		}
 
-	/* Llamamos a nuestra función con los parámetros correspondientes*/
-	calcprog_1(host, op1, operador, op2);
-
-	exit(0);
+	return 0;
 }
