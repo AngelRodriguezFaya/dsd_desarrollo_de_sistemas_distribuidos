@@ -6,15 +6,25 @@
 #include "calc.h"
 
 bool_t
+xdr_num_operaciones (XDR *xdrs, num_operaciones *objp)
+{
+	register int32_t *buf;
+
+	 if (!xdr_enum (xdrs, (enum_t *) objp))
+		 return FALSE;
+	return TRUE;
+}
+
+bool_t
 xdr_operacion (XDR *xdrs, operacion *objp)
 {
 	register int32_t *buf;
 
-	 if (!xdr_int (xdrs, &objp->op1))
+	 if (!xdr_double (xdrs, &objp->op1))
 		 return FALSE;
 	 if (!xdr_char (xdrs, &objp->operador))
 		 return FALSE;
-	 if (!xdr_int (xdrs, &objp->op2))
+	 if (!xdr_double (xdrs, &objp->op2))
 		 return FALSE;
 	return TRUE;
 }
@@ -24,7 +34,7 @@ xdr_operaciones (XDR *xdrs, operaciones *objp)
 {
 	register int32_t *buf;
 
-	 if (!xdr_array (xdrs, (char **)&objp->operaciones_val, (u_int *) &objp->operaciones_len, MAX,
+	 if (!xdr_array (xdrs, (char **)&objp->operaciones_val, (u_int *) &objp->operaciones_len, MAX_OP,
 		sizeof (operacion), (xdrproc_t) xdr_operacion))
 		 return FALSE;
 	return TRUE;
@@ -35,8 +45,8 @@ xdr_resultados (XDR *xdrs, resultados *objp)
 {
 	register int32_t *buf;
 
-	 if (!xdr_array (xdrs, (char **)&objp->resultados_val, (u_int *) &objp->resultados_len, MAX,
-		sizeof (int), (xdrproc_t) xdr_int))
+	 if (!xdr_array (xdrs, (char **)&objp->resultados_val, (u_int *) &objp->resultados_len, MAX_OP,
+		sizeof (double), (xdrproc_t) xdr_double))
 		 return FALSE;
 	return TRUE;
 }
@@ -44,9 +54,9 @@ xdr_resultados (XDR *xdrs, resultados *objp)
 bool_t
 xdr_suma_1_argument (XDR *xdrs, suma_1_argument *objp)
 {
-	 if (!xdr_int (xdrs, &objp->arg1))
+	 if (!xdr_double (xdrs, &objp->arg1))
 		 return FALSE;
-	 if (!xdr_int (xdrs, &objp->arg2))
+	 if (!xdr_double (xdrs, &objp->arg2))
 		 return FALSE;
 	return TRUE;
 }
@@ -54,9 +64,9 @@ xdr_suma_1_argument (XDR *xdrs, suma_1_argument *objp)
 bool_t
 xdr_resta_1_argument (XDR *xdrs, resta_1_argument *objp)
 {
-	 if (!xdr_int (xdrs, &objp->arg1))
+	 if (!xdr_double (xdrs, &objp->arg1))
 		 return FALSE;
-	 if (!xdr_int (xdrs, &objp->arg2))
+	 if (!xdr_double (xdrs, &objp->arg2))
 		 return FALSE;
 	return TRUE;
 }
@@ -64,9 +74,9 @@ xdr_resta_1_argument (XDR *xdrs, resta_1_argument *objp)
 bool_t
 xdr_multiplicacion_1_argument (XDR *xdrs, multiplicacion_1_argument *objp)
 {
-	 if (!xdr_int (xdrs, &objp->arg1))
+	 if (!xdr_double (xdrs, &objp->arg1))
 		 return FALSE;
-	 if (!xdr_int (xdrs, &objp->arg2))
+	 if (!xdr_double (xdrs, &objp->arg2))
 		 return FALSE;
 	return TRUE;
 }
@@ -74,9 +84,19 @@ xdr_multiplicacion_1_argument (XDR *xdrs, multiplicacion_1_argument *objp)
 bool_t
 xdr_division_1_argument (XDR *xdrs, division_1_argument *objp)
 {
-	 if (!xdr_int (xdrs, &objp->arg1))
+	 if (!xdr_double (xdrs, &objp->arg1))
 		 return FALSE;
-	 if (!xdr_int (xdrs, &objp->arg2))
+	 if (!xdr_double (xdrs, &objp->arg2))
+		 return FALSE;
+	return TRUE;
+}
+
+bool_t
+xdr_potencia_1_argument (XDR *xdrs, potencia_1_argument *objp)
+{
+	 if (!xdr_double (xdrs, &objp->arg1))
+		 return FALSE;
+	 if (!xdr_double (xdrs, &objp->arg2))
 		 return FALSE;
 	return TRUE;
 }

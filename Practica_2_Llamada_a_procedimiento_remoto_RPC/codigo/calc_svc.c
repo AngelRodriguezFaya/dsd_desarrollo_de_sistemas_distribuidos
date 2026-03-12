@@ -16,28 +16,64 @@
 #define SIG_PF void(*)(int)
 #endif
 
-static int *
+static double *
 _suma_1 (suma_1_argument *argp, struct svc_req *rqstp)
 {
 	return (suma_1_svc(argp->arg1, argp->arg2, rqstp));
 }
 
-static int *
+static double *
 _resta_1 (resta_1_argument *argp, struct svc_req *rqstp)
 {
 	return (resta_1_svc(argp->arg1, argp->arg2, rqstp));
 }
 
-static int *
+static double *
 _multiplicacion_1 (multiplicacion_1_argument *argp, struct svc_req *rqstp)
 {
 	return (multiplicacion_1_svc(argp->arg1, argp->arg2, rqstp));
 }
 
-static int *
+static double *
 _division_1 (division_1_argument *argp, struct svc_req *rqstp)
 {
 	return (division_1_svc(argp->arg1, argp->arg2, rqstp));
+}
+
+static double *
+_potencia_1 (potencia_1_argument *argp, struct svc_req *rqstp)
+{
+	return (potencia_1_svc(argp->arg1, argp->arg2, rqstp));
+}
+
+static double *
+_log10_1 (double  *argp, struct svc_req *rqstp)
+{
+	return (log10_1_svc(*argp, rqstp));
+}
+
+static double *
+_logn_1 (double  *argp, struct svc_req *rqstp)
+{
+	return (logn_1_svc(*argp, rqstp));
+}
+
+static double *
+_seno_1 (double  *argp, struct svc_req *rqstp)
+{
+	return (seno_1_svc(*argp, rqstp));
+}
+
+static double *
+_coseno_1 (double  *argp, struct svc_req *rqstp)
+{
+	return (coseno_1_svc(*argp, rqstp));
+}
+
+static double *
+_tangente_1 (double  *argp, struct svc_req *rqstp)
+{
+	return (tangente_1_svc(*argp, rqstp));
 }
 
 static resultados *
@@ -54,6 +90,12 @@ calcprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		resta_1_argument resta_1_arg;
 		multiplicacion_1_argument multiplicacion_1_arg;
 		division_1_argument division_1_arg;
+		potencia_1_argument potencia_1_arg;
+		double log10_1_arg;
+		double logn_1_arg;
+		double seno_1_arg;
+		double coseno_1_arg;
+		double tangente_1_arg;
 		operaciones calcular_lotes_1_arg;
 	} argument;
 	char *result;
@@ -67,26 +109,62 @@ calcprog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 
 	case SUMA:
 		_xdr_argument = (xdrproc_t) xdr_suma_1_argument;
-		_xdr_result = (xdrproc_t) xdr_int;
+		_xdr_result = (xdrproc_t) xdr_double;
 		local = (char *(*)(char *, struct svc_req *)) _suma_1;
 		break;
 
 	case RESTA:
 		_xdr_argument = (xdrproc_t) xdr_resta_1_argument;
-		_xdr_result = (xdrproc_t) xdr_int;
+		_xdr_result = (xdrproc_t) xdr_double;
 		local = (char *(*)(char *, struct svc_req *)) _resta_1;
 		break;
 
 	case MULTIPLICACION:
 		_xdr_argument = (xdrproc_t) xdr_multiplicacion_1_argument;
-		_xdr_result = (xdrproc_t) xdr_int;
+		_xdr_result = (xdrproc_t) xdr_double;
 		local = (char *(*)(char *, struct svc_req *)) _multiplicacion_1;
 		break;
 
 	case DIVISION:
 		_xdr_argument = (xdrproc_t) xdr_division_1_argument;
-		_xdr_result = (xdrproc_t) xdr_int;
+		_xdr_result = (xdrproc_t) xdr_double;
 		local = (char *(*)(char *, struct svc_req *)) _division_1;
+		break;
+
+	case POTENCIA:
+		_xdr_argument = (xdrproc_t) xdr_potencia_1_argument;
+		_xdr_result = (xdrproc_t) xdr_double;
+		local = (char *(*)(char *, struct svc_req *)) _potencia_1;
+		break;
+
+	case LOG10:
+		_xdr_argument = (xdrproc_t) xdr_double;
+		_xdr_result = (xdrproc_t) xdr_double;
+		local = (char *(*)(char *, struct svc_req *)) _log10_1;
+		break;
+
+	case LOGN:
+		_xdr_argument = (xdrproc_t) xdr_double;
+		_xdr_result = (xdrproc_t) xdr_double;
+		local = (char *(*)(char *, struct svc_req *)) _logn_1;
+		break;
+
+	case SENO:
+		_xdr_argument = (xdrproc_t) xdr_double;
+		_xdr_result = (xdrproc_t) xdr_double;
+		local = (char *(*)(char *, struct svc_req *)) _seno_1;
+		break;
+
+	case COSENO:
+		_xdr_argument = (xdrproc_t) xdr_double;
+		_xdr_result = (xdrproc_t) xdr_double;
+		local = (char *(*)(char *, struct svc_req *)) _coseno_1;
+		break;
+
+	case TANGENTE:
+		_xdr_argument = (xdrproc_t) xdr_double;
+		_xdr_result = (xdrproc_t) xdr_double;
+		local = (char *(*)(char *, struct svc_req *)) _tangente_1;
 		break;
 
 	case CALCULAR_LOTES:
