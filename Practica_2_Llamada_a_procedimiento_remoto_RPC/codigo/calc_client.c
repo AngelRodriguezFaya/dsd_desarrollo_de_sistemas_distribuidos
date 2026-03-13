@@ -58,47 +58,47 @@ int mostrar_menu(){
  * Si la opción no es válida, se muestra un mensaje de error y se termina el programa.
  */
 char procesar_menu(int opcion){ /* Devuelve el operador deseado*/
-	char operando;
+	char operador;
 
 	switch (opcion){
 		case OP_SUMA: /* 1 */
-			operando = '+';
+			operador = '+';
 			break;
 
 		case OP_RESTA: /* 2 */
-			operando = '-';
+			operador = '-';
 			break;
 
 		case OP_MULTIPLICACION: /* 3 */
-			operando = 'x';
+			operador = 'x';
 			break;
 
 		case OP_DIVISION: /* 4 */
-			operando = '/';
+			operador = '/';
 			break;
 
 		case OP_POTENCIA: /* 5 */
-			operando = '^';
+			operador = '^';
 			break;
 
 		case OP_LOG10: /* 6 */
-			operando = 'L';
+			operador = 'L';
 			break;
 
 		case OP_LOGN: /* 7 */
-			operando = 'l';
+			operador = 'l';
 			break;
 
 		case OP_SENO: /* 8 */
-			operando = 's';
+			operador = 's';
 			break;
 
 		case OP_COSENO: /* 9 */
-			operando = 'c';
+			operador = 'c';
 			break;
 
 		case OP_TANGENTE: /* 10 */
-			operando = 't';
+			operador = 't';
 			break;
 	
 		default:
@@ -106,62 +106,7 @@ char procesar_menu(int opcion){ /* Devuelve el operador deseado*/
 			exit(1);
 	}
 
-	return operando;
-}
-
-/**
- * @brief Función para leer un lote de operaciones desde la entrada estándar.
- * 
- * @param lote Un puntero a una estructura de tipo operaciones donde se almacenarán las operaciones leídas.
- * @param array_aux Un array auxiliar de tipo operacion donde se almacenarán temporalmente las operaciones leídas 
- *   		   antes de asignarlas a la estructura lote.
- * @return void
- */
-void leer_lote(operaciones *lote, operacion *array_aux){
-
-	int num_oper;
-	operacion oper;
-
-	printf("\nIndique cuántas operaciones desea realizar por lote (máx %d): ", MAX_OP);
-	scanf("%d", &num_oper);
-
-	/* Comprobamos que ha introducido un nro de veces correcto */
-	if(num_oper > MAX_OP) num_oper = MAX_OP;
-	if(num_oper < 1) num_oper = 1;
-
-	
-	for(int i = 0; i < num_oper; i++){
-
-		printf("\n----- Introduzca la operación nro %d -------", i+1);
-
-		/* Leemos los operandos y el operador. */
-		printf("\nIntroduzca el 1er operando: ");
-		scanf("%lf", &oper.op1);
-
-		printf("Introduzca el operador (+ - x / ^ L l s c t): ");
-		scanf(" %c", &oper.operador); /* Importante dejar un espacio para que nos e trague el '\n' de la entrada anterior*/
-		
-		/* Sólo leemos el segundo operando si la operación lo necesita. Si no lo necesita, no se lee. */
-		if(oper.operador == '+' || oper.operador == '-' || oper.operador == 'x' || 
-			oper.operador == '/' || oper.operador == '^'){
-			printf("Introduzca el 2o operando: ");
-			scanf("%lf", &oper.op2);
-		} else {
-			oper.op2 = 0.0;
-		}
-
-		/* Lo guardamos en el array auxiliar */
-		array_aux[i] = oper;
-
-		printf("------ Operación nro %d leida.--------------\n", i+1);
-	}
-
-	printf("\n-----> El lote se ha leído correctamente <------\n");
-
-
-	/* Asignamos la memoria y el tamaño al lote,*/
-	lote->operaciones_val = array_aux;
-	lote->operaciones_len = num_oper;
+	return operador;
 }
 
 /**
@@ -246,6 +191,61 @@ void calcprog_1(char *host, double op1, double op2, char operador){
 	#ifndef	DEBUG
 		clnt_destroy (clnt);
 	#endif	 /* DEBUG */
+}
+
+/**
+ * @brief Función para leer un lote de operaciones desde la entrada estándar.
+ * 
+ * @param lote Un puntero a una estructura de tipo operaciones donde se almacenarán las operaciones leídas.
+ * @param array_aux Un array auxiliar de tipo operacion donde se almacenarán temporalmente las operaciones leídas 
+ *   		   antes de asignarlas a la estructura lote.
+ * @return void
+ */
+void leer_lote(operaciones *lote, operacion *array_aux){
+
+	int num_oper;
+	operacion oper;
+
+	printf("\nIndique cuántas operaciones desea realizar por lote (máx %d): ", MAX_OP);
+	scanf("%d", &num_oper);
+
+	/* Comprobamos que ha introducido un nro de veces correcto */
+	if(num_oper > MAX_OP) num_oper = MAX_OP;
+	if(num_oper < 1) num_oper = 1;
+
+	
+	for(int i = 0; i < num_oper; i++){
+
+		printf("\n----- Introduzca la operación nro %d -------", i+1);
+
+		/* Leemos los operandos y el operador. */
+		printf("\nIntroduzca el 1er operando: ");
+		scanf("%lf", &oper.op1);
+
+		printf("Introduzca el operador (+ - x / ^ L l s c t): ");
+		scanf(" %c", &oper.operador); /* Importante dejar un espacio para que nos e trague el '\n' de la entrada anterior*/
+		
+		/* Sólo leemos el segundo operando si la operación lo necesita. Si no lo necesita, no se lee. */
+		if(oper.operador == '+' || oper.operador == '-' || oper.operador == 'x' || 
+			oper.operador == '/' || oper.operador == '^'){
+			printf("Introduzca el 2o operando: ");
+			scanf("%lf", &oper.op2);
+		} else {
+			oper.op2 = 0.0;
+		}
+
+		/* Lo guardamos en el array auxiliar */
+		array_aux[i] = oper;
+
+		printf("------ Operación nro %d leida.--------------\n", i+1);
+	}
+
+	printf("\n-----> El lote se ha leído correctamente <------\n");
+
+
+	/* Asignamos la memoria y el tamaño al lote,*/
+	lote->operaciones_val = array_aux;
+	lote->operaciones_len = num_oper;
 }
 
 /**
