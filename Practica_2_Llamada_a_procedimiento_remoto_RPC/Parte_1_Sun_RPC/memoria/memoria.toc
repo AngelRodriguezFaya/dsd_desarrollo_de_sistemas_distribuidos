@@ -1,0 +1,22 @@
+\babel@toc {spanish}{}\relax 
+\contentsline {section}{\numberline {1}Introducción}{2}{}%
+\contentsline {section}{\numberline {2}Diseño de la interfaz. Especificación del protocolo en el lenguaje RPC}{3}{}%
+\contentsline {subsection}{\numberline {a}Definición del Programa.}{4}{}%
+\contentsline {subsection}{\numberline {b}Definición de Estructuras de Datos auxiliares.}{4}{}%
+\contentsline {subsection}{\numberline {c}Generación de archivos con \textit {rpcgen}}{5}{}%
+\contentsline {section}{\numberline {3}Arquitectura del Servidor.}{6}{}%
+\contentsline {subsection}{\numberline {a}\texttt {realizar\_operacion(op1, op2, operador)}}{12}{}%
+\contentsline {subsection}{\numberline {b}Funciones intermediarias (\textit {Wrappers}): las rutinas RPC}{13}{}%
+\contentsline {subsection}{\numberline {c}La gestión de los lotes.}{13}{}%
+\contentsline {section}{\numberline {4}Arquitectura Cliente.}{13}{}%
+\contentsline {subsection}{\numberline {a}El programa principal: \textit {main}}{21}{}%
+\contentsline {subsection}{\numberline {b}\texttt {mostrar\_menu()}}{22}{}%
+\contentsline {subsection}{\numberline {c}\texttt {procesar\_menu(opcion)}}{22}{}%
+\contentsline {subsection}{\numberline {d}\texttt {calcprog\_1(*host, op1, op2, operador)}}{22}{}%
+\contentsline {subsection}{\numberline {e}\texttt {leer\_lote(*lote, *array\_aux)}}{23}{}%
+\contentsline {subsection}{\numberline {f}calcproglotes(*host, lote)}{24}{}%
+\contentsline {section}{\numberline {5}Ejemplos de compilación y ejecución.}{24}{}%
+\contentsline {subsection}{\numberline {a}Compilación del proyecto}{25}{}%
+\contentsline {subsection}{\numberline {b}Ejecución del Proyecto}{25}{}%
+\contentsline {subsubsection}{\numberline {b.1}Puesta en marcha del Servidor}{25}{}%
+\contentsline {subsubsection}{\numberline {b.2}Ejecución del Cliente.}{26}{}%
