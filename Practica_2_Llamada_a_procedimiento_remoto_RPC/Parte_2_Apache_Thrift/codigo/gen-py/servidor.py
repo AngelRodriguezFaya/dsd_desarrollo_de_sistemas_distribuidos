@@ -95,19 +95,35 @@ class CalculadoraHandler:
               + str(radio))
         return 3.14159 * radio * radio
     
-    def multMat(self, m1, m2):
+    def sumaMatrices(self, m1, m2):
+        if (len(m1) != len(m2)) or (len(m1[0]) != len(m2[0])):
+            raise CalculadoraValueError("Las dimensiones de las matrices son distintas")
+
+        # Inicializamos la matriz resultado con ceros
+        resultado = [[0 for _ in range(len(m1))] for _ in range(len(m1[0]))]
+
+        for i in range (len(m1)):
+            for j in range (len(m1[0])):
+                resultado[i][j] = m1[i][j] + m2[i][j]
+        
+        return resultado
+            
+    
+    def multiplicaMatrices(self, m1, m2):
+        print("Me han pedido que multiplique dos matrices")
         if len(m1[0]) != len(m2):
             raise CalculadoraValueError("El número de columnas de la primera matriz" + 
                                         " debe ser igual al número de filas de la segunda matriz.")
         
-        result = [[0 for _ in range(len(m2[0]))] for _ in range(len(m1))]
+        # Inicializamos la matriz resultado con ceros
+        resultado = [[0 for _ in range(len(m2[0]))] for _ in range(len(m1))]
         
         for i in range(len(m1)):
             for j in range(len(m2[0])):
                 for k in range(len(m2)):
-                    result[i][j] += m1[i][k] * m2[k][j]
+                    resultado[i][j] += m1[i][k] * m2[k][j]
 
-        return result
+        return resultado
     
 
 # Programa principal para iniciar el servidor

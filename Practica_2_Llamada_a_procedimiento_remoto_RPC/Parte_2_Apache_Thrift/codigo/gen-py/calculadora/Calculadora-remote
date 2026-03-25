@@ -29,9 +29,17 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  double resta(double num1, double num2)')
     print('  double multiplicacion(double num1, double num2)')
     print('  double division(double num1, double num2)')
+    print('  double potencia(double base, double exponente)')
+    print('  double raizCuadrada(double numero)')
+    print('  double logBase10(double numero)')
+    print('  double logNatural(double numero)')
+    print('  double seno(double angulo)')
+    print('  double coseno(double angulo)')
+    print('  double tangente(double angulo)')
     print('  double areaCuadrado(double lado1, double lado2)')
     print('  double areaTriangulo(double base, double altura)')
     print('  double areaCirculo(double radio)')
+    print('   sumaMatrices( m1,  m2)')
     print('   multiplicaMatrices( m1,  m2)')
     print('')
     sys.exit(0)
@@ -142,6 +150,48 @@ elif cmd == 'division':
         sys.exit(1)
     pp.pprint(client.division(eval(args[0]), eval(args[1]),))
 
+elif cmd == 'potencia':
+    if len(args) != 2:
+        print('potencia requires 2 args')
+        sys.exit(1)
+    pp.pprint(client.potencia(eval(args[0]), eval(args[1]),))
+
+elif cmd == 'raizCuadrada':
+    if len(args) != 1:
+        print('raizCuadrada requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.raizCuadrada(eval(args[0]),))
+
+elif cmd == 'logBase10':
+    if len(args) != 1:
+        print('logBase10 requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.logBase10(eval(args[0]),))
+
+elif cmd == 'logNatural':
+    if len(args) != 1:
+        print('logNatural requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.logNatural(eval(args[0]),))
+
+elif cmd == 'seno':
+    if len(args) != 1:
+        print('seno requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.seno(eval(args[0]),))
+
+elif cmd == 'coseno':
+    if len(args) != 1:
+        print('coseno requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.coseno(eval(args[0]),))
+
+elif cmd == 'tangente':
+    if len(args) != 1:
+        print('tangente requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.tangente(eval(args[0]),))
+
 elif cmd == 'areaCuadrado':
     if len(args) != 2:
         print('areaCuadrado requires 2 args')
@@ -159,6 +209,12 @@ elif cmd == 'areaCirculo':
         print('areaCirculo requires 1 args')
         sys.exit(1)
     pp.pprint(client.areaCirculo(eval(args[0]),))
+
+elif cmd == 'sumaMatrices':
+    if len(args) != 2:
+        print('sumaMatrices requires 2 args')
+        sys.exit(1)
+    pp.pprint(client.sumaMatrices(eval(args[0]), eval(args[1]),))
 
 elif cmd == 'multiplicaMatrices':
     if len(args) != 2:

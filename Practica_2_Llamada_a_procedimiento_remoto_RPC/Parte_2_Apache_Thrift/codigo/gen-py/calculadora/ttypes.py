@@ -46,8 +46,8 @@ class Operacion(object):
                 else:
                     iprot.skip(ftype)
             elif fid == 2:
-                if ftype == TType.DOUBLE:
-                    self.operador = iprot.readDouble()
+                if ftype == TType.STRING:
+                    self.operador = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
             elif fid == 3:
@@ -70,12 +70,123 @@ class Operacion(object):
             oprot.writeDouble(self.num1)
             oprot.writeFieldEnd()
         if self.operador is not None:
-            oprot.writeFieldBegin('operador', TType.DOUBLE, 2)
-            oprot.writeDouble(self.operador)
+            oprot.writeFieldBegin('operador', TType.STRING, 2)
+            oprot.writeString(self.operador.encode('utf-8') if sys.version_info[0] == 2 else self.operador)
             oprot.writeFieldEnd()
         if self.num2 is not None:
             oprot.writeFieldBegin('num2', TType.DOUBLE, 3)
             oprot.writeDouble(self.num2)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class OperacionMatriz(object):
+    """
+    Attributes:
+     - m1
+     - operador
+     - m2
+
+    """
+
+
+    def __init__(self, m1=None, operador=None, m2=None,):
+        self.m1 = m1
+        self.operador = operador
+        self.m2 = m2
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.LIST:
+                    self.m1 = []
+                    (_etype3, _size0) = iprot.readListBegin()
+                    for _i4 in range(_size0):
+                        _elem5 = []
+                        (_etype9, _size6) = iprot.readListBegin()
+                        for _i10 in range(_size6):
+                            _elem11 = iprot.readI32()
+                            _elem5.append(_elem11)
+                        iprot.readListEnd()
+                        self.m1.append(_elem5)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.operador = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.LIST:
+                    self.m2 = []
+                    (_etype15, _size12) = iprot.readListBegin()
+                    for _i16 in range(_size12):
+                        _elem17 = []
+                        (_etype21, _size18) = iprot.readListBegin()
+                        for _i22 in range(_size18):
+                            _elem23 = iprot.readI32()
+                            _elem17.append(_elem23)
+                        iprot.readListEnd()
+                        self.m2.append(_elem17)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('OperacionMatriz')
+        if self.m1 is not None:
+            oprot.writeFieldBegin('m1', TType.LIST, 1)
+            oprot.writeListBegin(TType.LIST, len(self.m1))
+            for iter24 in self.m1:
+                oprot.writeListBegin(TType.I32, len(iter24))
+                for iter25 in iter24:
+                    oprot.writeI32(iter25)
+                oprot.writeListEnd()
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.operador is not None:
+            oprot.writeFieldBegin('operador', TType.STRING, 2)
+            oprot.writeString(self.operador.encode('utf-8') if sys.version_info[0] == 2 else self.operador)
+            oprot.writeFieldEnd()
+        if self.m2 is not None:
+            oprot.writeFieldBegin('m2', TType.LIST, 3)
+            oprot.writeListBegin(TType.LIST, len(self.m2))
+            for iter26 in self.m2:
+                oprot.writeListBegin(TType.I32, len(iter26))
+                for iter27 in iter26:
+                    oprot.writeI32(iter27)
+                oprot.writeListEnd()
+            oprot.writeListEnd()
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -170,8 +281,15 @@ all_structs.append(Operacion)
 Operacion.thrift_spec = (
     None,  # 0
     (1, TType.DOUBLE, 'num1', None, None, ),  # 1
-    (2, TType.DOUBLE, 'operador', None, None, ),  # 2
+    (2, TType.STRING, 'operador', 'UTF8', None, ),  # 2
     (3, TType.DOUBLE, 'num2', None, None, ),  # 3
+)
+all_structs.append(OperacionMatriz)
+OperacionMatriz.thrift_spec = (
+    None,  # 0
+    (1, TType.LIST, 'm1', (TType.LIST, (TType.I32, None, False), False), None, ),  # 1
+    (2, TType.STRING, 'operador', 'UTF8', None, ),  # 2
+    (3, TType.LIST, 'm2', (TType.LIST, (TType.I32, None, False), False), None, ),  # 3
 )
 all_structs.append(CalculadoraValueError)
 CalculadoraValueError.thrift_spec = (
