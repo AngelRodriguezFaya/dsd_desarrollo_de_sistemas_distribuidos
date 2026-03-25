@@ -159,6 +159,14 @@ class Iface(object):
         """
         pass
 
+    def procesaLoteOperaciones(self, operaciones):
+        """
+        Parameters:
+         - operaciones
+
+        """
+        pass
+
 
 class Client(Iface):
     def __init__(self, iprot, oprot=None):
@@ -733,6 +741,40 @@ class Client(Iface):
             raise result.ex
         raise TApplicationException(TApplicationException.MISSING_RESULT, "multiplicaMatrices failed: unknown result")
 
+    def procesaLoteOperaciones(self, operaciones):
+        """
+        Parameters:
+         - operaciones
+
+        """
+        self.send_procesaLoteOperaciones(operaciones)
+        return self.recv_procesaLoteOperaciones()
+
+    def send_procesaLoteOperaciones(self, operaciones):
+        self._oprot.writeMessageBegin('procesaLoteOperaciones', TMessageType.CALL, self._seqid)
+        args = procesaLoteOperaciones_args()
+        args.operaciones = operaciones
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_procesaLoteOperaciones(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = procesaLoteOperaciones_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.ex is not None:
+            raise result.ex
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "procesaLoteOperaciones failed: unknown result")
+
 
 class Processor(Iface, TProcessor):
     def __init__(self, handler):
@@ -755,6 +797,7 @@ class Processor(Iface, TProcessor):
         self._processMap["areaCirculo"] = Processor.process_areaCirculo
         self._processMap["sumaMatrices"] = Processor.process_sumaMatrices
         self._processMap["multiplicaMatrices"] = Processor.process_multiplicaMatrices
+        self._processMap["procesaLoteOperaciones"] = Processor.process_procesaLoteOperaciones
         self._on_message_begin = None
 
     def on_message_begin(self, func):
@@ -1182,6 +1225,32 @@ class Processor(Iface, TProcessor):
             msg_type = TMessageType.EXCEPTION
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
         oprot.writeMessageBegin("multiplicaMatrices", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_procesaLoteOperaciones(self, seqid, iprot, oprot):
+        args = procesaLoteOperaciones_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = procesaLoteOperaciones_result()
+        try:
+            result.success = self._handler.procesaLoteOperaciones(args.operaciones)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except CalculadoraValueError as ex:
+            msg_type = TMessageType.REPLY
+            result.ex = ex
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("procesaLoteOperaciones", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
@@ -3515,6 +3584,158 @@ class multiplicaMatrices_result(object):
 all_structs.append(multiplicaMatrices_result)
 multiplicaMatrices_result.thrift_spec = (
     (0, TType.LIST, 'success', (TType.LIST, (TType.I32, None, False), False), None, ),  # 0
+    (1, TType.STRUCT, 'ex', [CalculadoraValueError, None], None, ),  # 1
+)
+
+
+class procesaLoteOperaciones_args(object):
+    """
+    Attributes:
+     - operaciones
+
+    """
+
+
+    def __init__(self, operaciones=None,):
+        self.operaciones = operaciones
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.LIST:
+                    self.operaciones = []
+                    (_etype115, _size112) = iprot.readListBegin()
+                    for _i116 in range(_size112):
+                        _elem117 = Operacion()
+                        _elem117.read(iprot)
+                        self.operaciones.append(_elem117)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('procesaLoteOperaciones_args')
+        if self.operaciones is not None:
+            oprot.writeFieldBegin('operaciones', TType.LIST, 1)
+            oprot.writeListBegin(TType.STRUCT, len(self.operaciones))
+            for iter118 in self.operaciones:
+                iter118.write(oprot)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(procesaLoteOperaciones_args)
+procesaLoteOperaciones_args.thrift_spec = (
+    None,  # 0
+    (1, TType.LIST, 'operaciones', (TType.STRUCT, [Operacion, None], False), None, ),  # 1
+)
+
+
+class procesaLoteOperaciones_result(object):
+    """
+    Attributes:
+     - success
+     - ex
+
+    """
+
+
+    def __init__(self, success=None, ex=None,):
+        self.success = success
+        self.ex = ex
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype122, _size119) = iprot.readListBegin()
+                    for _i123 in range(_size119):
+                        _elem124 = iprot.readDouble()
+                        self.success.append(_elem124)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.ex = CalculadoraValueError.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('procesaLoteOperaciones_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.LIST, 0)
+            oprot.writeListBegin(TType.DOUBLE, len(self.success))
+            for iter125 in self.success:
+                oprot.writeDouble(iter125)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.ex is not None:
+            oprot.writeFieldBegin('ex', TType.STRUCT, 1)
+            self.ex.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(procesaLoteOperaciones_result)
+procesaLoteOperaciones_result.thrift_spec = (
+    (0, TType.LIST, 'success', (TType.DOUBLE, None, False), None, ),  # 0
     (1, TType.STRUCT, 'ex', [CalculadoraValueError, None], None, ),  # 1
 )
 fix_spec(all_structs)

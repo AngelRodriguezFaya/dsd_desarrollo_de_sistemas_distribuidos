@@ -41,6 +41,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  double areaCirculo(double radio)')
     print('   sumaMatrices( m1,  m2)')
     print('   multiplicaMatrices( m1,  m2)')
+    print('   procesaLoteOperaciones( operaciones)')
     print('')
     sys.exit(0)
 
@@ -221,6 +222,12 @@ elif cmd == 'multiplicaMatrices':
         print('multiplicaMatrices requires 2 args')
         sys.exit(1)
     pp.pprint(client.multiplicaMatrices(eval(args[0]), eval(args[1]),))
+
+elif cmd == 'procesaLoteOperaciones':
+    if len(args) != 1:
+        print('procesaLoteOperaciones requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.procesaLoteOperaciones(eval(args[0]),))
 
 else:
     print('Unrecognized method %s' % cmd)

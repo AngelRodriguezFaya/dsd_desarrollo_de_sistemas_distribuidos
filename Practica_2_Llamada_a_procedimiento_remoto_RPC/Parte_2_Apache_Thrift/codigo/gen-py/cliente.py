@@ -10,61 +10,9 @@ from thrift.transport import TSocket
 from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 
-def leer_matriz():
-    # Pedimos al usuario que introduzca el número de filas y columnas de la matriz
-    filas = int(input(" Introduzca el número de filas de la matriz: "))
-    columnas = int(input(" Introduzca el número de columnas de la matriz: "))
-
-    matriz = []
-
-    print(f"\n Introduzca los elementos fila por fila, separados por espacios, (total {columnas} elementos por fila):")
-    for i in range(filas):
-        # Leemos la fila, la dividimos por espacios y convertimos cada elemento a entero
-        valores_fila = input(f" Fila {i+1}: ").split()
-        fila = [int(valor) for valor in valores_fila]
-
-        # Validación para asegurar que introduce el número correcto de columnas
-        while len(fila) != columnas:
-            print(f" Error: Debes introducir exactamente {columnas} elementos.")
-            valores_fila = input(f" Fila {i+1}: ").split()
-            fila = [int(valor) for valor in valores_fila]
-        
-        matriz.append(fila)
-
-    return matriz
-
-
-
-def mostrar_matriz(matriz):
-    for fila in matriz:
-        # Con esto hacemos que Python reserve 4 espacios para este número, alineado a la derecha"
-        fila_formateada = [f"{elemento:4}" for elemento in fila]
-        
-        # Unimos los elementos de la fila
-        print("\t[" + " ".join(fila_formateada) + " ]")
-
-
-def mostrar_resultado_matrices(operacion, resultado):
-    if operacion.operador == "sMat":
-        operador = "+"
-    elif operacion.operador == "mMat":
-        operador = "x"
-    
-    print("\n--- MATRIZ 1 ---")
-    mostrar_matriz(operacion.m1)
-    
-    print(f"\n       {operador}       \n")
-    
-    print("--- MATRIZ 2 ---")
-    mostrar_matriz(operacion.m2)
-    
-    print("\n = RESULTADO =")
-    mostrar_matriz(resultado)
-    print("\n----------------\n")
-
 
 def mostar_menu():
-    print("\n==== CALCULADORA DISTRIBUIDA usando Apache Thrift ====")
+    print("\n==== CALCULADORA DISTRIBUIDA usando Apache Thrift ============================")
     print("Opciones disponibles: \n")
     print("  0. Salir de la aplicación. ")
     print("  1. Suma                                     '+'")
@@ -83,8 +31,8 @@ def mostar_menu():
     print("  14. Área de un círculo                      'aCir'")
     print("  15. Suma de matrices (de enteros)           'sMat'")
     print("  16. Multiplicación de matrices (de enteros) 'mMat'")
-    print("  17. Calcular un lote de operaciones. ")
-    print("=======================================================\n")
+    print("  17. Calcular un lote de operaciones. (sólo operaciones básicas, no matrices) ")
+    print("==============================================================================\n")
 
     opcion = -1
 
@@ -147,27 +95,86 @@ def procesar_opcion(opcion):
 
 
 
+def leer_matriz():
+    # Pedimos al usuario que introduzca el número de filas y columnas de la matriz
+    filas = int(input(" Introduzca el número de filas de la matriz: "))
+    columnas = int(input(" Introduzca el número de columnas de la matriz: "))
+
+    matriz = []
+
+    print(f"\n Introduzca los elementos fila por fila, separados por espacios, (total {columnas} elementos por fila):")
+    for i in range(filas):
+        # Leemos la fila, la dividimos por espacios y convertimos cada elemento a entero
+        valores_fila = input(f" Fila {i+1}: ").split()
+        fila = [int(valor) for valor in valores_fila]
+
+        # Validación para asegurar que introduce el número correcto de columnas
+        while len(fila) != columnas:
+            print(f" Error: Debes introducir exactamente {columnas} elementos.")
+            valores_fila = input(f" Fila {i+1}: ").split()
+            fila = [int(valor) for valor in valores_fila]
+        
+        matriz.append(fila)
+
+    return matriz
+
+
+
+def leer_lote_operaciones():
+    print("\n Para esta opción, debe introducir un lote de operaciones a realizar.")
+    print(" Primero introducirá el número de operaciones que desea realizar, luego cada operación una por una.")
+    print(" Asegúrese de introducir cada operación en el formato correcto según el tipo de operación que desea realizar.")
+    print(" SÓLO se permiten operaciones básicas (no matrices) para esta opción.")
+    print("-------------------------------------------------------------\n")
+
+    operaciones = []
+
+    try:
+        num_operaciones = int(input(" Ingrese el número de operaciones a realizar: "))
+
+        for i in range(num_operaciones):
+            print(f"\n --- Introduzca la operación nro {i+1} de {num_operaciones} en total: ---")
+            print(" Operadores disponibles: +, -, x, /, ^, sqrt, log10, ln, sin, cos, tan, aCua, aTri, aCir")
+            operador = input(" Introduzca el operador: ")
+            
+            operaciones.append(pedir_operacion_basica(operador))
+
+            print(f" --- Operación nro {i+1} leída --- ")
+
+    except ValueError:
+        print("Entrada no válida. Vuelva a intentarlo.")
+        return None
+    
+    print ("\n -------- Lote de operaciones leído correctamente ---------- \n")
+
+    return operaciones
+
+
+
 def pedir_operacion_basica(operador):
 
     op1 = 0
     op2 = 0
 
     try:
-        print("\n------------------------------------")
+        print("--------------------------------------")
 
-        if operador in ["sqrt", "log10", "ln", "sin", "cos", "tan"]:
-            op1 = float(input(" Ingrese el operando: "))
+        if operador in ["sqrt", "log10", "ln"]:
+            op1 = float(input(" Introduzca el operando: "))
+        
+        elif operador in ["sin", "cos", "tan"]:
+            op1 = float(input(" Introduzca el ángulo en grados: "))
 
         elif operador in ["aCir"]:
-            op1 = float(input(" Ingrese el radio del círculo: "))
+            op1 = float(input(" Introduzca el radio del círculo: "))
         
         elif operador in ["aTri"]:
-            op1 = float(input(" Ingrese la base del triángulo: "))
-            op2 = float(input(" Ingrese la altura del triángulo: "))
+            op1 = float(input(" Introduzca la base del triángulo: "))
+            op2 = float(input(" Introduzca la altura del triángulo: "))
         
         else: # Resto de operaciones binarias
-            op1 = float(input(" Ingrese el 1er operando: "))
-            op2 = float(input(" Ingrese el 2o operando: "))
+            op1 = float(input(" Introduzca el 1er operando: "))
+            op2 = float(input(" Introduzca el 2o operando: "))
 
         print("--------------------------------------")
     
@@ -296,6 +303,51 @@ def realizar_operacion(operacion, client):
 
 
 
+def mostrar_matriz(matriz):
+    for fila in matriz:
+        # Con esto hacemos que Python reserve 4 espacios para este número, alineado a la derecha"
+        fila_formateada = [f"{elemento:4}" for elemento in fila]
+        
+        # Unimos los elementos de la fila
+        print("\t[" + " ".join(fila_formateada) + " ]")
+
+
+
+def mostrar_resultado_matrices(operacion, resultado):
+    if operacion.operador == "sMat":
+        operador = "+"
+    elif operacion.operador == "mMat":
+        operador = "x"
+    
+    print("\n--- MATRIZ 1 ---")
+    mostrar_matriz(operacion.m1)
+    
+    print(f"\n       {operador}       \n")
+    
+    print("--- MATRIZ 2 ---")
+    mostrar_matriz(operacion.m2)
+    
+    print("\n = RESULTADO =")
+    mostrar_matriz(resultado)
+    print("\n----------------\n")
+
+
+
+def mostrar_resultado_lote(operaciones, resultados):
+
+    print("\n=== RESULTADOS DEL LOTE DE OPERACIONES ===\n")
+
+    for i in range(len(operaciones)):
+        operacion = operaciones[i]
+        resultado = resultados[i]
+
+        print(f" Operación {i+1}: ", end="")
+        mostrar_resultado(operacion, resultado)
+
+    print("\n==========================================\n")
+
+
+
 def mostrar_resultado(operacion, resultado):
 
     if operacion.operador in ["sqrt", "log10", "ln", "sin", "cos", "tan"]:
@@ -342,23 +394,40 @@ def main():
                 print("\nSaliendo de la calculadora. ¡Hasta luego!\n")
                 break
 
-            # Realizamos la operación seleccionada por el usuario
+            # Obtenemos el operador de la operación seleccionada por el usuario
             operador = procesar_opcion(opcion)
 
-            operacion = pedir_operacion(operador)
             
-            if operacion is None:
-                print("No se pudo crear la operación. Vuelva a intentarlo.")
-                continue
-            else:
-                resultado = realizar_operacion(operacion, client)
-                if resultado is not None:
-                    # Mostramos el resultado de la operación al usuario
-                    mostrar_resultado(operacion, resultado)
-                    
-            print("\n Pulse 'Enter' para continuar...")
-            input()
-            print("\n\n\n\n\n\n\n\n")
+            if operador == "lote": # Si el usuario seleccionó la opción de procesar un lote de operaciones
+                operaciones = leer_lote_operaciones()
+                
+                if operaciones is not None:
+                    resultados = client.procesaLoteOperaciones(operaciones)
+                    mostrar_resultado_lote(operaciones, resultados)
+                
+                else:
+                    print("No se pudo leer el lote de operaciones. Vuelva a intentarlo.")
+
+                print("\n Pulse 'Enter' para continuar...")
+                input()
+                print("\n\n\n\n\n\n\n\n")
+                
+            else: # El usuario seleccionó una operación básica o con matrices            
+                operacion = pedir_operacion(operador)
+                
+                if operacion is None:
+                    print("No se pudo crear la operación. Vuelva a intentarlo.")
+                    continue
+                else:
+                    resultado = realizar_operacion(operacion, client)
+                    if resultado is not None:
+                        # Mostramos el resultado de la operación al usuario
+                        mostrar_resultado(operacion, resultado)
+
+                print("\n Pulse 'Enter' para continuar...")
+                input()
+                print("\n\n\n\n\n\n\n\n")
+            
             
     except Exception as e:
         print("Error al conectar con el servidor: " + str(e))
