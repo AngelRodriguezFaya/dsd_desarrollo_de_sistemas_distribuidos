@@ -167,6 +167,9 @@ def pedir_operacion_basica(operador):
 
         elif operador in ["aCir"]:
             op1 = float(input(" Introduzca el radio del círculo: "))
+            
+        elif operador in ["aCua"]:
+            op1 = float(input(" Introduzca el lado del cuadrado: "))
         
         elif operador in ["aTri"]:
             op1 = float(input(" Introduzca la base del triángulo: "))
@@ -251,7 +254,7 @@ def realizar_operacion_basica(operacion, client):
             case "tan":
                 resultado = client.tangente(operacion.num1)
             case "aCua":
-                resultado = client.areaCuadrado(operacion.num1, operacion.num2)
+                resultado = client.areaCuadrado(operacion.num1)
             case "aTri":
                 resultado = client.areaTriangulo(operacion.num1, operacion.num2)
             case "aCir":

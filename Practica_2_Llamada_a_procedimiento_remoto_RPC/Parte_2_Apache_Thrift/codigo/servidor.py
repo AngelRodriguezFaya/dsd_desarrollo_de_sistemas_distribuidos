@@ -2,7 +2,6 @@
 
 import glob
 import sys
-
 import math # Para funciones matemáticas
 
 from calculadora import Calculadora
@@ -23,6 +22,14 @@ logging.basicConfig(level=logging.DEBUG)
 class CalculadoraHandler:
     def __init__(self): # Constructor de la clase
         self.log = {}
+    
+    def mostrar_matriz(self, matriz):
+        for fila in matriz:
+            # Con esto hacemos que Python reserve 4 espacios para este número, alineado a la derecha"
+            fila_formateada = [f"{elemento:4}" for elemento in fila]
+            
+            # Unimos los elementos de la fila
+            print("\t[" + " ".join(fila_formateada) + " ]")
 
     def realizar_operacion(self, op1, operador, op2):
 
@@ -83,9 +90,8 @@ class CalculadoraHandler:
                 resultado = math.tan(math.radians(op1))
 
             case "aCua":
-                print("Me han pedido que calcule el área de un cuadrado con lados " 
-                      + str(op1) + " y " + str(op2))
-                resultado = op1 * op2
+                print("Me han pedido que calcule el área de un cuadrado con lado " + str(op1))
+                resultado = op1 * op1
             
             case "aTri":
                 print("Me han pedido que calcule el área de un triángulo con base " 
@@ -114,7 +120,7 @@ class CalculadoraHandler:
         return self.realizar_operacion(num1, "-", num2)
     
     def multiplicacion(self, num1, num2):
-        return self.realizar_operacion(num1, "*", num2)
+        return self.realizar_operacion(num1, "x", num2)
     
     def division(self, num1, num2):
         return self.realizar_operacion(num1, "/", num2)
@@ -140,8 +146,8 @@ class CalculadoraHandler:
     def tangente(self, angulo):
         return self.realizar_operacion(angulo, "tan", None)
 
-    def areaCuadrado(self, lado1, lado2):
-        return self.realizar_operacion(lado1, "aCua", lado2)
+    def areaCuadrado(self, lado):
+        return self.realizar_operacion(lado, "aCua", None)
     
     def areaTriangulo(self, base, altura):
         return self.realizar_operacion(base, "aTri", altura)
@@ -161,11 +167,25 @@ class CalculadoraHandler:
             for j in range (len(m1[0])):
                 resultado[i][j] = m1[i][j] + m2[i][j]
         
+        # Antes de devolver el resultado, lo mostramos por consola
+        print("Me han pedido que sume dos matrices")
+        print("\n--- MATRIZ 1 ---")
+        self.mostrar_matriz(m1)
+        
+        print(f"\n       x       \n")
+        
+        print("--- MATRIZ 2 ---")
+        self.mostrar_matriz(m2)
+        
+        print("\n = RESULTADO =")
+        self.mostrar_matriz(resultado)
+        print("\n----------------\n")
+        
         return resultado
             
     
     def multiplicaMatrices(self, m1, m2):
-        print("Me han pedido que multiplique dos matrices")
+        
         if len(m1[0]) != len(m2):
             raise CalculadoraValueError("El número de columnas de la primera matriz" + 
                                         " debe ser igual al número de filas de la segunda matriz.")
@@ -177,6 +197,20 @@ class CalculadoraHandler:
             for j in range(len(m2[0])):
                 for k in range(len(m2)):
                     resultado[i][j] += m1[i][k] * m2[k][j]
+        
+        # Antes de devolver el resultado, lo mostramos por consola
+        print("Me han pedido que multiplique dos matrices")
+        print("\n--- MATRIZ 1 ---")
+        self.mostrar_matriz(m1)
+        
+        print(f"\n       x       \n")
+        
+        print("--- MATRIZ 2 ---")
+        self.mostrar_matriz(m2)
+        
+        print("\n = RESULTADO =")
+        self.mostrar_matriz(resultado)
+        print("\n----------------\n")
 
         return resultado
     

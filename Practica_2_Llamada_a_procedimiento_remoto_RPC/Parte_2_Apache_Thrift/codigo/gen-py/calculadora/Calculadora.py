@@ -115,11 +115,10 @@ class Iface(object):
         """
         pass
 
-    def areaCuadrado(self, lado1, lado2):
+    def areaCuadrado(self, lado):
         """
         Parameters:
-         - lado1
-         - lado2
+         - lado
 
         """
         pass
@@ -569,21 +568,19 @@ class Client(Iface):
             return result.success
         raise TApplicationException(TApplicationException.MISSING_RESULT, "tangente failed: unknown result")
 
-    def areaCuadrado(self, lado1, lado2):
+    def areaCuadrado(self, lado):
         """
         Parameters:
-         - lado1
-         - lado2
+         - lado
 
         """
-        self.send_areaCuadrado(lado1, lado2)
+        self.send_areaCuadrado(lado)
         return self.recv_areaCuadrado()
 
-    def send_areaCuadrado(self, lado1, lado2):
+    def send_areaCuadrado(self, lado):
         self._oprot.writeMessageBegin('areaCuadrado', TMessageType.CALL, self._seqid)
         args = areaCuadrado_args()
-        args.lado1 = lado1
-        args.lado2 = lado2
+        args.lado = lado
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
@@ -1114,7 +1111,7 @@ class Processor(Iface, TProcessor):
         iprot.readMessageEnd()
         result = areaCuadrado_result()
         try:
-            result.success = self._handler.areaCuadrado(args.lado1, args.lado2)
+            result.success = self._handler.areaCuadrado(args.lado)
             msg_type = TMessageType.REPLY
         except TTransport.TTransportException:
             raise
@@ -2808,15 +2805,13 @@ tangente_result.thrift_spec = (
 class areaCuadrado_args(object):
     """
     Attributes:
-     - lado1
-     - lado2
+     - lado
 
     """
 
 
-    def __init__(self, lado1=None, lado2=None,):
-        self.lado1 = lado1
-        self.lado2 = lado2
+    def __init__(self, lado=None,):
+        self.lado = lado
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -2829,12 +2824,7 @@ class areaCuadrado_args(object):
                 break
             if fid == 1:
                 if ftype == TType.DOUBLE:
-                    self.lado1 = iprot.readDouble()
-                else:
-                    iprot.skip(ftype)
-            elif fid == 2:
-                if ftype == TType.DOUBLE:
-                    self.lado2 = iprot.readDouble()
+                    self.lado = iprot.readDouble()
                 else:
                     iprot.skip(ftype)
             else:
@@ -2847,13 +2837,9 @@ class areaCuadrado_args(object):
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
         oprot.writeStructBegin('areaCuadrado_args')
-        if self.lado1 is not None:
-            oprot.writeFieldBegin('lado1', TType.DOUBLE, 1)
-            oprot.writeDouble(self.lado1)
-            oprot.writeFieldEnd()
-        if self.lado2 is not None:
-            oprot.writeFieldBegin('lado2', TType.DOUBLE, 2)
-            oprot.writeDouble(self.lado2)
+        if self.lado is not None:
+            oprot.writeFieldBegin('lado', TType.DOUBLE, 1)
+            oprot.writeDouble(self.lado)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -2874,8 +2860,7 @@ class areaCuadrado_args(object):
 all_structs.append(areaCuadrado_args)
 areaCuadrado_args.thrift_spec = (
     None,  # 0
-    (1, TType.DOUBLE, 'lado1', None, None, ),  # 1
-    (2, TType.DOUBLE, 'lado2', None, None, ),  # 2
+    (1, TType.DOUBLE, 'lado', None, None, ),  # 1
 )
 
 

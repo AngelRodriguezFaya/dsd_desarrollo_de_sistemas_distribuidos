@@ -1,5 +1,7 @@
 /* calculadora.thrift */
 
+namespace java calculadora // Para poder generar código Java
+
 struct Operacion {
     1: double num1,
     2: string operador,
@@ -32,7 +34,7 @@ service Calculadora{
     double coseno(1:double angulo),
     double tangente(1:double angulo),
 
-    double areaCuadrado(1:double lado1, 2:double lado2),
+    double areaCuadrado(1:double lado),
     double areaTriangulo(1:double base, 2:double altura),
     double areaCirculo(1:double radio),
 
