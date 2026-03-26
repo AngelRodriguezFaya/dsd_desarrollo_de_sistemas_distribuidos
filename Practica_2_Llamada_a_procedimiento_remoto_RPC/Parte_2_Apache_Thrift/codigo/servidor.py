@@ -2,6 +2,8 @@
 
 import glob
 import sys
+sys.path.append('gen-py')
+
 import math # Para funciones matemáticas
 
 from calculadora import Calculadora

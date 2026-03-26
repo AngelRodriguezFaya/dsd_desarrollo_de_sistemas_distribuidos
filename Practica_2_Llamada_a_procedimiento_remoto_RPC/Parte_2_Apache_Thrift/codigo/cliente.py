@@ -1,4 +1,6 @@
 # cliente.py
+import sys
+sys.path.append('gen-py')
 
 # Importamos la clase cliente generada por Thrift a partir del fichero .thrift
 from calculadora import Calculadora
@@ -357,7 +359,7 @@ def mostrar_resultado(operacion, resultado):
         print(f"\n >>> Resultado de {operacion.operador}({operacion.num1}) = {resultado}")
 
     elif operacion.operador in ["aCua"]:
-        print(f"\n >>> Área de un cuadrado de lados {operacion.num1} y {operacion.num2} = {resultado}")
+        print(f"\n >>> Área de un cuadrado de lado {operacion.num1} = {resultado}")
     
     elif operacion.operador in ["aTri"]:
         print(f"\n >>> Área de un triángulo de base {operacion.num1} y altura {operacion.num2} = {resultado}")
