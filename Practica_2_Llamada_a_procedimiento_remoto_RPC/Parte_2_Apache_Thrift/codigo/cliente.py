@@ -359,13 +359,13 @@ def mostrar_resultado(operacion, resultado):
         print(f"\n >>> Resultado de {operacion.operador}({operacion.num1}) = {resultado}")
 
     elif operacion.operador in ["aCua"]:
-        print(f"\n >>> Área de un cuadrado de lado {operacion.num1} = {resultado}")
+        print(f"\n >>> Área de un cuadrado de lado {operacion.num1} = {resultado} metros cuadrados")
     
     elif operacion.operador in ["aTri"]:
-        print(f"\n >>> Área de un triángulo de base {operacion.num1} y altura {operacion.num2} = {resultado}")
+        print(f"\n >>> Área de un triángulo de base {operacion.num1} y altura {operacion.num2} = {resultado} metros cuadrados")
 
     elif operacion.operador in ["aCir"]:
-        print(f"\n >>> Área de un círculo de radio {operacion.num1} = {resultado}")
+        print(f"\n >>> Área de un círculo de radio {operacion.num1} = {resultado} metros cuadrados")
     
     elif operacion.operador in ["sMat", "mMat"]:
         print(f"\n >>> Resultado de la operación con matrices: ")
@@ -415,7 +415,7 @@ def main():
 
                 print("\n Pulse 'Enter' para continuar...")
                 input()
-                print("\n\n\n\n\n\n\n\n")
+                print("\n\n\n\n\n\n\n\n\n\n\n\n\n")
                 
             else: # El usuario seleccionó una operación básica o con matrices            
                 operacion = pedir_operacion(operador)
@@ -431,7 +431,7 @@ def main():
 
                 print("\n Pulse 'Enter' para continuar...")
                 input()
-                print("\n\n\n\n\n\n\n\n")
+                print("\n\n\n\n\n\n\n\n\n\n\n\n\n")
             
             
     except Exception as e:

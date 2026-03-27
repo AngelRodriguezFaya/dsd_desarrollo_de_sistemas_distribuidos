@@ -54,6 +54,7 @@ class CalculadoraHandler:
             case "/":
                 print("Me han pedido que divida " + str(op1) + " y " + str(op2))
                 if op2 == 0:
+                    print("\t ¡ERROR! No se puede dividir entre 0.")
                     raise CalculadoraValueError("No se puede dividir por cero.")
                 resultado = op1 / op2
 
@@ -64,18 +65,21 @@ class CalculadoraHandler:
             case "sqrt":
                 print("Me han pedido que calcule la raíz cuadrada de " + str(op1))
                 if op1 < 0:
+                    print("\t ¡ERROR! No se puede calcular la raíz cuadrada de un número negativo.")
                     raise CalculadoraValueError("No se puede calcular la raíz cuadrada de un número negativo.")
                 resultado = math.sqrt(op1)
 
             case "log10":
                 print("Me han pedido que calcule el logaritmo base 10 de " + str(op1))
                 if op1 <= 0:
+                    print("\t ¡ERROR! No se puede calcular el logaritmo de un número no positivo.")
                     raise CalculadoraValueError("No se puede calcular el logaritmo de un número no positivo.")
                 resultado = math.log10(op1)
 
             case "ln":
                 print("Me han pedido que calcule el logaritmo natural de " + str(op1))
                 if op1 <= 0:
+                    print("\t ¡ERROR! No se puede calcular el logaritmo de un número no positivo.")
                     raise CalculadoraValueError("No se puede calcular el logaritmo de un número no positivo.")
                 resultado = math.log(op1)
             
@@ -92,16 +96,16 @@ class CalculadoraHandler:
                 resultado = math.tan(math.radians(op1))
 
             case "aCua":
-                print("Me han pedido que calcule el área de un cuadrado con lado " + str(op1))
+                print("Me han pedido que calcule el área de un cuadrado con lado " + str(op1) + " metros")
                 resultado = op1 * op1
             
             case "aTri":
                 print("Me han pedido que calcule el área de un triángulo con base " 
-                      + str(op1) + " y altura " + str(op2))
+                      + str(op1) + " y altura " + str(op2) + " metros")
                 resultado = (op1 * op2) / 2
             
             case "aCir":
-                print("Me han pedido que calcule el área de un círculo con radio " + str(op1))
+                print("Me han pedido que calcule el área de un círculo con radio " + str(op1) + " metros")
                 resultado = math.pi * op1 * op1
 
             case _:

@@ -1,0 +1,112 @@
+@startuml diagrama_clases
+
+skinparam classAttributeIconSize 0
+skinparam monochrome false
+skinparam packageStyle rectangle
+
+package "Definiciones en Thrift (fichero: calculadora thrift)" {
+    
+    class Operacion << (S, #FF7700) struct >> {
+        + num1 : double
+        + operador : string
+        + num2 : double
+    }
+
+    class OperacionMatriz << (S, #FF7700) struct >> {
+        + m1 : list<list<int>>
+        + operador : string
+        + m2 : list<list<int>>
+    }
+
+    class CalculadoraValueError << (E, #FF2222) exception >> {
+        + message : string
+    }
+
+    interface "Calculadora.Iface" as CalculadoraIface << Service >> {
+        + ping() : void
+        + suma(num1: double, num2: double) : double
+        + resta(num1: double, num2: double) : double
+        + multiplicacion(num1: double, num2: double) : double
+        + division(num1: double, num2: double) : double
+        + potencia(base: double, exponente: double) : double
+        + raizCuadrada(numero: double) : double
+        + logBase10(numero: double) : double
+        + logNatural(numero: double) : double
+        + seno(angulo: double) : double
+        + coseno(angulo: double) : double
+        + tangente(angulo: double) : double
+        + areaCuadrado(lado: double) : double
+        + areaTriangulo(base: double, altura: double) : double
+        + areaCirculo(radio: double) : double
+        + sumaMatrices(m1: list<list<int>>, m2: list<list<int>>) : list<list<int>>
+        + multiplicaMatrices(m1: list<list<int>>, m2: list<list<int>>) : list<list<int>>
+        + procesaLoteOperaciones(operaciones: list<Operacion>) : list<double>
+    }
+}
+
+package "Servidor en Java (fichero: servidor java)" {
+    class servidor {
+        + main(args: String[])
+    }
+    
+    class CalculadoraHandlerJava <<CalculadoraHandler>> {
+        - realizarOperacion(op1: double, operador: String, op2: double) : double
+        - mostrarMatriz(matriz: List<List<Integer>>) : void
+        .. Métodos sobreescritos de Iface ..
+        + ping() : void
+        + suma() : double
+        + resta() : double
+        + multiplicacion() : double
+        + division() : double
+        + potencia() : double
+        + raizCuadrada() : double
+        + logBase10() : double
+        + logNatural() : double
+        + seno() : double
+        + coseno() : double
+        + tangente() : double
+        + areaCuadrado() : double
+        + areaTriangulo() : double
+        + areaCirculo() : double
+        + sumaMatrices() : List<List<Integer>>
+        + multiplicaMatrices() : List<List<Integer>>
+        + procesaLoteOperaciones() : List<Double>
+    }
+    
+    CalculadoraIface <|.. CalculadoraHandlerJava : implements
+    servidor +-- CalculadoraHandlerJava : inner class
+}
+
+package "Servidor en Python (fichero: servidor py)" {
+    class CalculadoraHandlerPython <<CalculadoraHandler>> {
+        + log : dict
+        + __init__()
+        + mostrar_matriz(matriz: list) : void
+        + realizar_operacion(op1: float, operador: str, op2: float) : float
+        .. Métodos de interfaz Thrift ..
+        + ping() : void
+        + suma() : float
+        + resta() : float
+        + multiplicacion() : float
+        + y_demas_operaciones() : float
+    }
+    
+    CalculadoraIface <|.. CalculadoraHandler : implements
+}
+
+package "Cliente en Python (fichero: cliente py)" {
+    class Cliente << (M, #55AAFF) module >> {
+        + mostar_menu() : int
+        + procesar_opcion(opcion: int) : str
+        + leer_matriz() : list
+        + leer_lote_operaciones() : list
+        + pedir_operacion_basica(operador: str) : Operacion
+    }
+}
+
+CalculadoraIface ..> CalculadoraValueError : throws
+CalculadoraIface ..> Operacion : uses
+CalculadoraIface ..> OperacionMatriz : uses
+Cliente ..> CalculadoraIface : "stub consume API"
+
+@enduml

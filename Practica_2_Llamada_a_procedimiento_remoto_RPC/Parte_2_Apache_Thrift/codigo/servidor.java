@@ -45,6 +45,7 @@ public class servidor {
                 case "/":
                     System.out.println("Realizando división: " + op1 + " / " + op2);
                     if (op2 == 0) {
+                        System.out.println("\t ¡ERROR! No se puede dividir entre 0.");
                         throw new CalculadoraValueError("No se puede dividir por cero");
                     }
                     resultado = op1 / op2;
@@ -58,6 +59,7 @@ public class servidor {
                 case "sqrt":
                     System.out.println("Realizando raíz cuadrada: sqrt(" + op1 + ")");
                     if (op1 < 0) {
+                        System.out.println("\t ¡ERROR! No se puede calcular la raíz cuadrada de un número negativo.");
                         throw new CalculadoraValueError("No se puede calcular la raíz cuadrada de un número negativo");
                     }
                     resultado = Math.sqrt(op1);
@@ -66,6 +68,7 @@ public class servidor {
                 case "log10":
                     System.out.println("Realizando logaritmo base 10: log10(" + op1 + ")");
                     if (op1 <= 0) {
+                        System.err.println("\t ¡ERROR! No se puede calcular el logaritmo de un número no positivo.");
                         throw new CalculadoraValueError("No se puede calcular el logaritmo de un número no positivo");
                     }
                     resultado = Math.log10(op1);
@@ -74,6 +77,7 @@ public class servidor {
                 case "ln":
                     System.out.println("Realizando logaritmo natural: ln(" + op1 + ")");
                     if (op1 <= 0) {
+                        System.err.println("\t ¡ERROR! No se puede calcular el logaritmo de un número no positivo.");
                         throw new CalculadoraValueError("No se puede calcular el logaritmo de un número no positivo");
                     }
                     resultado = Math.log(op1);
@@ -95,22 +99,23 @@ public class servidor {
                     break;
                 
                 case "aCua":
-                    System.out.println("Realizando área de un cuadrado con lado " + op1);
+                    System.out.println("Realizando área de un cuadrado con lado " + op1 + " metros");
                     resultado = op1 * op1;
                     break;
 
                 case "aTri":
                     System.out.println("Realizando área de un triángulo con base " + op1
-                                        + " y altura " + op2);
+                                        + " y altura " + op2 + " metros");
                     resultado = (op1 * op2) / 2;
                     break;
                 
                 case "aCir":
-                    System.out.println("Realizando área de un círculo con radio " + op1);
+                    System.out.println("Realizando área de un círculo con radio " + op1 + " metros");
                     resultado = Math.PI * op1 * op1;
                     break;
                 
                 default:
+                    System.err.println("\t ¡ERROR! Operador no reconocido: " + operador);
                     throw new CalculadoraValueError("Operador no reconocido: " + operador);
         
             }

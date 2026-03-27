@@ -1,5 +1,4 @@
 /* calculadora.thrift */
-
 namespace java calculadora // Para poder generar código Java
 
 struct Operacion {
