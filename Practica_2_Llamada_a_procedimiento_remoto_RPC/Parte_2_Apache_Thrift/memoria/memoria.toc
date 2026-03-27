@@ -1,0 +1,23 @@
+\babel@toc {spanish}{}\relax 
+\contentsline {section}{\numberline {1}Introducción.}{2}{section.1}%
+\contentsline {section}{\numberline {2}Requerimientos.}{2}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Requerimientos básicos.}{2}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Requerimientos avanzados.}{2}{subsection.2.2}%
+\contentsline {section}{\numberline {3}Componentes.}{4}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Calculadora en Apache Thrift.}{5}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Servidor.}{7}{subsection.3.2}%
+\contentsline {subsubsection}{\numberline {3.2.1}Servidor en Python.}{7}{subsubsection.3.2.1}%
+\contentsline {subsubsection}{\numberline {3.2.2}Servidor en Java.}{8}{subsubsection.3.2.2}%
+\contentsline {subsection}{\numberline {3.3}Cliente en Python.}{8}{subsection.3.3}%
+\contentsline {section}{\numberline {4}Guía de uso de la calculadora distribuida.}{10}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Instalación de Thrift.}{10}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Proceso para utilizar Thrift. Compilación y Ejecución.}{12}{subsection.4.2}%
+\contentsline {subsubsection}{\numberline {4.2.1}Compilar el archivo \texttt {calculadora.thrift}}{12}{subsubsection.4.2.1}%
+\contentsline {subsubsection}{\numberline {4.2.2}Arrancar el Servidor en Python}{12}{subsubsection.4.2.2}%
+\contentsline {subsubsection}{\numberline {4.2.3}Arrancar el Servidor en Java}{12}{subsubsection.4.2.3}%
+\contentsline {subsubsection}{\numberline {4.2.4}Ejecutar el Cliente en Python}{13}{subsubsection.4.2.4}%
+\contentsline {subsection}{\numberline {4.3}Ejemplos de uso.}{13}{subsection.4.3}%
+\contentsline {subsubsection}{\numberline {4.3.1}Ejemplo nº1. Operación básica. División}{14}{subsubsection.4.3.1}%
+\contentsline {subsubsection}{\numberline {4.3.2}Ejemplo nº2. Operación básica. Área de un Círculo.}{15}{subsubsection.4.3.2}%
+\contentsline {subsubsection}{\numberline {4.3.3}Ejemplo nº3. Operación con matrices}{17}{subsubsection.4.3.3}%
+\contentsline {subsubsection}{\numberline {4.3.4}Ejemplo nº4. Procesamiento de un lote de operaciones}{19}{subsubsection.4.3.4}%

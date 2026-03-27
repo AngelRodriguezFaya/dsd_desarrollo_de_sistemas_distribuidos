@@ -1,0 +1,50 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{c+cm}{/* calculadora.thrift */}
+\PYG{k+kn}{namespace}\PYG{+w}{ }\PYG{n+nn}{java}\PYG{+w}{ }\PYG{n}{calculadora}\PYG{+w}{ }\PYG{c}{// Para poder generar código Java}
+
+\PYG{k+kd}{struct}\PYG{+w}{ }\PYG{n+nc}{Operacion}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{    }\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{num1}\PYG{p}{,}
+\PYG{+w}{    }\PYG{l+m+mi}{2}\PYG{p}{:}\PYG{+w}{ }\PYG{k+kt}{string}\PYG{+w}{ }\PYG{n}{operador}\PYG{p}{,}
+\PYG{+w}{    }\PYG{l+m+mi}{3}\PYG{p}{:}\PYG{+w}{ }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{num2}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{k+kd}{struct}\PYG{+w}{ }\PYG{n+nc}{OperacionMatriz}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{    }\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{+w}{ }\PYG{k+kt}{list}\PYG{p}{\PYGZlt{}}\PYG{k+kt}{list}\PYG{p}{\PYGZlt{}}\PYG{k+kt}{i32}\PYG{p}{\PYGZgt{}\PYGZgt{}}\PYG{+w}{ }\PYG{n}{m1}\PYG{p}{,}
+\PYG{+w}{    }\PYG{l+m+mi}{2}\PYG{p}{:}\PYG{+w}{ }\PYG{k+kt}{string}\PYG{+w}{ }\PYG{n}{operador}\PYG{p}{,}
+\PYG{+w}{    }\PYG{l+m+mi}{3}\PYG{p}{:}\PYG{+w}{ }\PYG{k+kt}{list}\PYG{p}{\PYGZlt{}}\PYG{k+kt}{list}\PYG{p}{\PYGZlt{}}\PYG{k+kt}{i32}\PYG{p}{\PYGZgt{}\PYGZgt{}}\PYG{+w}{ }\PYG{n}{m2}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{k+kd}{exception}\PYG{+w}{ }\PYG{n+nc}{CalculadoraValueError}\PYG{p}{\PYGZob{}}
+\PYG{+w}{    }\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{+w}{ }\PYG{k+kt}{string}\PYG{+w}{ }\PYG{n}{message}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{k+kd}{service}\PYG{+w}{ }\PYG{n+nc}{Calculadora}\PYG{p}{\PYGZob{}}
+\PYG{+w}{    }\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{ping}\PYG{o}{(}\PYG{p}{),}
+
+\PYG{+w}{    }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n+nf}{suma}\PYG{o}{(}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{num1}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{2}\PYG{p}{:}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{num2}\PYG{p}{),}
+\PYG{+w}{    }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n+nf}{resta}\PYG{o}{(}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{num1}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{2}\PYG{p}{:}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{num2}\PYG{p}{),}
+\PYG{+w}{    }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n+nf}{multiplicacion}\PYG{o}{(}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{num1}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{2}\PYG{p}{:}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{num2}\PYG{p}{),}
+\PYG{+w}{    }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n+nf}{division}\PYG{o}{(}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{num1}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{2}\PYG{p}{:}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{num2}\PYG{p}{)}\PYG{+w}{ }\PYG{k}{throws}\PYG{+w}{ }\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{+w}{ }\PYG{n}{CalculadoraValueError}\PYG{+w}{ }\PYG{n}{ex}\PYG{p}{),}
+
+\PYG{+w}{    }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n+nf}{potencia}\PYG{o}{(}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{base}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{2}\PYG{p}{:}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{exponente}\PYG{p}{),}
+\PYG{+w}{    }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n+nf}{raizCuadrada}\PYG{o}{(}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{numero}\PYG{p}{)}\PYG{+w}{ }\PYG{k}{throws}\PYG{+w}{ }\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{+w}{ }\PYG{n}{CalculadoraValueError}\PYG{+w}{ }\PYG{n}{ex}\PYG{p}{),}
+\PYG{+w}{    }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n+nf}{logBase10}\PYG{o}{(}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{numero}\PYG{p}{)}\PYG{+w}{ }\PYG{k}{throws}\PYG{+w}{ }\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{+w}{ }\PYG{n}{CalculadoraValueError}\PYG{+w}{ }\PYG{n}{ex}\PYG{p}{),}
+\PYG{+w}{    }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n+nf}{logNatural}\PYG{o}{(}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{numero}\PYG{p}{)}\PYG{+w}{  }\PYG{k}{throws}\PYG{+w}{ }\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{+w}{ }\PYG{n}{CalculadoraValueError}\PYG{+w}{ }\PYG{n}{ex}\PYG{p}{),}
+\PYG{+w}{    }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n+nf}{seno}\PYG{o}{(}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{angulo}\PYG{p}{),}
+\PYG{+w}{    }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n+nf}{coseno}\PYG{o}{(}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{angulo}\PYG{p}{),}
+\PYG{+w}{    }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n+nf}{tangente}\PYG{o}{(}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{angulo}\PYG{p}{),}
+
+\PYG{+w}{    }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n+nf}{areaCuadrado}\PYG{o}{(}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{lado}\PYG{p}{),}
+\PYG{+w}{    }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n+nf}{areaTriangulo}\PYG{o}{(}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{base}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{2}\PYG{p}{:}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{altura}\PYG{p}{),}
+\PYG{+w}{    }\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n+nf}{areaCirculo}\PYG{o}{(}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{k+kt}{double}\PYG{+w}{ }\PYG{n}{radio}\PYG{p}{),}
+
+\PYG{+w}{    }\PYG{k+kt}{list}\PYG{p}{\PYGZlt{}}\PYG{k+kt}{list}\PYG{p}{\PYGZlt{}}\PYG{k+kt}{i32}\PYG{p}{\PYGZgt{}\PYGZgt{}}\PYG{+w}{ }\PYG{n+nf}{sumaMatrices}\PYG{o}{(}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{+w}{ }\PYG{k+kt}{list}\PYG{p}{\PYGZlt{}}\PYG{k+kt}{list}\PYG{p}{\PYGZlt{}}\PYG{k+kt}{i32}\PYG{p}{\PYGZgt{}\PYGZgt{}}\PYG{+w}{ }\PYG{n}{m1}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{2}\PYG{p}{:}\PYG{+w}{ }\PYG{k+kt}{list}\PYG{p}{\PYGZlt{}}\PYG{k+kt}{list}\PYG{p}{\PYGZlt{}}\PYG{k+kt}{i32}\PYG{p}{\PYGZgt{}\PYGZgt{}}\PYG{+w}{ }\PYG{n}{m2}\PYG{p}{)}\PYG{+w}{ }
+\PYG{+w}{        }\PYG{k}{throws}\PYG{+w}{ }\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{+w}{ }\PYG{n}{CalculadoraValueError}\PYG{+w}{ }\PYG{n}{ex}\PYG{p}{),}
+
+\PYG{+w}{    }\PYG{k+kt}{list}\PYG{p}{\PYGZlt{}}\PYG{k+kt}{list}\PYG{p}{\PYGZlt{}}\PYG{k+kt}{i32}\PYG{p}{\PYGZgt{}\PYGZgt{}}\PYG{+w}{ }\PYG{n+nf}{multiplicaMatrices}\PYG{o}{(}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{+w}{ }\PYG{k+kt}{list}\PYG{p}{\PYGZlt{}}\PYG{k+kt}{list}\PYG{p}{\PYGZlt{}}\PYG{k+kt}{i32}\PYG{p}{\PYGZgt{}\PYGZgt{}}\PYG{+w}{ }\PYG{n}{m1}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{2}\PYG{p}{:}\PYG{+w}{ }\PYG{k+kt}{list}\PYG{p}{\PYGZlt{}}\PYG{k+kt}{list}\PYG{p}{\PYGZlt{}}\PYG{k+kt}{i32}\PYG{p}{\PYGZgt{}\PYGZgt{}}\PYG{+w}{ }\PYG{n}{m2}\PYG{p}{)}\PYG{+w}{ }
+\PYG{+w}{        }\PYG{k}{throws}\PYG{+w}{ }\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{+w}{ }\PYG{n}{CalculadoraValueError}\PYG{+w}{ }\PYG{n}{ex}\PYG{p}{),}
+
+\PYG{+w}{    }\PYG{k+kt}{list}\PYG{p}{\PYGZlt{}}\PYG{k+kt}{double}\PYG{p}{\PYGZgt{}}\PYG{+w}{ }\PYG{n+nf}{procesaLoteOperaciones}\PYG{o}{(}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{+w}{ }\PYG{k+kt}{list}\PYG{p}{\PYGZlt{}}\PYG{n}{Operacion}\PYG{p}{\PYGZgt{}}\PYG{+w}{ }\PYG{n}{operaciones}\PYG{p}{)}\PYG{+w}{ }
+\PYG{+w}{        }\PYG{k}{throws}\PYG{+w}{ }\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{+w}{ }\PYG{n}{CalculadoraValueError}\PYG{+w}{ }\PYG{n}{ex}\PYG{p}{)}
+\PYG{p}{\PYGZcb{}}
+\end{Verbatim}
