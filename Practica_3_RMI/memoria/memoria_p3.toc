@@ -1,10 +1,27 @@
 \babel@toc {spanish}{}\relax 
 \contentsline {section}{\numberline {1}Introducción}{2}{}%
-\contentsline {section}{\numberline {2}Parte 1. Ejemplos del guion.}{2}{}%
+\contentsline {section}{\numberline {2}Parte 1. Implementación de Ejemplos.}{2}{}%
 \contentsline {subsection}{\numberline {2.1}Ejemplo 1. Cliente-Servidor básico.}{2}{}%
 \contentsline {subsubsection}{\numberline {2.1.1}\texttt {Ejemplo\_I.java} (La Interfaz Remota)}{3}{}%
 \contentsline {subsubsection}{\numberline {2.1.2}\texttt {Ejemplo.java} (El Servidor)}{3}{}%
 \contentsline {subsubsection}{\numberline {2.1.3}\texttt {Cliente\_Ejemplo.java} (El Cliente)}{5}{}%
 \contentsline {subsubsection}{\numberline {2.1.4}\texttt {launch.sh} (Script de Ejecución)}{5}{}%
-\contentsline {subsubsection}{\numberline {2.1.5}Ejemplo de compilación y ejecución del ejemplo 1.}{8}{}%
-\contentsline {subsection}{\numberline {2.2}Ejemplo 2. Multihebra.}{9}{}%
+\contentsline {subsubsection}{\numberline {2.1.5}Diagrama de clases del ejemplo 1.}{8}{}%
+\contentsline {subsubsection}{\numberline {2.1.6}Ejemplo de compilación y ejecución del ejemplo 1.}{8}{}%
+\contentsline {subsection}{\numberline {2.2}Ejemplo 2. Multihebra.}{10}{}%
+\contentsline {subsubsection}{\numberline {2.2.1}\texttt {Ejemplo\_I.java} (La Interfaz Remota)}{10}{}%
+\contentsline {subsubsection}{\numberline {2.2.2}\texttt {Ejemplo.java} (El Servidor)}{10}{}%
+\contentsline {subsubsection}{\numberline {2.2.3}\texttt {Cliente\_Ejemplo\_Multi\_Threaded.java} (El Cliente)}{12}{}%
+\contentsline {subsubsection}{\numberline {2.2.4}\texttt {launch.sh} (Script de Ejecución)}{13}{}%
+\contentsline {subsubsection}{\numberline {2.2.5}Diagrama de clases del ejemplo 2.}{14}{}%
+\contentsline {subsubsection}{\numberline {2.2.6}Ejemplo de compilación y ejecución del ejemplo 2. Respondiendo a las preguntas}{15}{}%
+\contentsline {subsection}{\numberline {2.3}Ejemplo 3. Contador.}{18}{}%
+\contentsline {subsubsection}{\numberline {2.3.1}\texttt {icontador.java} (La Interfaz Remota)}{18}{}%
+\contentsline {subsubsection}{\numberline {2.3.2}\texttt {contador.java} (El Objeto Remoto)}{19}{}%
+\contentsline {subsubsection}{\numberline {2.3.3}\texttt {servidor.java} (El Servidor)}{19}{}%
+\contentsline {subsubsection}{\numberline {2.3.4}\texttt {cliente.java} (El Cliente)}{20}{}%
+\contentsline {subsubsection}{\numberline {2.3.5}\texttt {launch.sh} (Script para Ejecución)}{21}{}%
+\contentsline {subsubsection}{\numberline {2.3.6}Diagramas en UML del ejemplo 3.}{22}{}%
+\contentsline {subsubsection}{\numberline {2.3.7}Ejemplo de compilación y ejecución del ejemplo 3.}{24}{}%
+\contentsline {section}{\numberline {3}Parte 2. Servidor Replicado.}{25}{}%
+\contentsline {subsection}{\numberline {3.1}Ejemplo 1. Cliente-Servidor básico.}{25}{}%

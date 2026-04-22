@@ -1,0 +1,36 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{c+c1}{// Fichero: servidor.java}
+\PYG{c+c1}{// Es el servidor que publica el objeto remoto contador}
+
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{java.rmi.registry.LocateRegistry}\PYG{p}{;}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{java.rmi.registry.Registry}\PYG{p}{;}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{java.rmi.server.UnicastRemoteObject}\PYG{p}{;}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{javax.rmi.ssl.SslRMIClientSocketFactory}\PYG{p}{;}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{javax.rmi.ssl.SslRMIServerSocketFactory}\PYG{p}{;}
+
+\PYG{k+kd}{public}\PYG{+w}{ }\PYG{k+kd}{class} \PYG{n+nc}{servidor}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{    }\PYG{k+kd}{public}\PYG{+w}{ }\PYG{k+kd}{static}\PYG{+w}{ }\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{main}\PYG{p}{(}\PYG{n}{String}\PYG{o}{[]}\PYG{+w}{ }\PYG{n}{args}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }\PYG{k}{try}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{puerto}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{1099}\PYG{p}{;}
+\PYG{+w}{            }\PYG{n}{contador}\PYG{+w}{ }\PYG{n}{micontador}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{new}\PYG{+w}{ }\PYG{n}{contador}\PYG{p}{();}
+
+\PYG{+w}{            }\PYG{c+c1}{// Configuramos las factorías SSL}
+\PYG{+w}{            }\PYG{n}{SslRMIClientSocketFactory}\PYG{+w}{ }\PYG{n}{csf}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{new}\PYG{+w}{ }\PYG{n}{SslRMIClientSocketFactory}\PYG{p}{();}
+\PYG{+w}{            }\PYG{n}{SslRMIServerSocketFactory}\PYG{+w}{ }\PYG{n}{ssf}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{new}\PYG{+w}{ }\PYG{n}{SslRMIServerSocketFactory}\PYG{p}{();}
+
+\PYG{+w}{            }\PYG{c+c1}{// Creamos el stub del objeto remoto para el cliente, exportándolo }
+\PYG{+w}{            }\PYG{c+c1}{// al puerto 0 (puerto anónimo) y usando las factorías SSL}
+\PYG{+w}{            }\PYG{n}{icontador}\PYG{+w}{ }\PYG{n}{stub}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{icontador}\PYG{p}{)}\PYG{+w}{ }\PYG{n}{UnicastRemoteObject}\PYG{p}{.}\PYG{n+na}{exportObject}\PYG{p}{(}\PYG{n}{micontador}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{csf}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{ssf}\PYG{p}{);}
+
+\PYG{+w}{            }\PYG{c+c1}{// Creamos el registro en el puerto 1099}
+\PYG{+w}{            }\PYG{n}{Registry}\PYG{+w}{ }\PYG{n}{registry}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{LocateRegistry}\PYG{p}{.}\PYG{n+na}{createRegistry}\PYG{p}{(}\PYG{n}{puerto}\PYG{p}{);}
+\PYG{+w}{            }\PYG{n}{registry}\PYG{p}{.}\PYG{n+na}{rebind}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}mmicontador\PYGZdq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{stub}\PYG{p}{);}
+
+\PYG{+w}{            }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}Servidor contador preparado con SSL en puerto \PYGZdq{}}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{puerto}\PYG{p}{);}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{catch}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Exception}\PYG{+w}{ }\PYG{n}{e}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{err}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}Excepción en el servidor: \PYGZdq{}}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{e}\PYG{p}{.}\PYG{n+na}{getMessage}\PYG{p}{());}
+\PYG{+w}{            }\PYG{n}{e}\PYG{p}{.}\PYG{n+na}{printStackTrace}\PYG{p}{();}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{}}
+\end{Verbatim}

@@ -76,7 +76,7 @@
 		 
 		 A continuación, veremos los tres ejemplos que nos dan en el guion de este práctica, los ejecutaremos y analizaremos que está sucediendo, así como mostrar sus archivos, pues considero que es más cómodo a la hora de corregir, tenerlo todo en un documento (hablo de tener el código fuente de los ejercicios más ejemplos de ejecución), que tener la necesidad de abrir el documento y el editor de código a la vez.
 		 
-	\section{Parte 1. Ejemplos del guion.}
+	\section{Parte 1. Implementación de Ejemplos.}
 		
 		\subsection{Ejemplo 1. Cliente-Servidor básico.}
 			Este ejemplo es una muestra de cómo se realiza una implementación básica de una aplicación Cliente-Servidor en Java RMI. Tenemos un servidor llamado \texttt{Ejemplo} que implementa un método \texttt{escribir\_mensaje(int idProceso)}, que recibe un entero que representa el identificador del proceso (Cliente) que invoca a este método del servidor, y muestra por pantalla dicho identificador. Si se trata del proceso/hebra 0, entonces la duerme 5 segundos y después continua como el resto de procesos.
@@ -87,24 +87,34 @@
 				Es la interfaz que define qué métodos del servidor pueden ser llamados por el cliente a través de la red.
 				
 				Su código es:			
-				\inputminted[linenos, frame=lines, fontsize=\footnotesize]{Java}{../codigo/Parte_1/Ejemplo_1/Ejemplo_I.java}
+				\inputminted[linenos, frame=lines, fontsize=\footnotesize]{Java}{../codigo/Parte_1_Implementacion_de_Ejemplos/Ejemplo_1/Ejemplo_I.java}
 			
 			\subsubsection{\texttt{Ejemplo.java} (El Servidor)}
 				Implementa la interfaz anteriormente definida, es decir, el método \texttt{escribir\_mensaje}. Esta aplicación está a la espera de recibir peticiones. Aquí se han \textbf{realizado modificaciones}, ya que el \texttt{SecurityManager} del ejemplo está obsoleto (\textit{deprecated}) a partir de Java 17, por lo que se han añadido las clases \texttt{SslRMIClientSocketFactory} y \texttt{SslRMIServerSocketFactory} para que la comunicación vaya cifrada a través de \textbf{SSL/TSL}.
 				
 				Su código es:			
-				\inputminted[linenos, frame=lines, fontsize=\footnotesize]{Java}{../codigo/Parte_1/Ejemplo_1/Ejemplo.java}
+				\inputminted[linenos, frame=lines, fontsize=\footnotesize]{Java}{../codigo/Parte_1_Implementacion_de_Ejemplos/Ejemplo_1/Ejemplo.java}
 			
 			\subsubsection{\texttt{Cliente\_Ejemplo.java} (El Cliente)}
 				Es el encargado de conectar con el servidor para realizar peticiones. Para ello, se conecta al registro (el \texttt{rmiregistry}) que hace de guía para poder encontrar nuestros objetos, y busca el servidor por su nombre, que sería "Ejemplo\_I". Después se llama al método para escribir el mensaje, pasándole su identificador de proceso como parámetro.
 				
 				Su código sería el siguiente:
-				\inputminted[linenos, frame=lines, fontsize=\footnotesize]{Java}{../codigo/Parte_1/Ejemplo_1/Cliente_Ejemplo.java}
+				\inputminted[linenos, frame=lines, fontsize=\footnotesize]{Java}{../codigo/Parte_1_Implementacion_de_Ejemplos/Ejemplo_1/Cliente_Ejemplo.java}
 				
 			\subsubsection{\texttt{launch.sh} (Script de Ejecución)}
 				Nos han proporcionado este script para poder realizar la compilación/ejecución con tan sólo ejecutarlo. Básicamente, lo que hace es crear unos ``certificados digitales'' necesarios para que el SSL funcione en neustra máquina, compilar todos los .java de golpe, lanzar el servidor en segundo plano y por último lanzar dos clientes para que se conecten al servidor, estos clientes tienen como identificadores 0 y 3, respectivamente.
 			
-				\inputminted[linenos, frame=lines, fontsize=\footnotesize]{Shell}{../codigo/Parte_1/Ejemplo_1/launch.sh}
+				\inputminted[linenos, frame=lines, fontsize=\footnotesize]{Shell}{../codigo/Parte_1_Implementacion_de_Ejemplos/Ejemplo_1/launch.sh}
+			
+			\subsubsection{Diagrama de clases del ejemplo 1.}
+				El diagrama de clases en UML del ejemplo 1 es: 
+				
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=1\linewidth]{./imagenes_necesarias/DC_ejemplo_1.png}
+					\caption{Diagrama de clases del ejemplo 1}
+					\label{fig:dc_ejemplo1}
+				\end{figure}
 			
 			\subsubsection{Ejemplo de compilación y ejecución del ejemplo 1.}
 				En primer lugar, debemos dar permiso de ejecución al script. Para ello abrimos una terminal y ejecutamos el siguiente comando:
@@ -131,8 +141,183 @@
 				Como podemos observar en la salida, se compilan todos los archivos, se lanza el servidor y se muestra el mensaje \texttt{"Ejemplo bound"}, que nos indica que el objeto remoto ya puede ser invocado por los clientes.
 				Después se lanza el cliente 0. Este busca el objeto remoto y lo invoca. El método de escribir mensaje en el servidor recibe la petición mostrando ese mensaje con el id del proceso cliente. Como se trata del proceso 0, lo pone a dormir 5 segundos. Pasado ese tiempo, muestra el mensaje de que ha terminado de dormir e imprime rl mensaje de hebra con el id de nuevo, y ya termina.
 				Finalmente se lanza el cliente con id 3 (aunque no se lanza después de que termine la hebra 0, si no que\textbf{ se lanza la hebra 3 mientras la hebra 0 duerme} ).De nuevo, este cliente busca el objeto remoto y lo invoca. Llama al método para escribir mensaje, este muestra que le ha llegado la petición mostrando su id.
+				
+				\newpage
 
 		\subsection{Ejemplo 2. Multihebra.}
+			Partiendo del ejemplo anterior, vamos a realizar una modificación y es que no vamos a lanzar varios clientes como habíamos hecho en el ejemplo anterior, si no que vamos a crear múltiples hebras dentro de un mismo cliente. Estas hebras van a realizar la misma tarea, que será imprimir un mensaje remoto accediendo al \textit{stub} de un objeto remoto. El objetivo de este ejemplo es dejar constancia de la gestión de concurrencia de RMI.
+			
+			De nuevo, vamos a ver los archivos y comentar los cambios que se han realizado con respecto a la versión del ejemplo 1.
+			
+			\subsubsection{\texttt{Ejemplo\_I.java} (La Interfaz Remota)}
+				Se ha modificado el parámetro que recibe el método imprimir mensaje, que ahora es un \texttt{String} en lugar de un entero.
+				
+				Su código es:			
+				\inputminted[linenos, frame=lines, fontsize=\footnotesize]{Java}{../codigo/Parte_1_Implementacion_de_Ejemplos/Ejemplo_2/Ejemplo_I.java}
+			
+			\subsubsection{\texttt{Ejemplo.java} (El Servidor)}
+				Se cambia la implementación del método \texttt{escribir\_mensaje}. En este caso, se informa de cuando entra y cuando sale la hebra, cuyo nombre es el mensaje pasado como parámetro al método. Además, \textbf{las hebras que sean múltiplo de 10 (su nombre termina en 0)}, se dormirán durante 5 segundos
+			
+				Su código es:			
+				\inputminted[linenos, frame=lines, fontsize=\footnotesize]{Java}{../codigo/Parte_1_Implementacion_de_Ejemplos/Ejemplo_2/Ejemplo.java}
+			
+			\subsubsection{\texttt{Cliente\_Ejemplo\_Multi\_Threaded.java} (El Cliente)}
+				Esta clase representa el cliente. Es distinta con respecto a la del ejercicio 1. Esta clase \texttt{Cliente\_Ejemplo\_Multi\_Threaded} implementa la interfaz \texttt{Runnable} que nos permite crear \textit{threads} o hebras en Java. Uno de los cambios es que ahora se le pasa el host del servidor como parámetro en el constructor de la clase, almacenándolo en un atributo. Como implementa esta interfaz la interfaz \texttt{Runnable}, tiene que darle una implementación al método \texttt{run()}, que será ejecutado por cada una de las hebras. En este método, cada hebra busca su propio stub y llama al servidor (al objeto remoto) de forma concurrente con el resto de hebras creadas.
+				
+				En el \texttt{main}, se extrae el número de hebras, que se pasa como argumento al programa. Se crean tantas hebras como se hayan indicado, pasándoles el nombre del servidor al crearlas e indicándole su nombre, que será \texttt{Cliente + i}, donde i será un entero entre 0 y el número de hebras - 1. Las hebras se guardarán en un array.
+			
+				Su código es:
+				\inputminted[linenos, frame=lines, fontsize=\footnotesize]{Java}{../codigo/Parte_1_Implementacion_de_Ejemplos/Ejemplo_2/Cliente_Ejemplo_Multi_Threaded.java}
+			
+			\subsubsection{\texttt{launch.sh} (Script de Ejecución)}
+				Simplemente se ha modificado para lanzar el servidor y el cliente correctamente. Al cliente se le indica que cree 12 hebras. 
+				
+				Las únicas líneas que han cambiado con respecto al ejemplo 1 son:
+				\inputminted[
+					linenos, 
+					frame=lines, 
+					fontsize=\footnotesize, 
+					firstline=58, 
+					lastline=79
+				]{Shell}{../codigo/Parte_1_Implementacion_de_Ejemplos/Ejemplo_2/launch.sh}
+
+			\subsubsection{Diagrama de clases del ejemplo 2.}
+				El diagrama de clases en UML del ejemplo 2 es: 
+				
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=1\linewidth]{./imagenes_necesarias/DC_ejemplo_2.png}
+					\caption{Diagrama de clases del ejemplo 2}
+					\label{fig:dc_ejemplo2}
+				\end{figure}
+				
+			\subsubsection{Ejemplo de compilación y ejecución del ejemplo 2. Respondiendo a las preguntas}
+				De nuevo, damos permiso de ejecución al script y lo ejecutamos. 
+					
+				La salida sería:
+				
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=0.55\linewidth]{./imagenes_necesarias/salida_1_ejemplo_2.png}
+					\caption{1ª ejecución del ejemplo 2}
+					\label{fig:salida_1_ejemplo2}
+				\end{figure}
+				
+				\textbf{Nos piden que comprobemos que ocurre con las hebras cuyo nombre acaba en 0 y en que se diferencian del resto. }Pues, como ya hemos comentado anteriormente, las hebras cuyo nombre es múltiplo de 10, el método remoto \texttt{escribir\_mensaje} las duerme durante 5 segundos.
+				
+				\textbf{Luego nos indican que prestemos atención a la impresión de mensajes y comprobemos si estos mensajes se entrelazan.} La respuesta es SÍ. Si nos fijamos en el ejemplo de ejecución que muestro arriba, podemos observar al final del todo que, las hebras 0 y 10 (que son las que tienen que dormir puesto que son las únicas que terminan en 0 de las 12 hebras que hay en total), entran al método pero se quedan dormidas, y el resto de hebras conforme entran al método, salen de forma instantánea. Mientras que, estas dos hebras, es al final, pasados esos 5 segundos, cuando despiertan  y ya terminan. Con esto podemos ver como las hebras se ejecutan y llaman al método remoto (realizan peticiones/llamadas al servidor) de forma concurrente.
+				
+				Vamos a hacer la \textbf{2ª modificación que nos pide el guion.} Voy a introducir el modificador \texttt{synchronized} en el método de la implementación remota y vamos a ver un ejemplo de ejecución y vamos a analizar las diferencias con respecto a la ejecución anterior.
+				
+				\textbf{¡Ojo! Esta modificación se realiza en la clase donde se implementa el método, NO en la interfaz donde se define}. En nuestro caso, sería en \texttt{Ejemplo.java}. El método quedaría como: \newline
+				\mintinline{Java}|public synchronized void escribir_mensaje (String mensaje) | \newline
+				\mintinline{Java}|throws RemoteException;|
+				
+				Volvemos a ejecutar el script con: \texttt{\$ ./launch.sh} y vemos que su salida es:
+				
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=0.8\linewidth]{./imagenes_necesarias/salida_2_ejemplo_2.png}
+					\caption{2ª ejecución del ejemplo 2}
+					\label{fig:salida_2_ejemplo2}
+				\end{figure}
+				
+				Vamos a explicar que esta sucediendo. Al añadir la palabra \texttt{synchronized} \textbf{estamos convertimos todo el método en una sección crítica. Java asocia a cada objeto un monitor o cerrojo (\textit{lock}) }como los que estudiamos en la asignatura de \textit{Sistemas Distribuidos y Concurrentes}. Entonces si hay varias clases que quieren acceder a una clase o método, sólo puede acceder una a la vez y modificarla, y así no pueden modificarlas todas de golpe. Es por eso que, cuando una hebra entra en el método remoto \texttt{escribir\_mensaje} adquiere automáticamente el cerrojo de la instancia del objeto \texttt{Ejemplo}. Hasta que la hebra no abandona el método, no se libera el cerrojo. Es por eso que, cuando entra la hebra 0 o 10, y se ponen a dormir esos 5 segundos, las hebras que vienen detrás tendrán que esperar también esos 5 segundos (entrando en un estado bloqueo), hasta que la hebra múltiplo de 10 se despierte y  abandone el método, liberando así el cerrojo.
+
+		\subsection{Ejemplo 3. Contador.}
+			En este ejemplo sobre un contador vamos a crear \textbf{por una parte el objeto remoto}, que está formado por varias funciones accesibles de forma remota; \textbf{y por otra parte el servidor}, implementado en el archivo \texttt{servidor.java}, que exporta los métodos contenidos en la interfaz \texttt{icontador.java} del objeto remoto instanciado como \texttt{micontador} de la clase definida en \texttt{contador.java. }
+			
+			Por otro lado encontramos el \textbf{programa cliente}, que es una aplicación en Java  y realiza las siguientes acciones: inicializar el contador del servidor, invocar el método \texttt{incrementar} del contador unas 1.000 veces, e imprimir el valor final del contador  junto con el tiempo de respuesta medio que se ha calculado a partir de las invocaciones remotas del método incrementar.
+			
+			\textbf{De nuevo, comentar que los archivos han sido levemente modificados para evitar los problemas de componentes obsoletos}. Vamos a verlos:
+			
+			\subsubsection{\texttt{icontador.java} (La Interfaz Remota)}
+				Declara los métodos que tendrá el objeto remoto que la implemente.
+				
+				\inputminted[linenos, frame=lines, fontsize=\footnotesize]{Java}{../codigo/Parte_1_Implementacion_de_Ejemplos/Ejemplo_3/icontador.java}
+				
+			\subsubsection{\texttt{contador.java} (El Objeto Remoto)}
+				Es el objeto remoto que implementa la interfaz remota, y por lo tanto, le da una implementación a los métodos declarados en dicha interfaz. Con respecto al ejemplo que nos proporciona el guion, se ha quitado el \texttt{extends UnicastRemoteObject} para exportarlo manualmente en el servidor con SSL.
+				
+				\inputminted[linenos, frame=lines, fontsize=\footnotesize]{Java}{../codigo/Parte_1_Implementacion_de_Ejemplos/Ejemplo_3/contador.java}
+			
+			\subsubsection{\texttt{servidor.java} (El Servidor)}
+				Es el servidor encargado de publicar el objeto remoto anterior.
+				
+				\inputminted[linenos, frame=lines, fontsize=\footnotesize]{Java}{../codigo/Parte_1_Implementacion_de_Ejemplos/Ejemplo_3/servidor.java}
+						
+			\subsubsection{\texttt{cliente.java} (El Cliente)}
+				Implementa el cliente. Sus funciones ya se comentaron anteriormente.
+			
+				\inputminted[linenos, frame=lines, fontsize=\footnotesize]{Java}{../codigo/Parte_1_Implementacion_de_Ejemplos/Ejemplo_3/cliente.java}
+			
+			\subsubsection{\texttt{launch.sh} (Script para Ejecución)}
+				Se ha modificado la forma en la que se lanza el cliente y el servidor. Las únicas líneas que han cambiado con respecto a los ejemplos anteriores son:
+				
+				\inputminted[
+				linenos, 
+				frame=lines, 
+				fontsize=\footnotesize, 
+				firstline=58, 
+				lastline=77
+				]{Shell}{../codigo/Parte_1_Implementacion_de_Ejemplos/Ejemplo_3/launch.sh}
+			
+			\subsubsection{Diagramas en UML del ejemplo 3.}
+			
+				El \textbf{diagrama de clases} en UML de este ejemplo es: 
+			
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=1\linewidth]{./imagenes_necesarias/DC_ejemplo_3.png}
+					\caption{Diagrama de clases en UML del ejemplo 3}
+					\label{fig:dc_ejemplo3}
+				\end{figure}
+				
+				Y también muestro a continuación el \textbf{diagrama de secuencia} en UML de este ejemplo, ya que considero qué es relevante ya que hemos separado el objeto remoto del servidor. 
+				
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=1\linewidth]{./imagenes_necesarias/DS_ejemplo_3.png}
+					\caption{Diagrama de secuencia en UML del ejemplo 3}
+					\label{fig:ds_ejemplo3}
+				\end{figure}
+			
+			\subsubsection{Ejemplo de compilación y ejecución del ejemplo 3.}
+				Una vez más, al igual que hicimos en los ejemplos anteriores, damos permiso de ejecución al script y lo ejecutamos.
+				
+				La salida sería:
+				 \begin{figure}[H]
+				 	\centering
+				 	\includegraphics[width=1\linewidth]{./imagenes_necesarias/salida_ejemplo_3.png}
+				 	\caption{Ejecución del ejemplo 3}
+				 	\label{fig:ejecucion_ejemplo3}
+				 \end{figure}
+				 
+				 Vamos a comentar varias cosas que podemos deducir tras ver el código del ejemplo y la imagen de la salida (Figura 8):
+				 
+				 \begin{itemize}
+				 	\item \textbf{El servidor recuerda el valor de suma.} Si lanzamos el cliente varias veces sin reiniciar el servidor (y quitamos la línea de \texttt{micontador.sumar(0)}), podremos ver que el contador sigue subiendo. El objeto remoto vive en el servidor mientras este esté en ejecución.
+				 	
+				 	\item 	Al realizar 1000 llamadas seguidas, \textbf{el cliente calcula el tiempo medio de una invocación RMI}, que lo podemos ver en la figura 8. \textbf{Llamar al método remoto es mucho más lento que una llamada a un método local}, porque cada incremento implica:
+				 	
+				 	\begin{itemize}
+				 		\item Serializar el nombre del método.
+				 		\item 	Enviar el paquete por la red (TCP/SSL).
+				 		\item  Procesarlo en el servidor.
+				 		\item  Recibir la confirmación o respuesta.
+				 	\end{itemize}
+				 	
+				 	\item Vemos que hay una \textbf{gran transparencia}, ya que el cliente usa el método \texttt{incrementar()} como si fuera un objeto local, pero el cálculo real ocurre en la JVM del servidor.
+				 \end{itemize}
+				 
+				 \newpage
+				 
+	\section{Parte 2. Servidor Replicado.}
+
+		\subsection{Ejemplo 1. Cliente-Servidor básico.}
+				
+				 
+				
 
 				
 	
