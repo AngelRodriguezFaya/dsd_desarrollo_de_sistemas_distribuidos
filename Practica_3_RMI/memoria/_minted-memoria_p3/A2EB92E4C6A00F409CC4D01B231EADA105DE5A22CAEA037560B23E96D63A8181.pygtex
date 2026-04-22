@@ -1,0 +1,28 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{c+c1}{// Cliente\PYGZus{}Ejemplo.java}
+\PYG{c+c1}{// Código del cliente que invoca al objeto remoto implementado en Ejemplo.java}
+
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{java.rmi.registry.LocateRegistry}\PYG{p}{;}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{java.rmi.registry.Registry}\PYG{p}{;}
+
+\PYG{k+kd}{public}\PYG{+w}{ }\PYG{k+kd}{class} \PYG{n+nc}{Cliente\PYGZus{}Ejemplo}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{    }\PYG{k+kd}{private}\PYG{+w}{ }\PYG{k+kd}{static}\PYG{+w}{ }\PYG{k+kd}{final}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{RMI\PYGZus{}PORT}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{2099}\PYG{p}{;}
+
+\PYG{+w}{    }\PYG{k+kd}{public}\PYG{+w}{ }\PYG{k+kd}{static}\PYG{+w}{ }\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{main}\PYG{p}{(}\PYG{n}{String}\PYG{+w}{ }\PYG{n}{args}\PYG{o}{[]}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }\PYG{k}{try}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{n}{String}\PYG{+w}{ }\PYG{n}{nombre\PYGZus{}objeto\PYGZus{}remoto}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}Ejemplo\PYGZus{}I\PYGZdq{}}\PYG{p}{;}
+\PYG{+w}{            }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}Buscando el objeto remoto\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{            }\PYG{n}{Registry}\PYG{+w}{ }\PYG{n}{registry}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{LocateRegistry}\PYG{p}{.}\PYG{n+na}{getRegistry}\PYG{p}{(}\PYG{n}{args}\PYG{o}{[}\PYG{l+m+mi}{0}\PYG{o}{]}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{RMI\PYGZus{}PORT}\PYG{p}{);}
+\PYG{+w}{            }\PYG{c+c1}{// Invocamos el objeto remoto obtenido del ligador }
+\PYG{+w}{            }\PYG{n}{Ejemplo\PYGZus{}I}\PYG{+w}{ }\PYG{n}{instancia\PYGZus{}local}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Ejemplo\PYGZus{}I}\PYG{p}{)}\PYG{+w}{ }\PYG{n}{registry}\PYG{p}{.}\PYG{n+na}{lookup}\PYG{p}{(}\PYG{n}{nombre\PYGZus{}objeto\PYGZus{}remoto}\PYG{p}{);}
+\PYG{+w}{            }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}Invocando el objeto remoto\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{            }\PYG{c+c1}{// Llamamos al método remoto, pasándole }
+\PYG{+w}{            }\PYG{c+c1}{// el id del proceso (recibido como argumento)}
+\PYG{+w}{            }\PYG{n}{instancia\PYGZus{}local}\PYG{p}{.}\PYG{n+na}{escribir\PYGZus{}mensaje}\PYG{p}{(}\PYG{n}{Integer}\PYG{p}{.}\PYG{n+na}{parseInt}\PYG{p}{(}\PYG{n}{args}\PYG{o}{[}\PYG{l+m+mi}{1}\PYG{o}{]}\PYG{p}{));}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{catch}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Exception}\PYG{+w}{ }\PYG{n}{e}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{err}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}Ejemplo\PYGZus{}I exception:\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{            }\PYG{n}{e}\PYG{p}{.}\PYG{n+na}{printStackTrace}\PYG{p}{();}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{}}
+\end{Verbatim}
