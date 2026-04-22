@@ -1,0 +1,74 @@
+@startuml Ejemplo2_ClassDiagram
+
+title Ejemplo 2 (Multi-Threaded) - Diagrama de Clases RMI
+
+package "java.lang" {
+    interface Runnable {
+        {abstract} run(): void
+    }
+}
+
+package "java.rmi" {
+    interface Remote {
+    }
+}
+
+package "Ejemplo_2" {
+    interface Ejemplo_I {
+        {abstract} escribir_mensaje(mensaje: String)
+    }
+    
+    class Ejemplo {
+        - {static} RMI_PORT: int = 2099
+        + Ejemplo()
+        + escribir_mensaje(mensaje: String): void
+        + main(args: String[]): void {static}
+    }
+    
+    class Cliente_Ejemplo_Multi_Threaded {
+        - {static} RMI_PORT: int = 2099
+        + nombre_objeto_remoto: String = "Ejemplo_I"
+        + server: String
+        + Cliente_Ejemplo_Multi_Threaded(server: String)
+        + run(): void
+        + main(args: String[]): void {static}
+    }
+}
+
+package "RMI Infrastructure" {
+    class Registry {
+        + lookup(name: String): Remote
+        + rebind(name: String, obj: Remote): void
+    }
+    
+    class UnicastRemoteObject {
+        + {static} exportObject(obj: Remote, port: int): Remote
+    }
+    
+    class LocateRegistry {
+        + {static} getRegistry(host: String, port: int): Registry
+        + {static} createRegistry(port: int): Registry
+    }
+}
+
+' Relaciones
+Remote <|-- Ejemplo_I: extends
+Ejemplo_I <|.. Ejemplo: implements
+
+Runnable <|.. Cliente_Ejemplo_Multi_Threaded: implements
+
+Cliente_Ejemplo_Multi_Threaded --> Ejemplo_I: usa (lookup)
+Cliente_Ejemplo_Multi_Threaded --> LocateRegistry: usa
+Ejemplo --> UnicastRemoteObject: usa
+Ejemplo --> LocateRegistry: usa
+Ejemplo --> Registry: registra (rebind)
+Cliente_Ejemplo_Multi_Threaded --> Registry: accede
+
+note right of Cliente_Ejemplo_Multi_Threaded
+  Cliente Multi-hebra:
+  - Implementa Runnable
+  - Crea 'n' hebras
+  - Cada hebra busca y usa el objeto remoto
+end note
+
+@enduml
