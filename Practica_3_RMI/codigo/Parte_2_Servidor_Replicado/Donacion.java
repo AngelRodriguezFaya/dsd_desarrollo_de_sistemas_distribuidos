@@ -101,25 +101,7 @@ public class Donacion implements iDonacion {
 		return new ArrayList<>(donantes.keySet());
 	}
 
-	/**
-     * @brief Permite dar de baja a un donante.
-     * @pre El donante debe estar registrado previamente.
-     * @param donante El nombre del donante a dar de baja.
-     * @throws RemoteException Si ocurre un error de comunicación remota.
-     */
-	@Override
-    public synchronized void darDeBaja(String donante) throws RemoteException{
-		// Comprobamos que el donante esté registrado en esta réplica
-		if(this.estaRegistrado(donante)){
-			donantes.remove(donante);
-			System.out.println("[INFO.] El donante " + donante
-				+ " ha sido dado de baja en " + this.getNombre() + ".");
-		} else {
-			System.out.println("[ERROR.] El donante " + donante
-				+ " ha intentado darse de baja en " + this.getNombre()
-				+ " pero no está registrado en esta réplica.");
-		}
-	}
+	
 
 
 	//=============================================================================
@@ -185,6 +167,26 @@ public class Donacion implements iDonacion {
     }
 
 	/**
+     * @brief Permite dar de baja a un donante.
+     * @pre El donante debe estar registrado previamente.
+     * @param donante El nombre del donante a dar de baja.
+     * @throws RemoteException Si ocurre un error de comunicación remota.
+     */
+	@Override
+    public synchronized void darDeBaja(String donante) throws RemoteException{
+		// Comprobamos que el donante esté registrado en esta réplica
+		if(this.estaRegistrado(donante)){
+			donantes.remove(donante);
+			System.out.println("[INFO.] El donante " + donante
+				+ " ha sido dado de baja en " + this.getNombre() + ".");
+		} else {
+			System.out.println("[ERROR.] El donante " + donante
+				+ " ha intentado darse de baja en " + this.getNombre()
+				+ " pero no está registrado en esta réplica.");
+		}
+	}
+
+	/**
 	 * @brief Permite a un donante realizar una donación. 
 	 * @pre El donante debe estar registrado previamente en ESTA réplica.
 	 * @param donante El nombre del donante que realiza la donación.
@@ -214,7 +216,7 @@ public class Donacion implements iDonacion {
 	//=============================================================================
 
 	/**
-	 * @brief Permite al cliente consultar el total de donaciones realizadas por un donante.
+	 * @brief Permite al cliente consultar el total de donaciones realizadas por todos los donantes en todo el sistema.
 	 * @pre El donante debe estar registrado previamente en ESTA réplica y haber realizado al menos una donación.
 	 * @param donante El nombre del donante a consultar.
 	 * @return int. El total de donaciones realizadas todo el sistema (en todas las réplicas).

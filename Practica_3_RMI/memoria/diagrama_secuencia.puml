@@ -1,0 +1,47 @@
+@startuml
+actor Usuario
+participant "Cliente" as C
+participant "Donacion_1\n(Servidor Local)" as D1
+participant "Donacion_2\n(Peer)" as D2
+
+== Inicialización y Registro ==
+Usuario -> C: "1. Registrarme" (Juan)
+C -> D1: registrar("Juan")
+activate D1
+D1 -> D1: estaRegistrado("Juan")
+D1 -> D2: estaRegistrado("Juan")
+activate D2
+D2 --> D1: false
+deactivate D2
+note over D1, D2: D1 evalúa quién tiene menos carga
+D1 -> D1: putIfAbsent("Juan", [])
+D1 --> C: retorna stub de Donacion_1
+deactivate D1
+C --> Usuario: "[ÉXITO] Registrado en Donacion_1"
+
+== Realizar Donación ==
+Usuario -> C: "3. Realizar donación" (100€)
+C -> D1: donar("Juan", 100)
+activate D1
+D1 -> D1: estaRegistrado("Juan")
+D1 -> D1: totalDonacionesLocal += 100
+D1 -> D1: donantes.get("Juan").add(100)
+D1 --> C: void
+deactivate D1
+C --> Usuario: "[ÉXITO] Donación realizada"
+
+== Consulta Global (Ej: totalDonaciones) ==
+Usuario -> C: "4. Consultar total de donaciones"
+C -> D1: totalDonaciones("Juan")
+activate D1
+D1 -> D1: estaRegistrado("Juan") y !vacio
+D1 -> D1: getTotalDonacionesLocal()
+D1 -> D2: getTotalDonacionesLocal()
+activate D2
+D2 --> D1: retorna total de D2 (Ej: 50)
+deactivate D2
+D1 --> C: retorna totalGlobal (150)
+deactivate D1
+C --> Usuario: "El total donado es: 150€"
+
+@enduml

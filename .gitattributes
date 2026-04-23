@@ -1,0 +1,7 @@
+# Ignorar archivos de LaTeX en las estadísticas de GitHub
+*.tex linguist-detectable=false
+*.sty linguist-detectable=false
+*.cls linguist-detectable=false
+
+# Marcar cualquier carpeta "memoria" (y todo su contenido) como documentación
+**/memoria/** linguist-documentation

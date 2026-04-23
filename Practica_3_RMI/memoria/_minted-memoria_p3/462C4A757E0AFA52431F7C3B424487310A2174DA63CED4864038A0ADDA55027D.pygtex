@@ -1,0 +1,195 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{c+cm}{/**}
+\PYG{c+cm}{ * @file Cliente.java}
+\PYG{c+cm}{ * @brief Cliente RMI para el sistema de donaciones replicado.}
+\PYG{c+cm}{ */}
+
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{java.rmi.registry.LocateRegistry}\PYG{p}{;}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{java.rmi.registry.Registry}\PYG{p}{;}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{java.util.List}\PYG{p}{;}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{java.util.Scanner}\PYG{p}{;}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{javax.rmi.ssl.SslRMIClientSocketFactory}\PYG{p}{;}
+
+\PYG{k+kd}{public}\PYG{+w}{ }\PYG{k+kd}{class} \PYG{n+nc}{Cliente}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+
+\PYG{+w}{    }\PYG{k+kd}{static}\PYG{+w}{ }\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{mostrarSeparador}\PYG{p}{(}\PYG{n}{Scanner}\PYG{+w}{ }\PYG{n}{scanner}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}\PYGZbs{}n \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{} Presione Enter para continuar \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{        }\PYG{n}{scanner}\PYG{p}{.}\PYG{n+na}{nextLine}\PYG{p}{();}\PYG{+w}{ }\PYG{c+c1}{// Espera a que el usuario pulse Enter}
+\PYG{+w}{        }\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{l+m+mi}{30}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{o}{++}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{();}\PYG{+w}{ }\PYG{c+c1}{// Añade muchos saltos de línea para limpiar la pantalla}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{    }\PYG{k+kd}{public}\PYG{+w}{ }\PYG{k+kd}{static}\PYG{+w}{ }\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{main}\PYG{p}{(}\PYG{n}{String}\PYG{o}{[]}\PYG{+w}{ }\PYG{n}{args}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }
+\PYG{+w}{        }\PYG{c+c1}{// Host y puerto donde se encuentra el RMI Registry}
+\PYG{+w}{        }\PYG{n}{String}\PYG{+w}{ }\PYG{n}{host}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}localhost\PYGZdq{}}\PYG{p}{;}
+\PYG{+w}{        }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{puerto}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{2099}\PYG{p}{;}
+\PYG{+w}{        }
+\PYG{+w}{        }\PYG{c+c1}{// Nombre del servidor al que nos conectaremos inicialmente (punto de entrada)}
+\PYG{+w}{        }\PYG{c+c1}{// Asumimos que al menos existe una réplica llamada \PYGZdq{}Donacion\PYGZus{}1\PYGZdq{}}
+\PYG{+w}{        }\PYG{n}{String}\PYG{+w}{ }\PYG{n}{nombreServidor}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}Donacion\PYGZus{}1\PYGZdq{}}\PYG{p}{;}\PYG{+w}{ }
+\PYG{+w}{        }
+\PYG{+w}{        }\PYG{k}{try}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{c+c1}{// Como el servidor usa SSL, el cliente también debe usar la fábrica SSL}
+\PYG{+w}{            }\PYG{n}{SslRMIClientSocketFactory}\PYG{+w}{ }\PYG{n}{csf}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{new}\PYG{+w}{ }\PYG{n}{SslRMIClientSocketFactory}\PYG{p}{();}
+\PYG{+w}{            }
+\PYG{+w}{            }\PYG{c+c1}{// Obtenemos el RMI Registry}
+\PYG{+w}{            }\PYG{n}{Registry}\PYG{+w}{ }\PYG{n}{registry}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{LocateRegistry}\PYG{p}{.}\PYG{n+na}{getRegistry}\PYG{p}{(}\PYG{n}{host}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{puerto}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{csf}\PYG{p}{);}
+\PYG{+w}{            }
+\PYG{+w}{            }\PYG{c+c1}{// Buscamos el objeto remoto (servidor) inicial}
+\PYG{+w}{            }\PYG{n}{iDonacion}\PYG{+w}{ }\PYG{n}{servidor}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{iDonacion}\PYG{p}{)}\PYG{+w}{ }\PYG{n}{registry}\PYG{p}{.}\PYG{n+na}{lookup}\PYG{p}{(}\PYG{n}{nombreServidor}\PYG{p}{);}
+\PYG{+w}{            }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}Se ha establecido la conexión con el servidor inicial: \PYGZdq{}}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{servidor}\PYG{p}{.}\PYG{n+na}{getNombre}\PYG{p}{());}
+\PYG{+w}{            }
+\PYG{+w}{            }\PYG{n}{Scanner}\PYG{+w}{ }\PYG{n}{scanner}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{new}\PYG{+w}{ }\PYG{n}{Scanner}\PYG{p}{(}\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{in}\PYG{p}{);}
+\PYG{+w}{            }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{opcion}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// Opción seleccionada del menú}
+\PYG{+w}{            }\PYG{n}{String}\PYG{+w}{ }\PYG{n}{miNombre}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}\PYGZdq{}}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// Guardará el nombre del donante activo en esta sesión}
+\PYG{+w}{            }
+\PYG{+w}{            }\PYG{k}{while}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{opcion}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{l+m+mi}{9}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{+w}{ }\PYG{c+c1}{// El menú se repetirá hasta que el usuario elija salir (opción 9)}
+\PYG{+w}{                }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}\PYGZbs{}n\PYGZbs{}n\PYGZbs{}n\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{} MENÚ DE CLIENTE (RMI) \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}Nombre de usuario: \PYGZdq{}}\PYG{+w}{ }
+\PYG{+w}{                                    }\PYG{o}{+}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{miNombre}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}\PYGZdq{}}\PYG{+w}{ }\PYG{o}{?}\PYG{+w}{ }\PYG{n}{miNombre}\PYG{+w}{ }\PYG{p}{:}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}Ninguno\PYGZdq{}}\PYG{p}{));}
+\PYG{+w}{                }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}Réplica actual asignada: \PYGZdq{}}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{servidor}\PYG{p}{.}\PYG{n+na}{getNombre}\PYG{p}{());}
+\PYG{+w}{                }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}1. Registrarme como donante / Iniciar sesión (si ya estoy registrado)\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}2. Darme de baja como donante\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}3. Realizar donación\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}4. Consultar total de donaciones (de forma global)\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}5. Listar todos los donantes (de forma global)\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}6. Consultar el mayor donante registrado en el sistema\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}7. Consultar el total de mis donaciones\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}8. Consultar mi historial de donaciones\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}9. Salir\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{print}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}Elija una opción: \PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                }
+\PYG{+w}{                }\PYG{k}{try}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                    }\PYG{n}{opcion}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Integer}\PYG{p}{.}\PYG{n+na}{parseInt}\PYG{p}{(}\PYG{n}{scanner}\PYG{p}{.}\PYG{n+na}{nextLine}\PYG{p}{());}
+\PYG{+w}{                }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{catch}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{NumberFormatException}\PYG{+w}{ }\PYG{n}{e}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                    }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}Opción inválida. Introduzca un número (del 1 al 9).\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                    }\PYG{k}{continue}\PYG{p}{;}
+\PYG{+w}{                }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{                }
+\PYG{+w}{                }\PYG{k}{switch}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{opcion}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                    }\PYG{k}{case}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{+w}{ }\PYG{c+c1}{// Registrar donante}
+\PYG{+w}{                        }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{print}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}Introduzca el nombre del donante a registrar: \PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                        }\PYG{n}{miNombre}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{scanner}\PYG{p}{.}\PYG{n+na}{nextLine}\PYG{p}{();}
+\PYG{+w}{                        }\PYG{c+c1}{// Al llamar a registrar, el servidor puede devolvernos la referencia }
+\PYG{+w}{                        }\PYG{c+c1}{// de otra réplica (balanceo de carga). Es pro eso que debemos actualizar}
+\PYG{+w}{                        }\PYG{c+c1}{// nuestra referencia.}
+\PYG{+w}{                        }\PYG{n}{servidor}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{servidor}\PYG{p}{.}\PYG{n+na}{registrar}\PYG{p}{(}\PYG{n}{miNombre}\PYG{p}{);}
+\PYG{+w}{                        }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}[ÉXITO] Registrado correctamente. Asignado a la réplica: \PYGZdq{}}\PYG{+w}{ }
+\PYG{+w}{                                            }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{servidor}\PYG{p}{.}\PYG{n+na}{getNombre}\PYG{p}{());}
+\PYG{+w}{                        }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                    }\PYG{k}{case}\PYG{+w}{ }\PYG{l+m+mi}{2}\PYG{p}{:}\PYG{+w}{ }\PYG{c+c1}{// Dar de baja a un donante}
+\PYG{+w}{                        }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{miNombre}\PYG{p}{.}\PYG{n+na}{isEmpty}\PYG{p}{())}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                            }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}[ERROR] Primero debe registrarse (Opción 1).\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                        }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{else}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                            }\PYG{n}{servidor}\PYG{p}{.}\PYG{n+na}{darDeBaja}\PYG{p}{(}\PYG{n}{miNombre}\PYG{p}{);}
+\PYG{+w}{                            }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}[ÉXITO] Dado de baja correctamente.\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                            }\PYG{n}{miNombre}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}\PYGZdq{}}\PYG{p}{;}
+\PYG{+w}{                        }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{                        }\PYG{k}{break}\PYG{p}{;}
+
+\PYG{+w}{                    }\PYG{k}{case}\PYG{+w}{ }\PYG{l+m+mi}{3}\PYG{p}{:}\PYG{+w}{ }\PYG{c+c1}{// Realizar donación}
+\PYG{+w}{                        }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{miNombre}\PYG{p}{.}\PYG{n+na}{isEmpty}\PYG{p}{())}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                            }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}[ERROR] Primero debe registrarse (Opción 1).\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                        }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{else}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                            }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{print}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}Introduzca la cantidad a donar (en €): \PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                            }\PYG{k}{try}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                                }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{cantidad}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{Integer}\PYG{p}{.}\PYG{n+na}{parseInt}\PYG{p}{(}\PYG{n}{scanner}\PYG{p}{.}\PYG{n+na}{nextLine}\PYG{p}{());}
+\PYG{+w}{                                }\PYG{k}{if}\PYG{p}{(}\PYG{n}{cantidad}\PYG{+w}{ }\PYG{o}{\PYGZlt{}=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                                    }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}[ERROR] La cantidad debe ser mayor que 0.\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                                }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{else}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                                    }\PYG{c+c1}{// Si ha introducido una cantidad válida, realizamos la donación}
+\PYG{+w}{                                    }\PYG{n}{servidor}\PYG{p}{.}\PYG{n+na}{donar}\PYG{p}{(}\PYG{n}{miNombre}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{cantidad}\PYG{p}{);}
+\PYG{+w}{                                    }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}[ÉXITO] Donación de \PYGZdq{}}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{cantidad}\PYG{+w}{ }
+\PYG{+w}{                                                        }\PYG{o}{+}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}€ realizada correctamente.\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                                }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{                            }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{catch}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{NumberFormatException}\PYG{+w}{ }\PYG{n}{e}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                                }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}[ERROR] La cantidad introducida no es válida.\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                            }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{                        }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{                        }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                        }
+\PYG{+w}{                    }\PYG{k}{case}\PYG{+w}{ }\PYG{l+m+mi}{4}\PYG{p}{:}\PYG{+w}{ }\PYG{c+c1}{// Consultar total de donaciones (global)}
+\PYG{+w}{                        }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{miNombre}\PYG{p}{.}\PYG{n+na}{isEmpty}\PYG{p}{())}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                            }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}[ERROR] Primero debe registrarse (Opción 1).\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                        }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{else}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                            }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{total}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{servidor}\PYG{p}{.}\PYG{n+na}{totalDonaciones}\PYG{p}{(}\PYG{n}{miNombre}\PYG{p}{);}
+\PYG{+w}{                            }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{total}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{+w}{ }
+\PYG{+w}{                                }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}[RESULTADO] El total donado en todo el sistema es: \PYGZdq{}}\PYG{+w}{ }
+\PYG{+w}{                                                    }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{total}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}€\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                            }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{else}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{+w}{ }\PYG{c+c1}{// Si el resultado es \PYGZhy{}1, significa que no se cumplen las precondiciones para consultar}
+\PYG{+w}{                                }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}[DENEGADO] No puede consultar. Compruebe que ha donado más de 0€.\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                            }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{                        }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{                        }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                        }
+\PYG{+w}{                    }\PYG{k}{case}\PYG{+w}{ }\PYG{l+m+mi}{5}\PYG{p}{:}\PYG{+w}{ }\PYG{c+c1}{// Listar todos los donantes (global)}
+\PYG{+w}{                        }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{miNombre}\PYG{p}{.}\PYG{n+na}{isEmpty}\PYG{p}{())}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                            }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}[ERROR] Primero debe registrarse (Opción 1).\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                        }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{else}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                            }\PYG{n}{List}\PYG{o}{\PYGZlt{}}\PYG{n}{String}\PYG{o}{\PYGZgt{}}\PYG{+w}{ }\PYG{n}{listado}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{servidor}\PYG{p}{.}\PYG{n+na}{listarDonantes}\PYG{p}{(}\PYG{n}{miNombre}\PYG{p}{);}
+\PYG{+w}{                            }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{listado}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{k+kc}{null}\PYG{+w}{ }\PYG{o}{\PYGZam{}\PYGZam{}}\PYG{+w}{ }\PYG{o}{!}\PYG{n}{listado}\PYG{p}{.}\PYG{n+na}{isEmpty}\PYG{p}{())}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{+w}{ }
+\PYG{+w}{                                }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}[RESULTADO] Lista global de donantes registrados:\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                                }\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{String}\PYG{+w}{ }\PYG{n}{d}\PYG{+w}{ }\PYG{p}{:}\PYG{+w}{ }\PYG{n}{listado}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                                    }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{} \PYGZhy{} \PYGZdq{}}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{d}\PYG{p}{);}
+\PYG{+w}{                                }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{                            }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{else}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                                }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}[DENEGADO] No puede listar donantes. Compruebe que ha donado más de 0€.\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                            }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{                        }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{                        }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                    }
+\PYG{+w}{                    }\PYG{k}{case}\PYG{+w}{ }\PYG{l+m+mi}{6}\PYG{p}{:}\PYG{+w}{ }\PYG{c+c1}{// Consultar el mayor donante registrado en el sistema}
+\PYG{+w}{                        }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}[RESULTADO] El mayor donante registrado en el sistema es: \PYGZdq{}}\PYG{+w}{ }
+\PYG{+w}{                                            }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{servidor}\PYG{p}{.}\PYG{n+na}{mayorDonanteGlobal}\PYG{p}{()}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{} (cantidad donada: \PYGZdq{}}
+\PYG{+w}{                                            }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{servidor}\PYG{p}{.}\PYG{n+na}{getTotalDonacionesDonante}\PYG{p}{(}\PYG{n}{servidor}\PYG{p}{.}\PYG{n+na}{mayorDonanteGlobal}\PYG{p}{())}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}€)\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                        }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                    }
+\PYG{+w}{                    }\PYG{k}{case}\PYG{+w}{ }\PYG{l+m+mi}{7}\PYG{p}{:}\PYG{+w}{ }\PYG{c+c1}{// Consultar el total de mis donaciones}
+\PYG{+w}{                        }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{miNombre}\PYG{p}{.}\PYG{n+na}{isEmpty}\PYG{p}{())}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                            }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}[ERROR] Primero debe registrarse (Opción 1).\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                        }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{else}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                            }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{totalMisDonaciones}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{servidor}\PYG{p}{.}\PYG{n+na}{getTotalDonacionesDonante}\PYG{p}{(}\PYG{n}{miNombre}\PYG{p}{);}
+\PYG{+w}{                            }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}[RESULTADO] El total de sus donaciones es: \PYGZdq{}}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{totalMisDonaciones}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}€\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                        }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{                        }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                    }
+\PYG{+w}{                    }\PYG{k}{case}\PYG{+w}{ }\PYG{l+m+mi}{8}\PYG{p}{:}\PYG{+w}{ }\PYG{c+c1}{// Consultar mi historial de donaciones}
+\PYG{+w}{                        }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{miNombre}\PYG{p}{.}\PYG{n+na}{isEmpty}\PYG{p}{())}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                            }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}[ERROR] Primero debe registrarse (Opción 1).\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                        }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{else}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                            }\PYG{n}{List}\PYG{o}{\PYGZlt{}}\PYG{n}{Integer}\PYG{o}{\PYGZgt{}}\PYG{+w}{ }\PYG{n}{historial}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{servidor}\PYG{p}{.}\PYG{n+na}{obtenerHistorialDonaciones}\PYG{p}{(}\PYG{n}{miNombre}\PYG{p}{);}
+\PYG{+w}{                            }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{historial}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{k+kc}{null}\PYG{+w}{ }\PYG{o}{\PYGZam{}\PYGZam{}}\PYG{+w}{ }\PYG{o}{!}\PYG{n}{historial}\PYG{p}{.}\PYG{n+na}{isEmpty}\PYG{p}{())}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                                }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}[RESULTADO] Su historial de donaciones:\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                                }\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{historial}\PYG{p}{.}\PYG{n+na}{size}\PYG{p}{();}\PYG{+w}{ }\PYG{n}{i}\PYG{o}{++}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                                    }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{} Donación \PYGZdq{}}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{i}\PYG{o}{+}\PYG{l+m+mi}{1}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}: \PYGZdq{}}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{historial}\PYG{p}{.}\PYG{n+na}{get}\PYG{p}{(}\PYG{n}{i}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}€\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                                }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{                            }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{else}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                                }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}[RESULTADO] No ha realizado ninguna donación aún.\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                            }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{                        }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{                        }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                        }
+\PYG{+w}{                    }\PYG{k}{case}\PYG{+w}{ }\PYG{l+m+mi}{9}\PYG{p}{:}\PYG{+w}{ }\PYG{c+c1}{// Salir}
+\PYG{+w}{                        }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}Desconectando y cerrando el cliente...\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                        }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                        }
+\PYG{+w}{                    }\PYG{k}{default}\PYG{p}{:}
+\PYG{+w}{                        }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}La opción introducida no es válida. Por favor, seleccione del 1 al 9.\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{                }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{                }\PYG{k}{if}\PYG{p}{(}\PYG{n}{opcion}\PYG{+w}{ }\PYG{o}{!=}\PYG{+w}{ }\PYG{l+m+mi}{9}\PYG{p}{)}
+\PYG{+w}{                    }\PYG{n}{mostrarSeparador}\PYG{p}{(}\PYG{n}{scanner}\PYG{p}{);}
+\PYG{+w}{            }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{            }\PYG{n}{scanner}\PYG{p}{.}\PYG{n+na}{close}\PYG{p}{();}
+\PYG{+w}{            }
+\PYG{+w}{        }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{catch}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Exception}\PYG{+w}{ }\PYG{n}{e}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{err}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}Excepción en el cliente:\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{            }\PYG{n}{e}\PYG{p}{.}\PYG{n+na}{printStackTrace}\PYG{p}{();}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{}}
+\end{Verbatim}

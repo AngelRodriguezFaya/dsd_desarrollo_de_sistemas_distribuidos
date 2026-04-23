@@ -1,27 +1,44 @@
 \babel@toc {spanish}{}\relax 
-\contentsline {section}{\numberline {1}Introducción}{2}{}%
-\contentsline {section}{\numberline {2}Parte 1. Implementación de Ejemplos.}{2}{}%
-\contentsline {subsection}{\numberline {2.1}Ejemplo 1. Cliente-Servidor básico.}{2}{}%
-\contentsline {subsubsection}{\numberline {2.1.1}\texttt {Ejemplo\_I.java} (La Interfaz Remota)}{3}{}%
-\contentsline {subsubsection}{\numberline {2.1.2}\texttt {Ejemplo.java} (El Servidor)}{3}{}%
-\contentsline {subsubsection}{\numberline {2.1.3}\texttt {Cliente\_Ejemplo.java} (El Cliente)}{5}{}%
-\contentsline {subsubsection}{\numberline {2.1.4}\texttt {launch.sh} (Script de Ejecución)}{5}{}%
-\contentsline {subsubsection}{\numberline {2.1.5}Diagrama de clases del ejemplo 1.}{8}{}%
-\contentsline {subsubsection}{\numberline {2.1.6}Ejemplo de compilación y ejecución del ejemplo 1.}{8}{}%
-\contentsline {subsection}{\numberline {2.2}Ejemplo 2. Multihebra.}{10}{}%
-\contentsline {subsubsection}{\numberline {2.2.1}\texttt {Ejemplo\_I.java} (La Interfaz Remota)}{10}{}%
-\contentsline {subsubsection}{\numberline {2.2.2}\texttt {Ejemplo.java} (El Servidor)}{10}{}%
-\contentsline {subsubsection}{\numberline {2.2.3}\texttt {Cliente\_Ejemplo\_Multi\_Threaded.java} (El Cliente)}{12}{}%
-\contentsline {subsubsection}{\numberline {2.2.4}\texttt {launch.sh} (Script de Ejecución)}{13}{}%
-\contentsline {subsubsection}{\numberline {2.2.5}Diagrama de clases del ejemplo 2.}{14}{}%
-\contentsline {subsubsection}{\numberline {2.2.6}Ejemplo de compilación y ejecución del ejemplo 2. Respondiendo a las preguntas}{15}{}%
-\contentsline {subsection}{\numberline {2.3}Ejemplo 3. Contador.}{18}{}%
-\contentsline {subsubsection}{\numberline {2.3.1}\texttt {icontador.java} (La Interfaz Remota)}{18}{}%
-\contentsline {subsubsection}{\numberline {2.3.2}\texttt {contador.java} (El Objeto Remoto)}{19}{}%
-\contentsline {subsubsection}{\numberline {2.3.3}\texttt {servidor.java} (El Servidor)}{19}{}%
-\contentsline {subsubsection}{\numberline {2.3.4}\texttt {cliente.java} (El Cliente)}{20}{}%
-\contentsline {subsubsection}{\numberline {2.3.5}\texttt {launch.sh} (Script para Ejecución)}{21}{}%
-\contentsline {subsubsection}{\numberline {2.3.6}Diagramas en UML del ejemplo 3.}{22}{}%
-\contentsline {subsubsection}{\numberline {2.3.7}Ejemplo de compilación y ejecución del ejemplo 3.}{24}{}%
-\contentsline {section}{\numberline {3}Parte 2. Servidor Replicado.}{25}{}%
-\contentsline {subsection}{\numberline {3.1}Ejemplo 1. Cliente-Servidor básico.}{25}{}%
+\contentsline {section}{\numberline {1}Introducción}{3}{}%
+\contentsline {section}{\numberline {2}Parte 1. Implementación de Ejemplos.}{3}{}%
+\contentsline {subsection}{\numberline {2.1}Ejemplo 1. Cliente-Servidor básico.}{3}{}%
+\contentsline {subsubsection}{\numberline {2.1.1}\texttt {Ejemplo\_I.java} (La Interfaz Remota)}{4}{}%
+\contentsline {subsubsection}{\numberline {2.1.2}\texttt {Ejemplo.java} (El Servidor)}{4}{}%
+\contentsline {subsubsection}{\numberline {2.1.3}\texttt {Cliente\_Ejemplo.java} (El Cliente)}{6}{}%
+\contentsline {subsubsection}{\numberline {2.1.4}\texttt {launch.sh} (Script de Ejecución)}{6}{}%
+\contentsline {subsubsection}{\numberline {2.1.5}Diagrama de clases del ejemplo 1.}{9}{}%
+\contentsline {subsubsection}{\numberline {2.1.6}Ejemplo de compilación y ejecución del ejemplo 1.}{9}{}%
+\contentsline {subsection}{\numberline {2.2}Ejemplo 2. Multihebra.}{11}{}%
+\contentsline {subsubsection}{\numberline {2.2.1}\texttt {Ejemplo\_I.java} (La Interfaz Remota)}{11}{}%
+\contentsline {subsubsection}{\numberline {2.2.2}\texttt {Ejemplo.java} (El Servidor)}{11}{}%
+\contentsline {subsubsection}{\numberline {2.2.3}\texttt {Cliente\_Ejemplo\_Multi\_Threaded.java} (El Cliente)}{13}{}%
+\contentsline {subsubsection}{\numberline {2.2.4}\texttt {launch.sh} (Script de Ejecución)}{14}{}%
+\contentsline {subsubsection}{\numberline {2.2.5}Diagrama de clases del ejemplo 2.}{15}{}%
+\contentsline {subsubsection}{\numberline {2.2.6}Ejemplo de compilación y ejecución del ejemplo 2. Respondiendo a las preguntas}{16}{}%
+\contentsline {subsection}{\numberline {2.3}Ejemplo 3. Contador.}{19}{}%
+\contentsline {subsubsection}{\numberline {2.3.1}\texttt {icontador.java} (La Interfaz Remota)}{19}{}%
+\contentsline {subsubsection}{\numberline {2.3.2}\texttt {contador.java} (El Objeto Remoto)}{20}{}%
+\contentsline {subsubsection}{\numberline {2.3.3}\texttt {servidor.java} (El Servidor)}{20}{}%
+\contentsline {subsubsection}{\numberline {2.3.4}\texttt {cliente.java} (El Cliente)}{21}{}%
+\contentsline {subsubsection}{\numberline {2.3.5}\texttt {launch.sh} (Script para Ejecución)}{22}{}%
+\contentsline {subsubsection}{\numberline {2.3.6}Diagramas en UML del ejemplo 3.}{23}{}%
+\contentsline {subsubsection}{\numberline {2.3.7}Ejemplo de compilación y ejecución del ejemplo 3.}{25}{}%
+\contentsline {section}{\numberline {3}Parte 2. Servidor Replicado.}{26}{}%
+\contentsline {subsection}{\numberline {3.1}Introducción y Objetivos.}{26}{}%
+\contentsline {subsection}{\numberline {3.2}Arquitectura del Sistema.}{27}{}%
+\contentsline {subsubsection}{\numberline {3.2.1}\texttt {iDonacion.java} (La Interfaz Remota)}{27}{}%
+\contentsline {subsubsection}{\numberline {3.2.2}\texttt {Donacion.java} (La Lógica de Negocio)}{30}{}%
+\contentsline {subsubsection}{\numberline {3.2.3}\texttt {Servidor.java} (El Servidor)}{40}{}%
+\contentsline {subsubsection}{\numberline {3.2.4}\texttt {Cliente.java} (El Cliente)}{42}{}%
+\contentsline {subsubsection}{\numberline {3.2.5}\texttt {launch.sh} (Script para Ejecución)}{46}{}%
+\contentsline {subsection}{\numberline {3.3}Diagramas en UML.}{48}{}%
+\contentsline {subsubsection}{\numberline {3.3.1}Diagrama de clases.}{48}{}%
+\contentsline {subsubsection}{\numberline {3.3.2}Diagrama de clases.}{49}{}%
+\contentsline {subsection}{\numberline {3.4}Guía de Uso. Ejemplos de ejecución}{50}{}%
+\contentsline {subsubsection}{\numberline {3.4.1}Registrar donantes.}{51}{}%
+\contentsline {subsubsection}{\numberline {3.4.2}Realizar donaciones}{52}{}%
+\contentsline {subsubsection}{\numberline {3.4.3}Consultar total de donaciones (en todo el sistema)}{54}{}%
+\contentsline {subsubsection}{\numberline {3.4.4}Consultar el historial de donaciones}{55}{}%
+\contentsline {subsubsection}{\numberline {3.4.5}Consultar el mayor donante.}{55}{}%
+\contentsline {subsubsection}{\numberline {3.4.6}Darse de baja.}{56}{}%
+\contentsline {subsubsection}{\numberline {3.4.7}Salir de la aplicación.}{56}{}%

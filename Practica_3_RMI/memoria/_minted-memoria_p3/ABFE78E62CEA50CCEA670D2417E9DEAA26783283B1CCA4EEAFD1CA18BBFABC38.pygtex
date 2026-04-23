@@ -1,0 +1,439 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{c+cm}{/**}
+\PYG{c+cm}{ * @file Donacion.java}
+\PYG{c+cm}{ * @brief Implementación de la interfaz remota iDonacion. Este es el objeto remoto que }
+\PYG{c+cm}{ * se va a publicar en el RMI Registry y que los clientes van a invocar.}
+\PYG{c+cm}{ */}
+
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{java.rmi.*}\PYG{p}{;}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{java.util.ArrayList}\PYG{p}{;}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{java.util.List}\PYG{p}{;}
+
+
+\PYG{k+kd}{public}\PYG{+w}{ }\PYG{k+kd}{class} \PYG{n+nc}{Donacion}\PYG{+w}{ }\PYG{k+kd}{implements}\PYG{+w}{ }\PYG{n}{iDonacion}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+
+\PYG{+w}{	}\PYG{c+c1}{// Identificador único de la réplica del servidor}
+\PYG{+w}{    }\PYG{k+kd}{private}\PYG{+w}{ }\PYG{k+kd}{final}\PYG{+w}{ }\PYG{n}{String}\PYG{+w}{ }\PYG{n}{nombreNodo}\PYG{p}{;}\PYG{+w}{ }
+
+\PYG{+w}{	}\PYG{c+c1}{// Total de donaciones realizadas de forma local (en esta réplica).}
+\PYG{+w}{    }\PYG{k+kd}{private}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{totalDonacionesLocal}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+
+\PYG{+w}{	}\PYG{c+c1}{// Map con los donantes registrados EN ESTA RÉPLICA y la cantidad total que han donado.}
+\PYG{+w}{	}\PYG{c+c1}{// los pares son: \PYGZlt{}nombreDonante, cantidadDonacionesRealizadas\PYGZgt{}}
+\PYG{+w}{    }\PYG{k+kd}{private}\PYG{+w}{ }\PYG{k+kd}{final}\PYG{+w}{ }\PYG{n}{java}\PYG{p}{.}\PYG{n+na}{util}\PYG{p}{.}\PYG{n+na}{Map}\PYG{o}{\PYGZlt{}}\PYG{n}{String}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{List}\PYG{o}{\PYGZlt{}}\PYG{n}{Integer}\PYG{o}{\PYGZgt{}\PYGZgt{}}\PYG{+w}{ }\PYG{n}{donantes}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{new}\PYG{+w}{ }\PYG{n}{java}\PYG{p}{.}\PYG{n+na}{util}\PYG{p}{.}\PYG{n+na}{HashMap}\PYG{o}{\PYGZlt{}\PYGZgt{}}\PYG{p}{();}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{c+c1}{// Map con los peers (otras réplicas del servidor) que esta réplica conoce.}
+\PYG{+w}{	}\PYG{k+kd}{private}\PYG{+w}{ }\PYG{k+kd}{final}\PYG{+w}{ }\PYG{n}{java}\PYG{p}{.}\PYG{n+na}{util}\PYG{p}{.}\PYG{n+na}{Map}\PYG{o}{\PYGZlt{}}\PYG{n}{String}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{iDonacion}\PYG{o}{\PYGZgt{}}\PYG{+w}{ }\PYG{n}{peers}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{new}\PYG{+w}{ }\PYG{n}{java}\PYG{p}{.}\PYG{n+na}{util}\PYG{p}{.}\PYG{n+na}{HashMap}\PYG{o}{\PYGZlt{}\PYGZgt{}}\PYG{p}{();}
+
+\PYG{+w}{	}\PYG{c+cm}{/**}
+\PYG{c+cm}{	 * @brief Constructor de la clase Donacion. }
+\PYG{c+cm}{	 * @param nombreNodo El nombre del nodo, que es su identificador único. }
+\PYG{c+cm}{	 * Este nombre se genera dinámicamente en el servidor para asegurar que cada }
+\PYG{c+cm}{	 * instancia tenga un identificador único.}
+\PYG{c+cm}{	 */}
+\PYG{+w}{    }\PYG{k+kd}{public}\PYG{+w}{ }\PYG{n+nf}{Donacion}\PYG{p}{(}\PYG{n}{String}\PYG{+w}{ }\PYG{n}{nombreNodo}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }\PYG{k}{this}\PYG{p}{.}\PYG{n+na}{nombreNodo}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{nombreNodo}\PYG{p}{;}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{	}\PYG{c+cm}{/**}
+\PYG{c+cm}{	 * @brief Devuelve el nombre del nodo, que es su identificador único. }
+\PYG{c+cm}{	 * Esto es útil para que los servidores puedan conocerse entre ellos y replicarse.}
+\PYG{c+cm}{	 * }
+\PYG{c+cm}{	 * @return El nombre del nodo del servidor.}
+\PYG{c+cm}{	 * @throws RemoteException Si ocurre un error de comunicación remota.}
+\PYG{c+cm}{	 */}
+\PYG{+w}{	}\PYG{n+nd}{@Override}
+\PYG{+w}{    }\PYG{k+kd}{public}\PYG{+w}{ }\PYG{n}{String}\PYG{+w}{ }\PYG{n+nf}{getNombre}\PYG{p}{()}\PYG{+w}{ }\PYG{k+kd}{throws}\PYG{+w}{ }\PYG{n}{RemoteException}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }\PYG{k}{return}\PYG{+w}{ }\PYG{n}{nombreNodo}\PYG{p}{;}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}
+\PYG{+w}{	}\PYG{c+cm}{/**}
+\PYG{c+cm}{	 * @brief Permite que un servidor conozca a otro servidor (peer) para que }
+\PYG{c+cm}{	 * puedan replicarse entre ellos. Cada servidor mantiene una lista de sus peers }
+\PYG{c+cm}{	 * y se actualizan mutuamente cuando se registran nuevos donantes o se realizan }
+\PYG{c+cm}{	 * nuevas donaciones.}
+\PYG{c+cm}{	 * }
+\PYG{c+cm}{	 * @param peer El servidor peer que se va a conocer.}
+\PYG{c+cm}{	 * @throws RemoteException Si ocurre un error de comunicación remota.}
+\PYG{c+cm}{	 */}
+\PYG{+w}{	}\PYG{n+nd}{@Override}
+\PYG{+w}{	}\PYG{k+kd}{public}\PYG{+w}{ }\PYG{k+kd}{synchronized}\PYG{+w}{ }\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{setPeer}\PYG{p}{(}\PYG{n}{iDonacion}\PYG{+w}{ }\PYG{n}{peer}\PYG{p}{)}\PYG{+w}{ }\PYG{k+kd}{throws}\PYG{+w}{ }\PYG{n}{RemoteException}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{n}{peers}\PYG{p}{.}\PYG{n+na}{put}\PYG{p}{(}\PYG{n}{peer}\PYG{p}{.}\PYG{n+na}{getNombre}\PYG{p}{(),}\PYG{+w}{ }\PYG{n}{peer}\PYG{p}{);}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{	}\PYG{c+cm}{/**}
+\PYG{c+cm}{	 * @brief Devuelve el número total de donantes registrados en esta réplica.}
+\PYG{c+cm}{	 * @return int. El número total de donantes registrados.}
+\PYG{c+cm}{	 * @throws RemoteException Si ocurre un error de comunicación remota.}
+\PYG{c+cm}{	 */}
+\PYG{+w}{	}\PYG{n+nd}{@Override}
+\PYG{+w}{	}\PYG{k+kd}{public}\PYG{+w}{ }\PYG{k+kd}{synchronized}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n+nf}{totalDonantes}\PYG{p}{()}\PYG{+w}{ }\PYG{k+kd}{throws}\PYG{+w}{ }\PYG{n}{RemoteException}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{k}{return}\PYG{+w}{ }\PYG{n}{donantes}\PYG{p}{.}\PYG{n+na}{size}\PYG{p}{();}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{	}\PYG{c+cm}{/**}
+\PYG{c+cm}{	 * @brief Permite consultar si un donante está registrado en esta réplica.}
+\PYG{c+cm}{	 * @param donante Nombre del donante a consultar.}
+\PYG{c+cm}{	 * @return boolean. true si el donante está registrado, false en caso contrario.}
+\PYG{c+cm}{	 * @throws RemoteException Si ocurre un error de comunicación remota.}
+\PYG{c+cm}{	 */}
+\PYG{+w}{	}\PYG{n+nd}{@Override}
+\PYG{+w}{	}\PYG{k+kd}{public}\PYG{+w}{ }\PYG{k+kd}{synchronized}\PYG{+w}{ }\PYG{k+kt}{boolean}\PYG{+w}{ }\PYG{n+nf}{estaRegistrado}\PYG{p}{(}\PYG{n}{String}\PYG{+w}{ }\PYG{n}{donante}\PYG{p}{)}\PYG{+w}{ }\PYG{k+kd}{throws}\PYG{+w}{ }\PYG{n}{RemoteException}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{k}{return}\PYG{+w}{ }\PYG{n}{donantes}\PYG{p}{.}\PYG{n+na}{containsKey}\PYG{p}{(}\PYG{n}{donante}\PYG{p}{);}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{	}\PYG{c+cm}{/**}
+\PYG{c+cm}{     * @brief Devuelve el número total de donaciones realizadas en esta réplica.}
+\PYG{c+cm}{     * @return int. El número total de donaciones realizadas.}
+\PYG{c+cm}{     * @throws RemoteException Si ocurre un error de comunicación remota.}
+\PYG{c+cm}{     */}
+\PYG{+w}{	}\PYG{n+nd}{@Override}
+\PYG{+w}{	}\PYG{k+kd}{public}\PYG{+w}{ }\PYG{k+kd}{synchronized}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n+nf}{getTotalDonacionesLocal}\PYG{p}{()}\PYG{+w}{ }\PYG{k+kd}{throws}\PYG{+w}{ }\PYG{n}{RemoteException}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{k}{return}\PYG{+w}{ }\PYG{n}{totalDonacionesLocal}\PYG{p}{;}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{	}\PYG{c+cm}{/**}
+\PYG{c+cm}{	 * @brief Devuelve una lista con los nombres de todos los donantes registrados en esta réplica.}
+\PYG{c+cm}{	 * @return List\PYGZlt{}String\PYGZgt{}. Una lista con los nombres de todos los donantes registrados.}
+\PYG{c+cm}{	 * @throws RemoteException Si ocurre un error de comunicación remota.}
+\PYG{c+cm}{	 */}
+\PYG{+w}{	}\PYG{n+nd}{@Override}
+\PYG{+w}{	}\PYG{k+kd}{public}\PYG{+w}{ }\PYG{k+kd}{synchronized}\PYG{+w}{ }\PYG{n}{List}\PYG{o}{\PYGZlt{}}\PYG{n}{String}\PYG{o}{\PYGZgt{}}\PYG{+w}{ }\PYG{n+nf}{listarDonantesLocal}\PYG{p}{()}\PYG{+w}{ }\PYG{k+kd}{throws}\PYG{+w}{ }\PYG{n}{RemoteException}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{k}{return}\PYG{+w}{ }\PYG{k}{new}\PYG{+w}{ }\PYG{n}{ArrayList}\PYG{o}{\PYGZlt{}\PYGZgt{}}\PYG{p}{(}\PYG{n}{donantes}\PYG{p}{.}\PYG{n+na}{keySet}\PYG{p}{());}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{	}
+
+
+\PYG{+w}{	}\PYG{c+c1}{//=============================================================================}
+\PYG{+w}{	}\PYG{c+c1}{// 			ACCIONES QUE PUEDEN INVOCAR LOS CLIENTES}
+\PYG{+w}{	}\PYG{c+c1}{//=============================================================================}
+
+\PYG{+w}{	}\PYG{c+cm}{/**}
+\PYG{c+cm}{	 * @brief Permite registrar un donante. }
+\PYG{c+cm}{	 * }
+\PYG{c+cm}{	 * @param donante El nombre del donante a registrar. }
+\PYG{c+cm}{	 * @return iDonacion. El servidor (réplica) donde se ha registrado el donante.}
+\PYG{c+cm}{	 * @throws RemoteException Si ocurre un error de comunicación remota. }
+\PYG{c+cm}{	 */}
+\PYG{+w}{	}\PYG{n+nd}{@Override}
+\PYG{+w}{	}\PYG{k+kd}{public}\PYG{+w}{ }\PYG{n}{iDonacion}\PYG{+w}{ }\PYG{n+nf}{registrar}\PYG{p}{(}\PYG{n}{String}\PYG{+w}{ }\PYG{n}{donante}\PYG{p}{)}\PYG{+w}{ }\PYG{k+kd}{throws}\PYG{+w}{ }\PYG{n}{RemoteException}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{n}{iDonacion}\PYG{+w}{ }\PYG{n}{peerRegistrado}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k+kc}{null}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// Réplica donde se ha registrado el donante}
+
+\PYG{+w}{		}\PYG{c+c1}{// 1. Comprobar si el donante ya está registrado en esta réplica. }
+\PYG{+w}{		}\PYG{k}{if}\PYG{p}{(}\PYG{k}{this}\PYG{p}{.}\PYG{n+na}{estaRegistrado}\PYG{p}{(}\PYG{n}{donante}\PYG{p}{))}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}\PYG{n}{peerRegistrado}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{this}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// El donante ya está registrado en esta réplica}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{else}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}\PYG{c+c1}{// 2. Comprobamos si no esta registrado en alguna de las otras réplicas}
+\PYG{+w}{			}\PYG{k}{for}\PYG{p}{(}\PYG{n}{iDonacion}\PYG{+w}{ }\PYG{n}{peer}\PYG{+w}{ }\PYG{p}{:}\PYG{+w}{ }\PYG{n}{peers}\PYG{p}{.}\PYG{n+na}{values}\PYG{p}{())}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{				}\PYG{k}{if}\PYG{p}{(}\PYG{n}{peer}\PYG{p}{.}\PYG{n+na}{estaRegistrado}\PYG{p}{(}\PYG{n}{donante}\PYG{p}{))}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{					}\PYG{n}{peerRegistrado}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{peer}\PYG{p}{;}\PYG{+w}{ }
+\PYG{+w}{					}\PYG{k}{break}\PYG{p}{;}\PYG{+w}{ }
+\PYG{+w}{				}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{			}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{		}\PYG{c+c1}{// Si el donante no está registrado en ninguna réplica, lo registramos en}
+\PYG{+w}{		}\PYG{c+c1}{// la réplica con menos donantes registrados para balancear la carga entre las réplicas.}
+\PYG{+w}{		}\PYG{k}{if}\PYG{p}{(}\PYG{n}{peerRegistrado}\PYG{+w}{ }\PYG{o}{==}\PYG{+w}{ }\PYG{k+kc}{null}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}
+\PYG{+w}{			}\PYG{c+c1}{// 3. Encontramos la réplica con menos donantes registrados}
+\PYG{+w}{			}\PYG{n}{iDonacion}\PYG{+w}{ }\PYG{n}{mejorPeer}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{this}\PYG{p}{;}\PYG{+w}{	}\PYG{c+c1}{// Mejor réplica encontrada para registrar el nuevo donante}
+\PYG{+w}{			}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{minDonantes}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{this}\PYG{p}{.}\PYG{n+na}{totalDonantes}\PYG{p}{();}\PYG{+w}{ }\PYG{c+c1}{// Minimo nro de donantes registrado en la mejorPeer}
+
+\PYG{+w}{			}\PYG{k}{for}\PYG{p}{(}\PYG{n}{iDonacion}\PYG{+w}{ }\PYG{n}{peer}\PYG{+w}{ }\PYG{p}{:}\PYG{+w}{ }\PYG{n}{peers}\PYG{p}{.}\PYG{n+na}{values}\PYG{p}{())}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{				}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{nroDonantesPeer}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{peer}\PYG{p}{.}\PYG{n+na}{totalDonantes}\PYG{p}{();}
+\PYG{+w}{				}\PYG{k}{if}\PYG{p}{(}\PYG{n}{nroDonantesPeer}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n}{minDonantes}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{					}\PYG{n}{mejorPeer}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{peer}\PYG{p}{;}
+\PYG{+w}{					}\PYG{n}{minDonantes}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{nroDonantesPeer}\PYG{p}{;}
+\PYG{+w}{				}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{			}\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{			}\PYG{c+c1}{// 4. Registramos el nuevo donante en la mejor réplica encontrada}
+\PYG{+w}{			}\PYG{k}{if}\PYG{p}{(}\PYG{n}{mejorPeer}\PYG{p}{.}\PYG{n+na}{getNombre}\PYG{p}{().}\PYG{n+na}{equals}\PYG{p}{(}\PYG{k}{this}\PYG{p}{.}\PYG{n+na}{getNombre}\PYG{p}{()))}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{				}\PYG{k+kd}{synchronized}\PYG{p}{(}\PYG{k}{this}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{+w}{ }\PYG{c+c1}{// Lo hacemos de exclusión mutua para evitar condiciones de carrera}
+\PYG{+w}{					}\PYG{n}{donantes}\PYG{p}{.}\PYG{n+na}{putIfAbsent}\PYG{p}{(}\PYG{n}{donante}\PYG{p}{,}\PYG{+w}{ }\PYG{k}{new}\PYG{+w}{ }\PYG{n}{ArrayList}\PYG{o}{\PYGZlt{}\PYGZgt{}}\PYG{p}{());}\PYG{+w}{ }\PYG{c+c1}{// Registramos de forma segura}
+\PYG{+w}{				}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{				}\PYG{n}{peerRegistrado}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{this}\PYG{p}{;}
+\PYG{+w}{			}\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{else}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{				}\PYG{c+c1}{// Registramos el nuevo donante en la mejor réplica encontrada}
+\PYG{+w}{				}\PYG{c+c1}{// Como este método ya no bloquea globalmente, evitamos el deadlock}
+\PYG{+w}{				}\PYG{n}{peerRegistrado}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{mejorPeer}\PYG{p}{.}\PYG{n+na}{registrar}\PYG{p}{(}\PYG{n}{donante}\PYG{p}{);}
+\PYG{+w}{			}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{		}\PYG{c+c1}{// El cliente obtiene una referencia al stub del servidor donde se acaba }
+\PYG{+w}{		}\PYG{c+c1}{// de registrar el donante, y así puede invocar a sus métodos.}
+\PYG{+w}{		}\PYG{k}{return}\PYG{+w}{ }\PYG{n}{peerRegistrado}\PYG{p}{;}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{	}\PYG{c+cm}{/**}
+\PYG{c+cm}{     * @brief Permite dar de baja a un donante.}
+\PYG{c+cm}{     * @pre El donante debe estar registrado previamente.}
+\PYG{c+cm}{     * @param donante El nombre del donante a dar de baja.}
+\PYG{c+cm}{     * @throws RemoteException Si ocurre un error de comunicación remota.}
+\PYG{c+cm}{     */}
+\PYG{+w}{	}\PYG{n+nd}{@Override}
+\PYG{+w}{    }\PYG{k+kd}{public}\PYG{+w}{ }\PYG{k+kd}{synchronized}\PYG{+w}{ }\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{darDeBaja}\PYG{p}{(}\PYG{n}{String}\PYG{+w}{ }\PYG{n}{donante}\PYG{p}{)}\PYG{+w}{ }\PYG{k+kd}{throws}\PYG{+w}{ }\PYG{n}{RemoteException}\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{c+c1}{// Comprobamos que el donante esté registrado en esta réplica}
+\PYG{+w}{		}\PYG{k}{if}\PYG{p}{(}\PYG{k}{this}\PYG{p}{.}\PYG{n+na}{estaRegistrado}\PYG{p}{(}\PYG{n}{donante}\PYG{p}{))\PYGZob{}}
+\PYG{+w}{			}\PYG{n}{donantes}\PYG{p}{.}\PYG{n+na}{remove}\PYG{p}{(}\PYG{n}{donante}\PYG{p}{);}
+\PYG{+w}{			}\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}[INFO.] El donante \PYGZdq{}}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{donante}
+\PYG{+w}{				}\PYG{o}{+}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{} ha sido dado de baja en \PYGZdq{}}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{k}{this}\PYG{p}{.}\PYG{n+na}{getNombre}\PYG{p}{()}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}.\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{else}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}[ERROR.] El donante \PYGZdq{}}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{donante}
+\PYG{+w}{				}\PYG{o}{+}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{} ha intentado darse de baja en \PYGZdq{}}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{k}{this}\PYG{p}{.}\PYG{n+na}{getNombre}\PYG{p}{()}
+\PYG{+w}{				}\PYG{o}{+}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{} pero no está registrado en esta réplica.\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{	}\PYG{c+cm}{/**}
+\PYG{c+cm}{	 * @brief Permite a un donante realizar una donación. }
+\PYG{c+cm}{	 * @pre El donante debe estar registrado previamente en ESTA réplica.}
+\PYG{c+cm}{	 * @param donante El nombre del donante que realiza la donación.}
+\PYG{c+cm}{	 * @param cantidad La cantidad a donar.}
+\PYG{c+cm}{	 * @throws RemoteException Si ocurre un error de comunicación remota.}
+\PYG{c+cm}{	 */}
+\PYG{+w}{	}\PYG{n+nd}{@Override}
+\PYG{+w}{    }\PYG{k+kd}{public}\PYG{+w}{ }\PYG{k+kd}{synchronized}\PYG{+w}{ }\PYG{k+kt}{void}\PYG{+w}{ }\PYG{n+nf}{donar}\PYG{p}{(}\PYG{n}{String}\PYG{+w}{ }\PYG{n}{donante}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{cantidad}\PYG{p}{)}\PYG{+w}{ }\PYG{k+kd}{throws}\PYG{+w}{ }\PYG{n}{RemoteException}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{c+c1}{// Comprobamos que el donante esté registrado en esta réplica}
+\PYG{+w}{		}\PYG{k}{if}\PYG{p}{(}\PYG{k}{this}\PYG{p}{.}\PYG{n+na}{estaRegistrado}\PYG{p}{(}\PYG{n}{donante}\PYG{p}{))\PYGZob{}}
+\PYG{+w}{			}\PYG{n}{totalDonacionesLocal}\PYG{+w}{ }\PYG{o}{+=}\PYG{+w}{ }\PYG{n}{cantidad}\PYG{p}{;}\PYG{+w}{ }
+\PYG{+w}{			}\PYG{n}{donantes}\PYG{p}{.}\PYG{n+na}{get}\PYG{p}{(}\PYG{n}{donante}\PYG{p}{).}\PYG{n+na}{add}\PYG{p}{(}\PYG{n}{cantidad}\PYG{p}{);}\PYG{+w}{ }\PYG{c+c1}{// Añadimos la cantidad donada al historial del donante}
+\PYG{+w}{			}\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}[INFO.] El donante \PYGZdq{}}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{donante}\PYG{+w}{ }
+\PYG{+w}{				}\PYG{o}{+}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{} ha realizado una donación de \PYGZdq{}}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{cantidad}\PYG{+w}{ }
+\PYG{+w}{				}\PYG{o}{+}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{}€\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{else}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}[ERROR.] El donante \PYGZdq{}}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{donante}\PYG{+w}{ }
+\PYG{+w}{				}\PYG{o}{+}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{} ha intentado realizar una donación\PYGZdq{}}
+\PYG{+w}{			 	}\PYG{o}{+}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{} en \PYGZdq{}}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{k}{this}\PYG{p}{.}\PYG{n+na}{getNombre}\PYG{p}{()}\PYG{+w}{ }
+\PYG{+w}{				}\PYG{o}{+}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{} pero no está registrado en esta réplica.\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}
+
+
+\PYG{+w}{	}\PYG{c+c1}{//=============================================================================}
+\PYG{+w}{	}\PYG{c+c1}{// 					OPERACIONES DE CONSULTA GLOBAL}
+\PYG{+w}{	}\PYG{c+c1}{//=============================================================================}
+
+\PYG{+w}{	}\PYG{c+cm}{/**}
+\PYG{c+cm}{	 * @brief Permite al cliente consultar el total de donaciones realizadas por todos los donantes en todo el sistema.}
+\PYG{c+cm}{	 * @pre El donante debe estar registrado previamente en ESTA réplica y haber realizado al menos una donación.}
+\PYG{c+cm}{	 * @param donante El nombre del donante a consultar.}
+\PYG{c+cm}{	 * @return int. El total de donaciones realizadas todo el sistema (en todas las réplicas).}
+\PYG{c+cm}{	 * @throws RemoteException Si ocurre un error de comunicación remota.}
+\PYG{c+cm}{	 */}
+\PYG{+w}{	}\PYG{n+nd}{@Override}
+\PYG{+w}{    }\PYG{k+kd}{public}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n+nf}{totalDonaciones}\PYG{p}{(}\PYG{n}{String}\PYG{+w}{ }\PYG{n}{donante}\PYG{p}{)}\PYG{+w}{ }\PYG{k+kd}{throws}\PYG{+w}{ }\PYG{n}{RemoteException}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{totalDonacionesGlobal}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{		}\PYG{k+kt}{boolean}\PYG{+w}{ }\PYG{n}{tienePermiso}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k+kc}{false}\PYG{p}{;}
+
+\PYG{+w}{		}\PYG{c+c1}{//1. Hacemos de forma sincronizada sólamente la comprobación local}
+\PYG{+w}{		}\PYG{k+kd}{synchronized}\PYG{p}{(}\PYG{k}{this}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}\PYG{k}{if}\PYG{p}{(}\PYG{k}{this}\PYG{p}{.}\PYG{n+na}{estaRegistrado}\PYG{p}{(}\PYG{n}{donante}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{\PYGZam{}\PYGZam{}}\PYG{+w}{ }\PYG{o}{!}\PYG{n}{donantes}\PYG{p}{.}\PYG{n+na}{get}\PYG{p}{(}\PYG{n}{donante}\PYG{p}{).}\PYG{n+na}{isEmpty}\PYG{p}{())}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{				}\PYG{n}{tienePermiso}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k+kc}{true}\PYG{p}{;}
+\PYG{+w}{			}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{		}
+\PYG{+w}{		}\PYG{c+c1}{// 2. Si el donante cumple las precondiciones para consultar...}
+\PYG{+w}{		}\PYG{k}{if}\PYG{p}{(}\PYG{n}{tienePermiso}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}\PYG{c+c1}{// 3. Sumamos las donaciones realizadas en esta réplica.}
+\PYG{+w}{			}\PYG{n}{totalDonacionesGlobal}\PYG{+w}{ }\PYG{o}{+=}\PYG{+w}{ }\PYG{k}{this}\PYG{p}{.}\PYG{n+na}{getTotalDonacionesLocal}\PYG{p}{();}
+
+\PYG{+w}{			}\PYG{c+c1}{// 4. Sumamos las donaciones realizadas en las otras réplicas.}
+\PYG{+w}{			}\PYG{k}{for}\PYG{p}{(}\PYG{n}{iDonacion}\PYG{+w}{ }\PYG{n}{peer}\PYG{+w}{ }\PYG{p}{:}\PYG{+w}{ }\PYG{n}{peers}\PYG{p}{.}\PYG{n+na}{values}\PYG{p}{())}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{				}\PYG{n}{totalDonacionesGlobal}\PYG{+w}{ }\PYG{o}{+=}\PYG{+w}{ }\PYG{n}{peer}\PYG{p}{.}\PYG{n+na}{getTotalDonacionesLocal}\PYG{p}{();}
+\PYG{+w}{			}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{else}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}\PYG{c+c1}{// Si el donante no cumple las precondiciones, mostramos un mensaje de }
+\PYG{+w}{			}\PYG{c+c1}{// error indicando el motivo y de forma síncrona.}
+\PYG{+w}{			}\PYG{k+kd}{synchronized}\PYG{p}{(}\PYG{k}{this}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{				}\PYG{k}{if}\PYG{p}{(}\PYG{o}{!}\PYG{k}{this}\PYG{p}{.}\PYG{n+na}{estaRegistrado}\PYG{p}{(}\PYG{n}{donante}\PYG{p}{))}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{					}\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}[ERROR.] El donante \PYGZdq{}}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{donante}\PYG{+w}{ }
+\PYG{+w}{						}\PYG{o}{+}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{} no está registrado en la réplica:\PYGZdq{}}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{k}{this}\PYG{p}{.}\PYG{n+na}{getNombre}\PYG{p}{());}
+\PYG{+w}{				}\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{else}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{					}\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}[ERROR.] El donante \PYGZdq{}}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{donante}\PYG{+w}{ }
+\PYG{+w}{						}\PYG{o}{+}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{} no ha realizado ninguna donación.\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{				}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{			}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{			}\PYG{n}{totalDonacionesGlobal}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{;}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{		}\PYG{k}{return}\PYG{+w}{ }\PYG{n}{totalDonacionesGlobal}\PYG{p}{;}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{	}\PYG{c+cm}{/**}
+\PYG{c+cm}{	 * @brief Permite al cliente listar todos los donantes registrados en el sistema.}
+\PYG{c+cm}{	 * @pre El donante debe estar registrado previamente en ESTA réplica y haber realizado al menos una donación.}
+\PYG{c+cm}{	 * @param donante El nombre del donante que realiza la consulta.}
+\PYG{c+cm}{	 * @return List\PYGZlt{}String\PYGZgt{}. Una lista con los nombres de todos los donantes registrados.}
+\PYG{c+cm}{	 * @throws RemoteException Si ocurre un error de comunicación remota.}
+\PYG{c+cm}{	 */}
+\PYG{+w}{	}\PYG{n+nd}{@Override}
+\PYG{+w}{    }\PYG{k+kd}{public}\PYG{+w}{ }\PYG{n}{List}\PYG{o}{\PYGZlt{}}\PYG{n}{String}\PYG{o}{\PYGZgt{}}\PYG{+w}{ }\PYG{n+nf}{listarDonantes}\PYG{p}{(}\PYG{n}{String}\PYG{+w}{ }\PYG{n}{donante}\PYG{p}{)}\PYG{+w}{ }\PYG{k+kd}{throws}\PYG{+w}{ }\PYG{n}{RemoteException}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}
+\PYG{+w}{		}\PYG{n}{List}\PYG{o}{\PYGZlt{}}\PYG{n}{String}\PYG{o}{\PYGZgt{}}\PYG{+w}{ }\PYG{n}{donantesRegistradosGlobal}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k+kc}{null}\PYG{p}{;}
+\PYG{+w}{		}\PYG{k+kt}{boolean}\PYG{+w}{ }\PYG{n}{tienePermiso}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k+kc}{false}\PYG{p}{;}
+
+\PYG{+w}{		}\PYG{c+c1}{// 1. Hacemos de forma sincronizada sólamente la comprobación local}
+\PYG{+w}{		}\PYG{k+kd}{synchronized}\PYG{p}{(}\PYG{k}{this}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}\PYG{k}{if}\PYG{p}{(}\PYG{k}{this}\PYG{p}{.}\PYG{n+na}{estaRegistrado}\PYG{p}{(}\PYG{n}{donante}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{\PYGZam{}\PYGZam{}}\PYG{+w}{ }\PYG{o}{!}\PYG{n}{donantes}\PYG{p}{.}\PYG{n+na}{get}\PYG{p}{(}\PYG{n}{donante}\PYG{p}{).}\PYG{n+na}{isEmpty}\PYG{p}{())}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{				}\PYG{n}{tienePermiso}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k+kc}{true}\PYG{p}{;}
+\PYG{+w}{			}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{		}\PYG{c+c1}{// 2. Si el donante cumple las precondiciones para consultar...}
+\PYG{+w}{		}\PYG{k}{if}\PYG{p}{(}\PYG{n}{tienePermiso}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}\PYG{c+c1}{// 3. Obtenemos los donantes registrados en esta réplica.}
+\PYG{+w}{			}\PYG{n}{donantesRegistradosGlobal}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{this}\PYG{p}{.}\PYG{n+na}{listarDonantesLocal}\PYG{p}{();}
+
+\PYG{+w}{			}\PYG{c+c1}{// 4. Obtenemos los donantes registrados en las otras réplicas.}
+\PYG{+w}{			}\PYG{k}{for}\PYG{p}{(}\PYG{n}{iDonacion}\PYG{+w}{ }\PYG{n}{peer}\PYG{+w}{ }\PYG{p}{:}\PYG{+w}{ }\PYG{n}{peers}\PYG{p}{.}\PYG{n+na}{values}\PYG{p}{())}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{				}\PYG{n}{donantesRegistradosGlobal}\PYG{p}{.}\PYG{n+na}{addAll}\PYG{p}{(}\PYG{n}{peer}\PYG{p}{.}\PYG{n+na}{listarDonantesLocal}\PYG{p}{());}
+\PYG{+w}{			}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{else}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{+w}{ }
+\PYG{+w}{			}\PYG{c+c1}{// Si el donante no cumple las precondiciones, mostramos un mensaje de }
+\PYG{+w}{			}\PYG{c+c1}{// error indicando el motivo y de forma síncrona.}
+\PYG{+w}{			}\PYG{k+kd}{synchronized}\PYG{p}{(}\PYG{k}{this}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{				}\PYG{k}{if}\PYG{p}{(}\PYG{o}{!}\PYG{k}{this}\PYG{p}{.}\PYG{n+na}{estaRegistrado}\PYG{p}{(}\PYG{n}{donante}\PYG{p}{))}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{					}\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}[ERROR.] El donante \PYGZdq{}}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{donante}\PYG{+w}{ }
+\PYG{+w}{						}\PYG{o}{+}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{} no está registrado en la réplica:\PYGZdq{}}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{k}{this}\PYG{p}{.}\PYG{n+na}{getNombre}\PYG{p}{());}
+\PYG{+w}{				}\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{else}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{					}\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}[ERROR.] El donante \PYGZdq{}}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{donante}\PYG{+w}{ }
+\PYG{+w}{						}\PYG{o}{+}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{} no ha realizado ninguna donación.\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{				}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{			}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{		}
+\PYG{+w}{		}\PYG{k}{return}\PYG{+w}{ }\PYG{n}{donantesRegistradosGlobal}\PYG{p}{;}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{	}\PYG{c+cm}{/**}
+\PYG{c+cm}{     * @brief Devuelve el total de donaciones realizadas por un donante específico en todo el sistema,}
+\PYG{c+cm}{     * sumando las donaciones realizadas.}
+\PYG{c+cm}{     * @pre El donante debe estar registrado previamente.}
+\PYG{c+cm}{     * @param donante El nombre del donante }
+\PYG{c+cm}{     * @return int. El total de donaciones realizadas por el donante en todo el sistema.}
+\PYG{c+cm}{     * @throws RemoteException}
+\PYG{c+cm}{     */}
+\PYG{+w}{	}\PYG{n+nd}{@Override}
+\PYG{+w}{    }\PYG{k+kd}{public}\PYG{+w}{ }\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n+nf}{getTotalDonacionesDonante}\PYG{p}{(}\PYG{n}{String}\PYG{+w}{ }\PYG{n}{donante}\PYG{p}{)}\PYG{+w}{ }\PYG{k+kd}{throws}\PYG{+w}{ }\PYG{n}{RemoteException}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{total}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{		}\PYG{k+kt}{boolean}\PYG{+w}{ }\PYG{n}{encontrado}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k+kc}{false}\PYG{p}{;}
+
+\PYG{+w}{		}\PYG{c+c1}{// 1. Comprobamos de forma segura si el donante está en esta réplica}
+\PYG{+w}{		}\PYG{k+kd}{synchronized}\PYG{p}{(}\PYG{k}{this}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}\PYG{n}{encontrado}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{this}\PYG{p}{.}\PYG{n+na}{estaRegistrado}\PYG{p}{(}\PYG{n}{donante}\PYG{p}{);}
+\PYG{+w}{			}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{encontrado}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{+w}{ }\PYG{c+c1}{// Está registrado en esta réplica.}
+\PYG{+w}{				}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{Integer}\PYG{+w}{ }\PYG{n}{cantidad}\PYG{+w}{ }\PYG{p}{:}\PYG{+w}{ }\PYG{n}{donantes}\PYG{p}{.}\PYG{n+na}{get}\PYG{p}{(}\PYG{n}{donante}\PYG{p}{))}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{					}\PYG{n}{total}\PYG{+w}{ }\PYG{o}{+=}\PYG{+w}{ }\PYG{n}{cantidad}\PYG{p}{;}
+\PYG{+w}{				}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{			}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{		}\PYG{k}{if}\PYG{p}{(}\PYG{o}{!}\PYG{n}{encontrado}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}\PYG{c+c1}{// 2. Si no está en esta réplica local, buscamos en qué réplica (peer) está registrado}
+\PYG{+w}{			}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{iDonacion}\PYG{+w}{ }\PYG{n}{peer}\PYG{+w}{ }\PYG{p}{:}\PYG{+w}{ }\PYG{n}{peers}\PYG{p}{.}\PYG{n+na}{values}\PYG{p}{())}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{				}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{peer}\PYG{p}{.}\PYG{n+na}{estaRegistrado}\PYG{p}{(}\PYG{n}{donante}\PYG{p}{))}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{					}\PYG{c+c1}{// Si el donante está registrado en esta réplica peer, }
+\PYG{+w}{					}\PYG{c+c1}{// consultamos su total de donaciones en esa réplica peer}
+\PYG{+w}{					}\PYG{n}{total}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{peer}\PYG{p}{.}\PYG{n+na}{getTotalDonacionesDonante}\PYG{p}{(}\PYG{n}{donante}\PYG{p}{);}
+\PYG{+w}{					}\PYG{n}{encontrado}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k+kc}{true}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{				}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{			}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}\PYG{+w}{ }
+
+\PYG{+w}{		}\PYG{c+c1}{// Si llegados este punto no lo ha encontrado, es que no está registrado}
+\PYG{+w}{		}\PYG{k}{if}\PYG{p}{(}\PYG{o}{!}\PYG{n}{encontrado}\PYG{p}{)}
+\PYG{+w}{			}\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}[ERROR.] El donante \PYGZdq{}}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{donante}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{} no está registrado en el sistema.\PYGZdq{}}\PYG{p}{);}
+
+\PYG{+w}{		}\PYG{k}{return}\PYG{+w}{ }\PYG{n}{total}\PYG{p}{;}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{	}\PYG{c+cm}{/**}
+\PYG{c+cm}{     * @brief Devuelve el nombre del donante que ha donado la mayor cantidad de dinero }
+\PYG{c+cm}{     * desde que se registró en el sistema. Si hay varios donantes con la misma cantidad, }
+\PYG{c+cm}{     * se devuelve el que primero se encuentre en la lista de donantes registrados.}
+\PYG{c+cm}{     * @return String. El nombre del donante.}
+\PYG{c+cm}{     * @throws RemoteException Si ocurre un error de comunicación remota.}
+\PYG{c+cm}{     */}
+\PYG{+w}{	}\PYG{n+nd}{@Override}
+\PYG{+w}{	}\PYG{k+kd}{public}\PYG{+w}{ }\PYG{n}{String}\PYG{+w}{ }\PYG{n+nf}{mayorDonanteGlobal}\PYG{p}{()}\PYG{+w}{ }\PYG{k+kd}{throws}\PYG{+w}{ }\PYG{n}{RemoteException}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{c+c1}{// 1. Obtenemos TODOS los donantes del sistema }
+\PYG{+w}{		}\PYG{c+c1}{// Primero obtenemos los donantes registrados en esta réplica.}
+\PYG{+w}{		}\PYG{n}{List}\PYG{o}{\PYGZlt{}}\PYG{n}{String}\PYG{o}{\PYGZgt{}}\PYG{+w}{ }\PYG{n}{todosLosDonantes}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{this}\PYG{p}{.}\PYG{n+na}{listarDonantesLocal}\PYG{p}{();}
+\PYG{+w}{		}\PYG{k}{for}\PYG{p}{(}\PYG{n}{iDonacion}\PYG{+w}{ }\PYG{n}{peer}\PYG{+w}{ }\PYG{p}{:}\PYG{+w}{ }\PYG{n}{peers}\PYG{p}{.}\PYG{n+na}{values}\PYG{p}{())}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}\PYG{c+c1}{// Ahora obtenemos los donantes registrados en las otras réplicas.}
+\PYG{+w}{			}\PYG{n}{todosLosDonantes}\PYG{p}{.}\PYG{n+na}{addAll}\PYG{p}{(}\PYG{n}{peer}\PYG{p}{.}\PYG{n+na}{listarDonantesLocal}\PYG{p}{());}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{		}\PYG{n}{String}\PYG{+w}{ }\PYG{n}{mayorDonante}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k+kc}{null}\PYG{p}{;}
+\PYG{+w}{		}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{maxCantidad}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{;}
+
+\PYG{+w}{		}\PYG{c+c1}{// 2. Iteramos para encontrar el donante }
+\PYG{+w}{		}\PYG{k}{for}\PYG{p}{(}\PYG{n}{String}\PYG{+w}{ }\PYG{n}{d}\PYG{+w}{ }\PYG{p}{:}\PYG{+w}{ }\PYG{n}{todosLosDonantes}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}\PYG{k+kt}{int}\PYG{+w}{ }\PYG{n}{totalDeEsteDonante}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{this}\PYG{p}{.}\PYG{n+na}{getTotalDonacionesDonante}\PYG{p}{(}\PYG{n}{d}\PYG{p}{);}\PYG{+w}{ }\PYG{c+c1}{// Consulta su total }
+\PYG{+w}{			}
+\PYG{+w}{			}\PYG{c+c1}{// Si la cantidad es estrictamente MAYOR, se actualiza el máximo.}
+\PYG{+w}{			}\PYG{c+c1}{// Si es IGUAL, no se actualiza, por lo que Conservamos el que aparece antes en la lista.}
+\PYG{+w}{			}\PYG{k}{if}\PYG{p}{(}\PYG{n}{totalDeEsteDonante}\PYG{+w}{ }\PYG{o}{\PYGZgt{}}\PYG{+w}{ }\PYG{n}{maxCantidad}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{				}\PYG{n}{maxCantidad}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{totalDeEsteDonante}\PYG{p}{;}
+\PYG{+w}{				}\PYG{n}{mayorDonante}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{d}\PYG{p}{;}
+\PYG{+w}{			}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{		}
+\PYG{+w}{		}\PYG{k}{return}\PYG{+w}{ }\PYG{n}{mayorDonante}\PYG{p}{;}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{	}\PYG{c+cm}{/**}
+\PYG{c+cm}{     * @brief Permite a un donante consultar su historial de donaciones.}
+\PYG{c+cm}{     * @pre El donante debe estar registrado previamente y haber realizado al menos una donación.}
+\PYG{c+cm}{     * @param donante El nombre del donante que quiere consultar su historial.}
+\PYG{c+cm}{     * @return List\PYGZlt{}Integer\PYGZgt{}. Lista con las cantidades donadas.}
+\PYG{c+cm}{     * @throws RemoteException Si ocurre un error de comunicación remota.}
+\PYG{c+cm}{     */}
+\PYG{+w}{	}\PYG{n+nd}{@Override}
+\PYG{+w}{    }\PYG{k+kd}{public}\PYG{+w}{ }\PYG{n}{List}\PYG{o}{\PYGZlt{}}\PYG{n}{Integer}\PYG{o}{\PYGZgt{}}\PYG{+w}{ }\PYG{n+nf}{obtenerHistorialDonaciones}\PYG{p}{(}\PYG{n}{String}\PYG{+w}{ }\PYG{n}{donante}\PYG{p}{)}\PYG{+w}{ }\PYG{k+kd}{throws}\PYG{+w}{ }\PYG{n}{RemoteException}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{n}{List}\PYG{o}{\PYGZlt{}}\PYG{n}{Integer}\PYG{o}{\PYGZgt{}}\PYG{+w}{ }\PYG{n}{historial}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k+kc}{null}\PYG{p}{;}
+\PYG{+w}{		}\PYG{k+kt}{boolean}\PYG{+w}{ }\PYG{n}{encontrado}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k+kc}{false}\PYG{p}{;}
+
+\PYG{+w}{		}\PYG{c+c1}{// 1. Comprobamos de forma segura si el donante está en esta réplica}
+\PYG{+w}{		}\PYG{k+kd}{synchronized}\PYG{p}{(}\PYG{k}{this}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}\PYG{n}{encontrado}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{this}\PYG{p}{.}\PYG{n+na}{estaRegistrado}\PYG{p}{(}\PYG{n}{donante}\PYG{p}{);}
+\PYG{+w}{			}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{encontrado}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{				}\PYG{c+c1}{// Comprobamos la precondición de que haya realizado al menos una donación}
+\PYG{+w}{				}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{o}{!}\PYG{n}{donantes}\PYG{p}{.}\PYG{n+na}{get}\PYG{p}{(}\PYG{n}{donante}\PYG{p}{).}\PYG{n+na}{isEmpty}\PYG{p}{())}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{					}\PYG{c+c1}{// Devolvemos una copia por seguridad}
+\PYG{+w}{					}\PYG{n}{historial}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{new}\PYG{+w}{ }\PYG{n}{ArrayList}\PYG{o}{\PYGZlt{}\PYGZgt{}}\PYG{p}{(}\PYG{n}{donantes}\PYG{p}{.}\PYG{n+na}{get}\PYG{p}{(}\PYG{n}{donante}\PYG{p}{));}\PYG{+w}{ }
+\PYG{+w}{				}\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{else}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{					}\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}[ERROR.] El donante \PYGZdq{}}\PYG{+w}{ }
+\PYG{+w}{					}\PYG{o}{+}\PYG{+w}{ }\PYG{n}{donante}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{} no ha realizado ninguna donación.\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{				}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{			}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{		}\PYG{k}{if}\PYG{p}{(}\PYG{o}{!}\PYG{n}{encontrado}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}\PYG{c+c1}{// 2. Si no está en esta réplica local, buscamos en qué réplica (peer) }
+\PYG{+w}{			}\PYG{c+c1}{// está registrado}
+\PYG{+w}{			}\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{iDonacion}\PYG{+w}{ }\PYG{n}{peer}\PYG{+w}{ }\PYG{p}{:}\PYG{+w}{ }\PYG{n}{peers}\PYG{p}{.}\PYG{n+na}{values}\PYG{p}{())}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{				}\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{peer}\PYG{p}{.}\PYG{n+na}{estaRegistrado}\PYG{p}{(}\PYG{n}{donante}\PYG{p}{))}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{					}\PYG{c+c1}{// Si lo encontramos en un peer, le pedimos la información }
+\PYG{+w}{					}\PYG{c+c1}{// y cortamos la búsqueda}
+\PYG{+w}{					}\PYG{n}{historial}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{peer}\PYG{p}{.}\PYG{n+na}{obtenerHistorialDonaciones}\PYG{p}{(}\PYG{n}{donante}\PYG{p}{);}
+\PYG{+w}{					}\PYG{n}{encontrado}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k+kc}{true}\PYG{p}{;}
+\PYG{+w}{					}\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{				}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{			}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}\PYG{+w}{ }
+
+\PYG{+w}{		}\PYG{c+c1}{// Si llegados este punto no lo ha encontrado en ninguna réplica}
+\PYG{+w}{		}\PYG{k}{if}\PYG{p}{(}\PYG{o}{!}\PYG{n}{encontrado}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}\PYG{n}{System}\PYG{p}{.}\PYG{n+na}{out}\PYG{p}{.}\PYG{n+na}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}[ERROR.] El donante \PYGZdq{}}\PYG{+w}{ }
+\PYG{+w}{			}\PYG{o}{+}\PYG{+w}{ }\PYG{n}{donante}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{l+s}{\PYGZdq{} no está registrado en el sistema.\PYGZdq{}}\PYG{p}{);}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{		}\PYG{k}{return}\PYG{+w}{ }\PYG{n}{historial}\PYG{p}{;}
+\PYG{+w}{	}\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{}}
+\end{Verbatim}

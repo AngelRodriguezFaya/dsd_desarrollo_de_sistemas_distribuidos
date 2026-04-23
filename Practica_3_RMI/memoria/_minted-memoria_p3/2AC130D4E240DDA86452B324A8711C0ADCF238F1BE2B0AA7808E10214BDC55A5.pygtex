@@ -1,0 +1,101 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{c+ch}{\PYGZsh{}!/bin/bash}
+
+\PYG{c+c1}{\PYGZsh{} Configuración de variables}
+\PYG{n+nv}{KEYSTORE}\PYG{o}{=}server\PYGZhy{}keystore.p12
+\PYG{n+nv}{TRUSTSTORE}\PYG{o}{=}client\PYGZhy{}truststore.p12
+\PYG{n+nv}{STOREPASS}\PYG{o}{=}changeit
+\PYG{n+nv}{RMI\PYGZus{}PORT}\PYG{o}{=}\PYG{l+m}{2099}
+
+\PYG{n+nb}{echo}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}=================================================\PYGZdq{}}
+\PYG{n+nb}{echo}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}   Iniciando Sistema de Donaciones (RMI SSL)     \PYGZdq{}}
+\PYG{n+nb}{echo}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}=================================================\PYGZdq{}}
+
+\PYG{c+c1}{\PYGZsh{} 1. Generación de certificados SSL (Si no existen)}
+\PYG{k}{if}\PYG{+w}{ }\PYG{o}{[}\PYG{+w}{ }!\PYG{+w}{ }\PYGZhy{}f\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}}\PYG{n+nv}{\PYGZdl{}KEYSTORE}\PYG{l+s+s2}{\PYGZdq{}}\PYG{+w}{ }\PYG{o}{]}\PYG{p}{;}\PYG{+w}{ }\PYG{k}{then}
+\PYG{+w}{    }\PYG{n+nb}{echo}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}[1/5] Generando keystore TLS para el servidor...\PYGZdq{}}
+\PYG{+w}{    }keytool\PYG{+w}{ }\PYGZhy{}genkeypair\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{        }\PYGZhy{}alias\PYG{+w}{ }rmi\PYGZhy{}server\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{        }\PYGZhy{}keyalg\PYG{+w}{ }RSA\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{        }\PYGZhy{}keysize\PYG{+w}{ }\PYG{l+m}{2048}\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{        }\PYGZhy{}validity\PYG{+w}{ }\PYG{l+m}{365}\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{        }\PYGZhy{}dname\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}CN=localhost, OU=DSD, O=UGR, L=Granada, ST=Granada, C=ES\PYGZdq{}}\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{        }\PYGZhy{}storetype\PYG{+w}{ }PKCS12\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{        }\PYGZhy{}keystore\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}}\PYG{n+nv}{\PYGZdl{}KEYSTORE}\PYG{l+s+s2}{\PYGZdq{}}\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{        }\PYGZhy{}storepass\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}}\PYG{n+nv}{\PYGZdl{}STOREPASS}\PYG{l+s+s2}{\PYGZdq{}}\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{        }\PYGZhy{}keypass\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}}\PYG{n+nv}{\PYGZdl{}STOREPASS}\PYG{l+s+s2}{\PYGZdq{}}\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{        }\PYGZhy{}noprompt
+\PYG{k}{fi}
+
+\PYG{k}{if}\PYG{+w}{ }\PYG{o}{[}\PYG{+w}{ }!\PYG{+w}{ }\PYGZhy{}f\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}}\PYG{n+nv}{\PYGZdl{}TRUSTSTORE}\PYG{l+s+s2}{\PYGZdq{}}\PYG{+w}{ }\PYG{o}{]}\PYG{p}{;}\PYG{+w}{ }\PYG{k}{then}
+\PYG{+w}{    }\PYG{n+nb}{echo}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}[2/5] Generando truststore TLS para el cliente...\PYGZdq{}}
+\PYG{+w}{    }keytool\PYG{+w}{ }\PYGZhy{}exportcert\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{        }\PYGZhy{}alias\PYG{+w}{ }rmi\PYGZhy{}server\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{        }\PYGZhy{}keystore\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}}\PYG{n+nv}{\PYGZdl{}KEYSTORE}\PYG{l+s+s2}{\PYGZdq{}}\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{        }\PYGZhy{}storepass\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}}\PYG{n+nv}{\PYGZdl{}STOREPASS}\PYG{l+s+s2}{\PYGZdq{}}\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{        }\PYGZhy{}file\PYG{+w}{ }rmi\PYGZhy{}server.crt\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{        }\PYGZhy{}rfc
+\PYG{+w}{    }keytool\PYG{+w}{ }\PYGZhy{}importcert\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{        }\PYGZhy{}alias\PYG{+w}{ }rmi\PYGZhy{}server\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{        }\PYGZhy{}file\PYG{+w}{ }rmi\PYGZhy{}server.crt\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{        }\PYGZhy{}keystore\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}}\PYG{n+nv}{\PYGZdl{}TRUSTSTORE}\PYG{l+s+s2}{\PYGZdq{}}\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{        }\PYGZhy{}storepass\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}}\PYG{n+nv}{\PYGZdl{}STOREPASS}\PYG{l+s+s2}{\PYGZdq{}}\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{        }\PYGZhy{}noprompt
+\PYG{+w}{    }rm\PYG{+w}{ }rmi\PYGZhy{}server.crt
+\PYG{k}{fi}
+
+\PYG{c+c1}{\PYGZsh{} 2. Limpieza de procesos (Matar cualquier servidor previo en el puerto 2099)}
+\PYG{n+nb}{echo}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}[3/5] Limpiando procesos previos en el puerto }\PYG{n+nv}{\PYGZdl{}RMI\PYGZus{}PORT}\PYG{l+s+s2}{...\PYGZdq{}}
+fuser\PYG{+w}{ }\PYGZhy{}k\PYG{+w}{ }\PYG{n+nv}{\PYGZdl{}RMI\PYGZus{}PORT}/tcp\PYG{+w}{ }\PYGZgt{}\PYG{+w}{ }/dev/null\PYG{+w}{ }\PYG{l+m}{2}\PYGZgt{}\PYG{p}{\PYGZam{}}\PYG{l+m}{1}
+
+\PYG{c+c1}{\PYGZsh{} 3. Compilación de todos los archivos}
+\PYG{n+nb}{echo}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}[4/5] Compilando los archivos Java...\PYGZdq{}}
+javac\PYG{+w}{ }*.java
+
+\PYG{k}{if}\PYG{+w}{ }\PYG{o}{[}\PYG{+w}{ }\PYG{n+nv}{\PYGZdl{}?}\PYG{+w}{ }\PYGZhy{}ne\PYG{+w}{ }\PYG{l+m}{0}\PYG{+w}{ }\PYG{o}{]}\PYG{p}{;}\PYG{+w}{ }\PYG{k}{then}
+\PYG{+w}{    }\PYG{n+nb}{echo}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}Error en la compilación. Abortando ...\PYGZdq{}}
+\PYG{+w}{    }\PYG{n+nb}{exit}\PYG{+w}{ }\PYG{l+m}{1}
+\PYG{k}{fi}
+
+\PYG{c+c1}{\PYGZsh{} 4. Lanzamiento de las Réplicas}
+\PYG{n+nb}{echo}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}[5/5] Levantando las réplicas del servidor...\PYGZdq{}}
+
+\PYG{c+c1}{\PYGZsh{} Lanzar Réplica 1 (Esta creará el Registry y se llamará Donacion\PYGZus{}1)}
+java\PYG{+w}{ }\PYGZhy{}cp\PYG{+w}{ }.\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{    }\PYGZhy{}Djava.rmi.server.hostname\PYG{o}{=}localhost\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{    }\PYGZhy{}Djavax.net.ssl.keyStore\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}}\PYG{n+nv}{\PYGZdl{}KEYSTORE}\PYG{l+s+s2}{\PYGZdq{}}\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{    }\PYGZhy{}Djavax.net.ssl.keyStorePassword\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}}\PYG{n+nv}{\PYGZdl{}STOREPASS}\PYG{l+s+s2}{\PYGZdq{}}\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{    }\PYGZhy{}Djavax.net.ssl.keyStoreType\PYG{o}{=}PKCS12\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{    }\PYGZhy{}Djavax.net.ssl.trustStore\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}}\PYG{n+nv}{\PYGZdl{}TRUSTSTORE}\PYG{l+s+s2}{\PYGZdq{}}\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{    }\PYGZhy{}Djavax.net.ssl.trustStorePassword\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}}\PYG{n+nv}{\PYGZdl{}STOREPASS}\PYG{l+s+s2}{\PYGZdq{}}\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{    }\PYGZhy{}Djavax.net.ssl.trustStoreType\PYG{o}{=}PKCS12\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{    }Servidor\PYG{+w}{ }\PYG{p}{\PYGZam{}}
+
+\PYG{c+c1}{\PYGZsh{} Le damos 2 segundos para que arranque bien antes de lanzar la siguiente}
+sleep\PYG{+w}{ }\PYG{l+m}{2}\PYG{+w}{ }
+
+\PYG{c+c1}{\PYGZsh{} Lanzar Réplica 2 (Esta detectará a la 1 y se llamará Donacion\PYGZus{}2)}
+java\PYG{+w}{ }\PYGZhy{}cp\PYG{+w}{ }.\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{    }\PYGZhy{}Djava.rmi.server.hostname\PYG{o}{=}localhost\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{    }\PYGZhy{}Djavax.net.ssl.keyStore\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}}\PYG{n+nv}{\PYGZdl{}KEYSTORE}\PYG{l+s+s2}{\PYGZdq{}}\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{    }\PYGZhy{}Djavax.net.ssl.keyStorePassword\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}}\PYG{n+nv}{\PYGZdl{}STOREPASS}\PYG{l+s+s2}{\PYGZdq{}}\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{    }\PYGZhy{}Djavax.net.ssl.keyStoreType\PYG{o}{=}PKCS12\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{    }\PYGZhy{}Djavax.net.ssl.trustStore\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}}\PYG{n+nv}{\PYGZdl{}TRUSTSTORE}\PYG{l+s+s2}{\PYGZdq{}}\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{    }\PYGZhy{}Djavax.net.ssl.trustStorePassword\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}}\PYG{n+nv}{\PYGZdl{}STOREPASS}\PYG{l+s+s2}{\PYGZdq{}}\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{    }\PYGZhy{}Djavax.net.ssl.trustStoreType\PYG{o}{=}PKCS12\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{    }Servidor\PYG{+w}{ }\PYG{p}{\PYGZam{}}
+
+\PYG{c+c1}{\PYGZsh{} Le damos otros 2 segundos para que se conecten entre ellas}
+sleep\PYG{+w}{ }\PYG{l+m}{2}\PYG{+w}{ }
+
+\PYG{n+nb}{echo}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}=================================================\PYGZdq{}}
+\PYG{n+nb}{echo}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}   Servidores listos. Lanzando el Cliente...     \PYGZdq{}}
+\PYG{n+nb}{echo}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}=================================================\PYGZdq{}}
+
+\PYG{c+c1}{\PYGZsh{} 5. Lanzamiento del Cliente}
+java\PYG{+w}{ }\PYGZhy{}cp\PYG{+w}{ }.\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{    }\PYGZhy{}Djavax.net.ssl.trustStore\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}}\PYG{n+nv}{\PYGZdl{}TRUSTSTORE}\PYG{l+s+s2}{\PYGZdq{}}\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{    }\PYGZhy{}Djavax.net.ssl.trustStorePassword\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}}\PYG{n+nv}{\PYGZdl{}STOREPASS}\PYG{l+s+s2}{\PYGZdq{}}\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{    }\PYGZhy{}Djavax.net.ssl.trustStoreType\PYG{o}{=}PKCS12\PYG{+w}{ }\PYG{l+s+se}{\PYGZbs{}}
+\PYG{+w}{    }Cliente\PYG{+w}{ }localhost
+\end{Verbatim}

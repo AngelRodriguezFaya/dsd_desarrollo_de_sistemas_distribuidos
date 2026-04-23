@@ -273,7 +273,7 @@
 					\label{fig:dc_ejemplo3}
 				\end{figure}
 				
-				Y también muestro a continuación el \textbf{diagrama de secuencia} en UML de este ejemplo, ya que considero qué es relevante ya que hemos separado el objeto remoto del servidor. 
+				Y también muestro a continuación el \textbf{diagrama de secuencia} en UML de este ejemplo, ya que considero qué es interesante ya que hemos separado el objeto remoto del servidor. 
 				
 				\begin{figure}[H]
 					\centering
@@ -313,12 +313,284 @@
 				 \newpage
 				 
 	\section{Parte 2. Servidor Replicado.}
-
-		\subsection{Ejemplo 1. Cliente-Servidor básico.}
+	
+		\subsection{Introducción y Objetivos.}
+			En esta segunda parte de la práctica, teníamos el objetivo de diseñar y programar aplicaciones distribuidas siguiendo el Cliente-Servidor y, aunque estas aplicaciones son sencillas, nos permiten abordar los aspectos más importates a tener en cuenta en en el desarrollo de este tipo de aplicaciones. En concreto, el objetivo era que \textbf{desarrollar con Java RMI un sistema cliente-servidor para realizar donaciones monetarias para una causa humanitaria, con las siguientes características}:
+			
+			\begin{itemize}
+				\item El servidor sería un servidor replicado y sería el encargado de de recibir donaciones de entidades (clientes) para la causa.
+				\item El servidor proporcionaría en principio dos operaciones, registro de una entidad interesada (cliente) en la causa, y depósito de una donación a la causa, siendo imposible realizar un depósito (o más) sin haberse registrado como cliente (o donante) previamente.
+				\item Cuando un donante deseaba registrarse y contactaba con cualquiera de las dos réplicas del servidor para hacerlo, entonces el registro del donante debía ocurrir de forma real y transparente en la réplica con menos entidades registradas en ese momento. Es decir, el donante se  dirigió a una réplica aunque esta no sea donde ha quedado registrado finalmente, pero a partir de ese momento, el donante realizará los depósitos en la réplica del servidor donde fue registrado.
+				\item Cada réplica del servidor almacena y actualiza el subtotal de las donaciones realizadas en dicha replica.
+				\item Un cliente no puede registrarse más de una vez, ni siquiera en replicas distintas.
+				\item Los servidores también ofrecen, en principio, dos operaciones de consulta: total donado y listado de donantes. Dichas operaciones sólo se llevarán a cabo si el cliente/donante previamente se ha registrado y ha realizado al menos un depósito. Cuando un cliente realiza alguna de estas consultas, solamente podrá  hacer la petición a la réplica donde se encuentra registrado, y esta réplica es la encargada de devolver el resultado después de solicitar la información oportuna a la otra réplica.
+			\end{itemize}
+			
+			Estas son las \textbf{características básicas que nos pedía el guion, y que el sistema tiene en cuenta, implementándolas correctamente}. Además,\textbf{ se han añadido más mejoras que se nos indicaban en el archivo \texttt{normas.pdf}}, las cuáles son:
+			\begin{itemize}
+				\item \textbf{Se han añadido más operaciones al servidor.}
+				\item Se pueden utilizar más de 2 réplicas. En concreto, \textbf{podemos utilizar el número de réplicas que queramos}, ya que se crean y se comunican en tiempo de ejecución perfectamente (lo veremos más en detalle cuando veamos el servidor, más adelante). 
+			\end{itemize} 
+		 
+		
+		\subsection{Arquitectura del Sistema.}
+			A continuación vamos a ver los componentes del sistema, además del diagrama de clases en UML y el diagrama de secuencia con un par de operaciones de ejemplo.
+			
+			\subsubsection{\texttt{iDonacion.java} (La Interfaz Remota)}
+				Es la interfaz remota, que sería el "contrato" entre el cliente y el servidor, ya que hereda de \texttt{Remote}  y es conocida por estos dos componentes para que el \textit{stub} sepa los métodos que pueden ser invocados a través de la red. Estos métodos devuelven tipos básicos (\texttt{int}, \texttt{String}) o incluso referencias a otros objetos remotos (\texttt{iDonacion}), lo que permite al cliente saltar de un servidor a otro de forma transparente.
 				
-				 
+				El código de este componente es:
 				
+				\inputminted[linenos, frame=lines, fontsize=\scriptsize]{Java}{../codigo/Parte_2_Servidor_Replicado/iDonacion.java}
+				
+			\subsubsection{\texttt{Donacion.java} (La Lógica de Negocio)}
+				Como indica su título, se trata de la clase que implementa la lógica de negocio, tratándose posiblemente del archivo más importante de toda la práctica. La clase \texttt{Donacion} implementa la interfaz \texttt{iDonacion}. Vamos a comentar los aspectos más importantes de este componente:
+				
+				\begin{itemize}
+					\item Tiene como atributos
+					\begin{itemize}
+						\item \texttt{nombreNodo} que es el nombre o identificador de este nodo/réplica del servidor.
+						\item \texttt{totalDonacionesLocal} el total de donaciones realizadas de forma local en esta réplica.
+						\item \texttt{donantes} que es un \texttt{HashMap} que almacena los donantes registrados en esta réplica, junto con una lista de las cantidades donadas.
+						\item \texttt{peers} que es un \texttt{HashMap} que almacena las referencias a las otras réplicas del servidor. Los pares son: \texttt{<nombreNodo, iDonacion>}, es decir, el nombre del nodo y la referencia al objeto remoto de ese nodo.
+					\end{itemize}
 
+					\item En el constructor de la clase, se pasa como parámetro el nombre del nodo.
+					\item En el resto de métodos, que están definidos en la interfaz remota, se implementa la lógica de negocio y \textbf{se tiene en cuenta la gestión de la concurrencia, ya que se han añadido los modificadores \texttt{synchronized}} a los métodos que modifican el estado del objeto, para evitar así problemas de concurrencia; esto afecta al método entero o a una parte de este, ya que la he considerado como una sección crítica. Además, en algunos métodos, se realizan llamadas a otros objetos remotos (a otras réplicas del servidor) para solicitar información o realizar alguna acción, lo que hace que el sistema sea completamente funcional y transparente, haciendo una buena \textbf{gestión de la interoperabilidad entre réplicas}. 
+					\item Veámos el resto de métodos, empezando por las operaciones básicas que puede realizar el cliente, que son las siguientes:
+					\begin{itemize}
+						\item \texttt{registrar} es el método que se encarga de registrar a un nuevo donante. Para ello, primero comprueba si el donante ya está registrado en esta réplica o en alguna de las otras réplicas, y si no lo está, \textbf{lo registra en la réplica con menor número de donantes, haciendo así un Balanceo de Carga}. Esto permite que un servidor no solo registre, sino que decida la réplica más adecuada para registrar al cliente. Además, la parte de código que se encarga del registro se implementa como una sección crítica, añadiendo el modificador \texttt{synchronized} para evitar problemas de concurrencia.
+						
+						A la hora de implementar este método me surgió un error, y es que, tras ejecutar todo el proyecto, registré un donante en una réplica, y al intentar realizar otro registro desde el mismo cliente me ocurrió un \textbf{intebloqueo (o \textit{dearlock})} debido a que, cuando entraba en el método \texttt{registrar} para comprobar si el donante ya estaba registrado, se llamaba a la otra réplica para realizar la misma comprobación, y esta réplica a su vez llamaba a la primera réplica para realizar la misma comprobación, y así sucesivamente, quedando ambas réplicas bloqueadas esperando una respuesta de la otra. Para solucionar este problema, eliminé el modificador \texttt{synchronized} de la cabecera del método \texttt{registrar}, y solamente lo añadí a la parte del código que debían ejecutarse en exclusión mutua. \textbf{Esto me sirvió para tenerlo en cuenta en otros métodos, como \texttt{totalDonaciones}, que también tenía el mismo problema.}
+						\item \texttt{darDeBaja} es el método que se encarga de dar de baja a un donante registrado. Para realizar esta acción, primero \textbf{comprueba si el donante está registrado en esta réplica, y si lo está, elimina su registro y actualiza el total de donaciones local}. 
+						\item \texttt{donar} es el método que se encarga de realizar una donación. Para ello, primero comprueba si el donante está registrado en esta réplica, y si lo está, añade la cantidad donada a su lista de donaciones y actualiza el total de donaciones local.
+					\end{itemize}
+					\item En cuanto a las operaciones de consulta, tenemos las siguientes:
+					\begin{itemize}
+						\item \texttt{totalDonaciones} es el método que se encarga de calcular el total donado por un donante. Para ello, primero \textbf{comprueba si el donante está registrado en el sistema}, no sólo en la réplica, ya que el objetivo de este método es consultar cualquier donante independientemente de la réplica en la que esté registrado. Si está registrado, suma todas las cantidades donadas por ese donante y devuelve el resultado. Cuando se accede a comprobar si el donante está registrado en el sistema, esa porción de código se implementa como una sección crítica, añadiendo el modificador \texttt{synchronized} para evitar que otro cliente pueda modificar el estado del objeto mientras se está realizando esta comprobación.
+						\item \texttt{listadoDonantes} es el método que se encarga de devolver un listado con los nombres de los donantes registrados en todo el sistema. 
+						\item \texttt{getTotalDonacionesDonante} es el método que se encarga de devolver el total donado por un donante concreto. Para ello, primero comprueba si el donante está registrado en el sistema, y si lo está, devuelve el total de donaciones local de ese donante.
+						\item \texttt{mayorDonanteGlobal} es el método que se encarga de devolver el nombre del donante que más ha donado en todo el sistema. Para ello, recorre la lista de donantes de esta réplica y de las otras réplicas para encontrar el donante con mayor total de donaciones.
+						\item \texttt{obtenerHistorialDonaciones} es el método que se encarga de devolver el historial de donaciones de un donante concreto. Para ello, primero comprueba si el donante está registrado en el sistema, y si lo está, devuelve la lista de todas las cantidades que ha ido donando.
+					\end{itemize}\item El resto de métodos serían:
+					\begin{itemize}
+						\item \texttt{getNombre} es el método que se encarga de devolver el nombre del nodo.
+						\item \texttt{setPeer} es el método que se encarga de añadir una referencia a otra réplica del servidor. Para ello, se le pasa como parámetro la referencia al objeto remoto de la otra réplica, y se añade a la lista de pares de esta réplica.
+						\item \texttt{totalDonantes} es el método que se encarga de devolver el número de donantes registrados en esta réplica.
+						\item \texttt{estaRegistrado} es el método que se encarga de comprobar si un donante está registrado en esta réplica. Devuelve un valor booleano indicando si el donante está registrado o no.
+						\item \texttt{getTotalDonacionesLocal} es el método que se encarga de devolver el total de donaciones (en €)realizadas en esta réplica.
+						\item \texttt{listarDonantesLocal} es el método que se encarga de devolver un listado con los nombres de los donantes registrados en esta réplica.
+					\end{itemize}
+				\end{itemize}
+				
+				El código de este componente es:
+				
+				\inputminted[linenos, frame=lines, fontsize=\scriptsize]{Java}{../codigo/Parte_2_Servidor_Replicado/Donacion.java}					 
+
+			\subsubsection{\texttt{Servidor.java} (El Servidor)}
+				Es el servidor encargado de publicar el objeto remoto \texttt{Donacion}. Implementa la seguridad \texttt{SSL/TLS}, haciendo uso de las clases \texttt{SslRMIClientSocketFactory} y \texttt{SslRMIServerSocketFactory} para cifrar la comunicación entre el cliente y el servidor. Además, \textbf{se ha implementado de forma que se puedan crear tantas réplicas como se quiera, simplemente lanzando el servidor varias veces con un nombre de nodo distinto cada vez}, y estas réplicas se comunicarán entre sí para compartir información sobre los donantes registrados y las donaciones realizadas. 
+				Al arrancar el servidor, \textbf{hace un descubrimiento de las otras réplicas (peers) del sistema}, para ello, se conecta al registro (el \texttt{rmiregistry}) y busca los objetos remotos de las otras réplicas por su nombre, y si los encuentra, añade una referencia a estos objetos remotos en su lista de pares. Esto permite que las réplicas puedan comunicarse entre sí para compartir información sobre los donantes registrados y las donaciones realizadas.
+				Además, el servidor se encarga de exportar el objeto remoto \texttt{Donacion} con SSL, para ello, se crea una instancia de este objeto remoto y se exporta. Después se registra en el registro con su nombre, para que los clientes puedan encontrarlo y conectarse a él.
+				El código de este componente es:
+
+				\inputminted[linenos, frame=lines, fontsize=\scriptsize]{Java}{../codigo/Parte_2_Servidor_Replicado/Servidor.java}					 
+	
+			\subsubsection{\texttt{Cliente.java} (El Cliente)}
+				Es el cliente encargado de interactuar con el objeto remoto \texttt{Donacion}. Tiene como atributos el \textit{host} del servidor y el puerto donde se encuentra el objeto remoto, además del nombre del primer servidor, que es Donacion\_1. Después, realiza las siguientes acciones:
+				\begin{itemize}
+					\item Crea la fábrica de sockets SSL para el cliente, para cifrar la comunicación con el servidor.
+					\item Obtiene el registro del servidor y busca el objeto remoto de la réplica del servidor con el que se va a conectar, que es la réplica donde se ha registrado el cliente. Para ello, se conecta al registro y busca el objeto remoto por su nombre, que es "Donacion\_i", donde i es un entero entre 1 y el número de réplicas que hay en total. Si encuentra el objeto remoto, lo almacena en un atributo para poder interactuar con él posteriormente.
+					\item A continuación entra en un bucle donde muestra un menú de opciones al cliente, para que este pueda elegir la acción que desea realizar. Las opciones son: registrar un nuevo donante, dar de baja a un donante registrado, realizar una donación, consultar el total donado por un donante, consultar el listado de donantes registrados en el sistema, consultar el total de donaciones realizadas por el donante que la llama, consultar el nombre del mayor donante global, consultar el historial de donaciones del donante que lo llama y salir del programa. En función de la opción elegida por el cliente, se llama al método correspondiente del objeto remoto para realizar la acción deseada. Por ejemplo, si el cliente elige la opción de registrar un nuevo donante, se le pide que introduzca su nombre, y se llama al método \texttt{registrar} del objeto remoto, pasándole el nombre del donante como parámetro. Si el cliente elige la opción de realizar una donación, se le pide que la cantidad a donar, y se llama al método \texttt{donar} del objeto remoto (aunque previamente debe estar registrado, si no, se le pide que se registre primero). Y así sucesivamente con el resto de opciones.
+					\item Otro aspecto a destacar es que \textbf{tanto en el cliente como en el resto de componentes se tiene en cuenta la gestión de excepciones}, ya que se han añadido bloques \texttt{try-catch} para manejar las posibles excepciones que puedan ocurrir durante la ejecución del programa, como por ejemplo, problemas de conexión con el servidor, errores al buscar el objeto remoto en el registro, errores al llamar a los métodos remotos, etc. Esto permite que el programa sea más robusto y pueda manejar situaciones inesperadas de forma adecuada.
+				\end{itemize}
+				El código del cliente es:
+				\inputminted[linenos, frame=lines, fontsize=\scriptsize]{Java}{../codigo/Parte_2_Servidor_Replicado/Cliente.java}		
+				
+			\subsubsection{\texttt{launch.sh} (Script para Ejecución)}
+				Se ha modificado el script que nos proporcionaban en los ejemplos. Se compilan los archivos de la parte 2, y se lanzan las dos réplicas del servidor y el cliente, dándose un delay para que se inicialicen correctamente y se emparejen.
+				
+				\inputminted[linenos, frame=lines, fontsize=\scriptsize]{Shell}{../codigo/Parte_2_Servidor_Replicado/launch.sh}
+		
+		\subsection{Diagramas en UML.}
+			
+			\subsubsection{Diagrama de clases.}
+				El diagrama de clases del sistema que hemos descrito es el siguiente:
+				
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=1\linewidth]{./imagenes_necesarias/DC_parte_2.png}
+					\caption{Diagrama de clases de la parte 2 Servidor Replicado}
+					\label{fig:DC_parte2}
+				\end{figure}
+			
+			\subsubsection{Diagrama de clases.}
+				El diagrama de secuencia muestra un ejemplo de varias operaciones  del sistema como: registrar un donante, realizar una donación y pedir el total de donaciones.
+				
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=0.75\linewidth]{./imagenes_necesarias/DS_parte_2.png}
+					\caption{Diagrama de secuencia de la parte 2 Servidor Replicado}
+					\label{fig:DS_parte2}
+				\end{figure}
+		
+		\subsection{Guía de Uso. Ejemplos de ejecución}
+			En este apartado vamos a ver como compilar y ejecutar nuestra aplicación y vamos a realizar un par de operaciones de ejemplo.
+			
+			Lo primero que tendremos que hacer es dar permisos de ejecución a nuestro script. Para ello abrimos una terminal y ejecutamos el siguiente comando:
+			
+			\begin{center}
+				\fbox{\texttt{\$ chmod u+x launch.sh}}
+			\end{center}
+			
+			Después, ejecutamos el script con el siguiente comando:
+			
+			\begin{center}
+				\fbox{\texttt{\$ ./launch.sh}}
+			\end{center}
+			
+			Llegados a este punto, hemos hecho: generado las keystore TLS para el servidor y las del cliente, limpiado los procesos previos que habia en el puerto que usamos (que es el \texttt{2099}), compilado los archivos \texttt{.java} necesarios y, lo más importante, \textbf{se lanzan dos réplicas del servidor en segundo plano, y un cliente}. La salida es la que se muestra en la siguiente imagen:
+			
+			\begin{figure}[H]
+				\centering
+				\includegraphics[width=0.75\linewidth]{./imagenes_necesarias/ejecuciones_parte_2/1.png}
+				\caption{Salida al lanzar el script de la parte 2 Servidor Replicado}
+				\label{fig:1_parte2}
+			\end{figure}
+			
+			Ahora, abrimos una nueva terminal y \textbf{lanzamos un segundo cliente }con el comando:
+			
+			\begin{center}
+				\textbf{\$ java -cp . -Djavax.net.ssl.trustStore="client-truststore.p12" -Djavax.net.ssl.trustStorePassword="changeit" -Djavax.net.ssl.trustStoreType=PKCS12 Cliente}
+			\end{center}
+			
+			La salida que veamos será igual que la de la siguiente imagen (figura 12):
+			
+			\begin{figure}[H]
+				\centering
+				\includegraphics[width=0.75\linewidth]{./imagenes_necesarias/ejecuciones_parte_2/2.png}
+				\caption{Salida al lanzar el segundo cliente de la parte 2 Servidor Replicado}
+				\label{fig:2_parte2}
+			\end{figure}
+			
+			Ahora, vamos a ir realizando varias operaciones de ejemplo:
+			
+			\subsubsection{Registrar donantes.}
+				Primero vamos a registrar un donante, haciendo uso del Cliente 1. El donante se llamará "Pablo". (Figura 13)
+				
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=0.75\linewidth]{./imagenes_necesarias/ejecuciones_parte_2/3.png}
+					\caption{Registrar el 1er donante}
+					\label{fig:3_parte2}
+				\end{figure}
+				
+				Como podemos observar, se ha registrado con éxito, y nos indica que se ha registrado en la réplica \texttt{Donacion\_1}
+				
+				Vamos a registrar un segundo donante, ahora en el Cliente 2. La donante se llamará "Alba" (Figura 14)
+				
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=0.75\linewidth]{./imagenes_necesarias/ejecuciones_parte_2/4.png}
+					\caption{Registrar el 2º donante}
+					\label{fig:4_parte2}
+				\end{figure}
+				
+				Como podemos observar, también se ha registrado con éxito, y nos indica que se ha registrado en la réplica \texttt{Donacion\_2}. \textbf{Recordemos el balanceo de carga}
+			
+			\subsubsection{Realizar donaciones}
+				Ahora vemos que arriba en el menú ya nos aparece el nombre del usuario y la replica donde se encuentra, \textbf{si volvemos a seleccionar la opción 1 y registramos un nuevo cliente,se cambiará y estaremos en el nuevo cliente. En cambio, si introducimos el nombre de un usuario que ya existe, se nos cambiará a ese usuario (como si iniciáramos sesión con él)}.
+				
+				Mediante el Cliente 1, Pablo va enviar una donación de 10€ (Figura 15)
+				
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=0.75\linewidth]{./imagenes_necesarias/ejecuciones_parte_2/5.png}
+					\caption{Donación de Pablo de 10€ a través del cliente 1}
+					\label{fig:5_parte2}
+				\end{figure}
+				
+				Ahora Alba, mediante el Cliente 2, va enviar dos donaciones, una de 15€ (Figura 16) y otra de 8€ (Figura 17)
+				
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=0.75\linewidth]{./imagenes_necesarias/ejecuciones_parte_2/6.png}
+					\caption{Donación de Alba de 15€ a través del cliente 2}
+					\label{fig:6_parte2}
+				\end{figure}
+				
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=0.75\linewidth]{./imagenes_necesarias/ejecuciones_parte_2/7.png}
+					\caption{Donación de Alba de 8€ a través del cliente 2}
+					\label{fig:7_parte2}
+				\end{figure}
+	
+			\subsubsection{Consultar total de donaciones (en todo el sistema)}
+				Pablo, a través del cliente 1, consulta la cantidad total de dinero que se ha donado:
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=0.75\linewidth]{./imagenes_necesarias/ejecuciones_parte_2/8.png}
+					\caption{Consulta de Pablo de total de donaciones a través del cliente 1}
+					\label{fig:8_parte2}
+				\end{figure}
+				
+				Vemos que es la suma de las tres donaciones realizadas (10 + 15 + 8)€ = 33€.
+				
+				\textbf{Nota:} En la terminal 1 donde está el cliente 1, \textbf{también se muestran los mensajes del servidor, ya que se ejecutan en segundo plano}, un ejemplo de ello es la figura 19:
+				
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=0.75\linewidth]{./imagenes_necesarias/ejecuciones_parte_2/extra.png}
+					\caption{Ejemplo de mensajes del servidor a través del cliente 1}
+					\label{fig:extra_parte2}
+				\end{figure}
+				
+			
+			\subsubsection{Consultar el historial de donaciones}
+				Alba, a través del cliente 2, consulta el historial de donaciones (opcion = 8) que ha realizado desde que se dio de alta en el sistema: (Figura 20)
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=0.75\linewidth]{./imagenes_necesarias/ejecuciones_parte_2/9.png}
+					\caption{Consulta de Alba de historial de donaciones a través del cliente 1, al final del todo}
+					\label{fig:9_parte2}
+				\end{figure}
+
+			
+			\subsubsection{Consultar el mayor donante.}
+				Pablo, a través del cliente 1, consulta el mayor donante del que se tiene registro (opcion = 6) que ha realizado desde que se dio de alta en el sistema: (Figura 21)
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=0.75\linewidth]{./imagenes_necesarias/ejecuciones_parte_2/10.png}
+					\caption{Consulta del mayor donante del sistema}
+					\label{fig:10_parte2}
+				\end{figure}
+			
+			\subsubsection{Darse de baja.}
+				Pablo, a través del cliente 1, se da de baja del sistema: (Figura 22)
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=0.75\linewidth]{./imagenes_necesarias/ejecuciones_parte_2/11.png}
+					\caption{Ejemplo de darse de baja}
+					\label{fig:11_parte2}
+				\end{figure}
+				
+			\subsubsection{Salir de la aplicación.}
+				Alba , a través del cliente 2, sale de la aplicación
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=0.75\linewidth]{./imagenes_necesarias/ejecuciones_parte_2/12.png}
+					\caption{Ejemplo de salir}
+					\label{fig:12_parte2}
+				\end{figure}
+			
+				
+			\textbf{Estos son algunos ejemplos de operaciones que se pueden realizar. Hay muchas más combinaciones o posibilidades por probar (como meter valores mal a propósito para demostrar que el sistema es robusto ante fallos y demás), pero no quiero extender más este documento.}
+				
+				
+			
+			
+			
+			
 				
 	
 	

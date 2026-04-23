@@ -71,14 +71,6 @@ public interface iDonacion extends Remote {
     iDonacion registrar(String donante) throws RemoteException;
 
     /**
-     * @brief Permite a un cliente registrar un donante y realizar una donación.
-     * @param donante El nombre del donante (debe estar registrado previamente).
-     * @param cantidad La cantidad a donar.
-     * @throws RemoteException Si ocurre un error de comunicación remota.
-     */
-    void donar(String donante,int cantidad) throws RemoteException;
-
-    /**
      * @brief Permite dar de baja a un donante.
      * @pre El donante debe estar registrado previamente.
      * @param donante El nombre del donante a dar de baja.
@@ -86,18 +78,28 @@ public interface iDonacion extends Remote {
      */
     void darDeBaja(String donante) throws RemoteException;
 
+    /**
+     * @brief Permite a un cliente registrar un donante y realizar una donación.
+     * @param donante El nombre del donante (debe estar registrado previamente).
+     * @param cantidad La cantidad a donar.
+     * @throws RemoteException Si ocurre un error de comunicación remota.
+     */
+    void donar(String donante,int cantidad) throws RemoteException;
+
     
     //=============================================================================
     // 					OPERACIONES DE CONSULTA
     //=============================================================================
 
     /**
-     * @brief Permite al cliente consultar el total de donaciones realizadas 
-     * por un donante.      
-     * @param donante Nombre del donante (debe estar registrado previamente).
-     * @return int. El total de donaciones realizadas por el donante.
-     * @throws RemoteException Si ocurre un error de comunicación remota.
-     */
+	 * @brief Permite al cliente consultar el total de donaciones realizadas por 
+     * todos los donantes en todo el sistema.
+	 * @pre El donante debe estar registrado previamente en ESTA réplica y haber 
+     * realizado al menos una donación.
+	 * @param donante El nombre del donante a consultar.
+	 * @return int. El total de donaciones realizadas todo el sistema (en todas las réplicas).
+	 * @throws RemoteException Si ocurre un error de comunicación remota.
+	 */
     int totalDonaciones(String donante) throws RemoteException;
 
     /**

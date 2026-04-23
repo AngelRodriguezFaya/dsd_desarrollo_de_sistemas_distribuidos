@@ -1,3 +1,5 @@
 # Ignorar cualquier carpeta llamada 'guiones' y 'codigo-ejemplos' en cualquier parte del repositorio
 **/guiones/
 **/codigo-ejemplos/
+
+./gitattributes
