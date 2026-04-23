@@ -48,7 +48,8 @@ public interface iDonacion extends Remote {
     int getTotalDonacionesLocal() throws RemoteException;
 
     /**
-     * @brief Devuelve una lista con los nombres de todos los donantes registrados en esta réplica.
+     * @brief Devuelve una lista con los nombres de todos los donantes registrados 
+     * en esta réplica.
      * @return List<String>. Una lista con los nombres de todos los donantes registrados.
      * @throws RemoteException Si ocurre un error de comunicación remota.
      */
@@ -56,15 +57,15 @@ public interface iDonacion extends Remote {
 
 
     //=============================================================================
-	// 			OPERACIONES QUE PUEDEN INVOCAR LOS CLIENTES
-	//=============================================================================
+    // 			ACCIONES QUE PUEDEN INVOCAR LOS CLIENTES
+    //=============================================================================
 
     /**
      * @brief Permite a un cliente registrar un donante. Si el donante ya estaba 
      * registrado, no hace nada. 
      * @param donante Nombre del donante a registrar.
-     * @return iDonacion. Devuelve una referencia al servidor donde se ha registrado el donante,
-     * para que el cliente pueda invocar a sus métodos.
+     * @return iDonacion. Devuelve una referencia al servidor donde se ha registrado 
+     *  el donante, para que el cliente pueda invocar a sus métodos.
      * @throws RemoteException Si ocurre un error de comunicación remota.
      */
     iDonacion registrar(String donante) throws RemoteException;
@@ -77,13 +78,22 @@ public interface iDonacion extends Remote {
      */
     void donar(String donante,int cantidad) throws RemoteException;
 
+    /**
+     * @brief Permite dar de baja a un donante.
+     * @pre El donante debe estar registrado previamente.
+     * @param donante El nombre del donante a dar de baja.
+     * @throws RemoteException Si ocurre un error de comunicación remota.
+     */
+    void darDeBaja(String donante) throws RemoteException;
+
     
     //=============================================================================
-	// 					OPERACIONES DE CONSULTA
-	//=============================================================================
+    // 					OPERACIONES DE CONSULTA
+    //=============================================================================
 
     /**
-     * @brief Permite al cliente consultar el total de donaciones realizadas por un donante.      
+     * @brief Permite al cliente consultar el total de donaciones realizadas 
+     * por un donante.      
      * @param donante Nombre del donante (debe estar registrado previamente).
      * @return int. El total de donaciones realizadas por el donante.
      * @throws RemoteException Si ocurre un error de comunicación remota.
@@ -98,5 +108,32 @@ public interface iDonacion extends Remote {
      */
     java.util.List<String> listarDonantes(String donante) throws RemoteException;
 
-    
+    /**
+     * @brief Devuelve el total de donaciones realizadas por un donante específico 
+     * en todo el sistema, sumando las donaciones realizadas.
+     * @pre El donante debe estar registrado previamente.
+     * @param donante El nombre del donante 
+     * @return int. El total de donaciones realizadas por el donante en todo el sistema.
+     * @throws RemoteException
+     */
+    int getTotalDonacionesDonante(String donante) throws RemoteException;
+
+    /**
+     * @brief Devuelve el nombre del donante que ha donado la mayor cantidad de dinero 
+     * desde que se registró en el sistema. Si hay varios donantes con la misma cantidad, 
+     * se devuelve el que primero se encuentre en la lista de donantes registrados.
+     * @return String. El nombre del donante.
+     * @throws RemoteException Si ocurre un error de comunicación remota.
+     */
+    String mayorDonanteGlobal() throws RemoteException;
+
+    /**
+     * @brief Permite a un donante consultar su historial de donaciones.
+     * @pre El donante debe estar registrado previamente y haber realizado al menos 
+     * una donación.
+     * @param donante El nombre del donante que quiere consultar su historial.
+     * @return List<Integer>. Lista con las cantidades donadas.
+     * @throws RemoteException Si ocurre un error de comunicación remota.
+     */
+    java.util.List<Integer> obtenerHistorialDonaciones(String donante) throws RemoteException;
 }

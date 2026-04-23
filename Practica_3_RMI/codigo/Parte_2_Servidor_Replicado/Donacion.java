@@ -18,7 +18,8 @@ public class Donacion implements iDonacion {
     private int totalDonacionesLocal = 0;
 
 	// Map con los donantes registrados EN ESTA RÉPLICA y la cantidad total que han donado.
-    private final java.util.Map<String, Integer> donantes = new java.util.HashMap<>();
+	// los pares son: <nombreDonante, cantidadDonacionesRealizadas>
+    private final java.util.Map<String, List<Integer>> donantes = new java.util.HashMap<>();
 	
 	// Map con los peers (otras réplicas del servidor) que esta réplica conoce.
 	private final java.util.Map<String, iDonacion> peers = new java.util.HashMap<>();
@@ -100,9 +101,29 @@ public class Donacion implements iDonacion {
 		return new ArrayList<>(donantes.keySet());
 	}
 
+	/**
+     * @brief Permite dar de baja a un donante.
+     * @pre El donante debe estar registrado previamente.
+     * @param donante El nombre del donante a dar de baja.
+     * @throws RemoteException Si ocurre un error de comunicación remota.
+     */
+	@Override
+    public synchronized void darDeBaja(String donante) throws RemoteException{
+		// Comprobamos que el donante esté registrado en esta réplica
+		if(this.estaRegistrado(donante)){
+			donantes.remove(donante);
+			System.out.println("[INFO.] El donante " + donante
+				+ " ha sido dado de baja en " + this.getNombre() + ".");
+		} else {
+			System.out.println("[ERROR.] El donante " + donante
+				+ " ha intentado darse de baja en " + this.getNombre()
+				+ " pero no está registrado en esta réplica.");
+		}
+	}
+
 
 	//=============================================================================
-	// 			OPERACIONES QUE PUEDEN INVOCAR LOS CLIENTES
+	// 			ACCIONES QUE PUEDEN INVOCAR LOS CLIENTES
 	//=============================================================================
 
 	/**
@@ -148,7 +169,7 @@ public class Donacion implements iDonacion {
 			// 4. Registramos el nuevo donante en la mejor réplica encontrada
 			if(mejorPeer.getNombre().equals(this.getNombre())) {
 				synchronized(this) { // Lo hacemos de exclusión mutua para evitar condiciones de carrera
-					donantes.putIfAbsent(donante, 0); // Registramos de forma segura
+					donantes.putIfAbsent(donante, new ArrayList<>()); // Registramos de forma segura
 				}
 				peerRegistrado = this;
 			} else {
@@ -175,11 +196,10 @@ public class Donacion implements iDonacion {
 		// Comprobamos que el donante esté registrado en esta réplica
 		if(this.estaRegistrado(donante)){
 			totalDonacionesLocal += cantidad; 
-			donantes.put(donante, donantes.get(donante) + cantidad); 
+			donantes.get(donante).add(cantidad); // Añadimos la cantidad donada al historial del donante
 			System.out.println("[INFO.] El donante " + donante 
 				+ " ha realizado una donación de " + cantidad 
-				+ "€ en " + this.getNombre() + ". Total donado por el donante: " 
-				+ donantes.get(donante));
+				+ "€");
 		} else {
 			System.out.println("[ERROR.] El donante " + donante 
 				+ " ha intentado realizar una donación"
@@ -207,7 +227,7 @@ public class Donacion implements iDonacion {
 
 		//1. Hacemos de forma sincronizada sólamente la comprobación local
 		synchronized(this) {
-			if(this.estaRegistrado(donante) && donantes.get(donante) > 0) {
+			if(this.estaRegistrado(donante) && !donantes.get(donante).isEmpty()) {
 				tienePermiso = true;
 			}
 		}
@@ -254,7 +274,7 @@ public class Donacion implements iDonacion {
 
 		// 1. Hacemos de forma sincronizada sólamente la comprobación local
 		synchronized(this) {
-			if(this.estaRegistrado(donante) && donantes.get(donante) > 0) {
+			if(this.estaRegistrado(donante) && !donantes.get(donante).isEmpty()) {
 				tienePermiso = true;
 			}
 		}
@@ -284,4 +304,132 @@ public class Donacion implements iDonacion {
 		
 		return donantesRegistradosGlobal;
     }
+
+	/**
+     * @brief Devuelve el total de donaciones realizadas por un donante específico en todo el sistema,
+     * sumando las donaciones realizadas.
+     * @pre El donante debe estar registrado previamente.
+     * @param donante El nombre del donante 
+     * @return int. El total de donaciones realizadas por el donante en todo el sistema.
+     * @throws RemoteException
+     */
+	@Override
+    public int getTotalDonacionesDonante(String donante) throws RemoteException {
+		int total = 0;
+		boolean encontrado = false;
+
+		// 1. Comprobamos de forma segura si el donante está en esta réplica
+		synchronized(this) {
+			encontrado = this.estaRegistrado(donante);
+			if (encontrado) { // Está registrado en esta réplica.
+				for (Integer cantidad : donantes.get(donante)) {
+					total += cantidad;
+				}
+			}
+		}
+
+		if(!encontrado) {
+			// 2. Si no está en esta réplica local, buscamos en qué réplica (peer) está registrado
+			for (iDonacion peer : peers.values()) {
+				if (peer.estaRegistrado(donante)) {
+					// Si el donante está registrado en esta réplica peer, 
+					// consultamos su total de donaciones en esa réplica peer
+					total = peer.getTotalDonacionesDonante(donante);
+					encontrado = true;
+					break;
+				}
+			}
+		} 
+
+		// Si llegados este punto no lo ha encontrado, es que no está registrado
+		if(!encontrado)
+			System.out.println("[ERROR.] El donante " + donante + " no está registrado en el sistema.");
+
+		return total;
+	}
+
+	/**
+     * @brief Devuelve el nombre del donante que ha donado la mayor cantidad de dinero 
+     * desde que se registró en el sistema. Si hay varios donantes con la misma cantidad, 
+     * se devuelve el que primero se encuentre en la lista de donantes registrados.
+     * @return String. El nombre del donante.
+     * @throws RemoteException Si ocurre un error de comunicación remota.
+     */
+	@Override
+	public String mayorDonanteGlobal() throws RemoteException {
+		// 1. Obtenemos TODOS los donantes del sistema 
+		// Primero obtenemos los donantes registrados en esta réplica.
+		List<String> todosLosDonantes = this.listarDonantesLocal();
+		for(iDonacion peer : peers.values()) {
+			// Ahora obtenemos los donantes registrados en las otras réplicas.
+			todosLosDonantes.addAll(peer.listarDonantesLocal());
+		}
+
+		String mayorDonante = null;
+		int maxCantidad = -1;
+
+		// 2. Iteramos para encontrar el donante 
+		for(String d : todosLosDonantes) {
+			int totalDeEsteDonante = this.getTotalDonacionesDonante(d); // Consulta su total 
+			
+			// Si la cantidad es estrictamente MAYOR, se actualiza el máximo.
+			// Si es IGUAL, no se actualiza, por lo que Conservamos el que aparece antes en la lista.
+			if(totalDeEsteDonante > maxCantidad) {
+				maxCantidad = totalDeEsteDonante;
+				mayorDonante = d;
+			}
+		}
+		
+		return mayorDonante;
+	}
+
+	/**
+     * @brief Permite a un donante consultar su historial de donaciones.
+     * @pre El donante debe estar registrado previamente y haber realizado al menos una donación.
+     * @param donante El nombre del donante que quiere consultar su historial.
+     * @return List<Integer>. Lista con las cantidades donadas.
+     * @throws RemoteException Si ocurre un error de comunicación remota.
+     */
+	@Override
+    public List<Integer> obtenerHistorialDonaciones(String donante) throws RemoteException {
+		List<Integer> historial = null;
+		boolean encontrado = false;
+
+		// 1. Comprobamos de forma segura si el donante está en esta réplica
+		synchronized(this) {
+			encontrado = this.estaRegistrado(donante);
+			if (encontrado) {
+				// Comprobamos la precondición de que haya realizado al menos una donación
+				if (!donantes.get(donante).isEmpty()) {
+					// Devolvemos una copia por seguridad
+					historial = new ArrayList<>(donantes.get(donante)); 
+				} else {
+					System.out.println("[ERROR.] El donante " 
+					+ donante + " no ha realizado ninguna donación.");
+				}
+			}
+		}
+
+		if(!encontrado) {
+			// 2. Si no está en esta réplica local, buscamos en qué réplica (peer) 
+			// está registrado
+			for (iDonacion peer : peers.values()) {
+				if (peer.estaRegistrado(donante)) {
+					// Si lo encontramos en un peer, le pedimos la información 
+					// y cortamos la búsqueda
+					historial = peer.obtenerHistorialDonaciones(donante);
+					encontrado = true;
+					break;
+				}
+			}
+		} 
+
+		// Si llegados este punto no lo ha encontrado en ninguna réplica
+		if(!encontrado) {
+			System.out.println("[ERROR.] El donante " 
+			+ donante + " no está registrado en el sistema.");
+		}
+
+		return historial;
+	}
 }
