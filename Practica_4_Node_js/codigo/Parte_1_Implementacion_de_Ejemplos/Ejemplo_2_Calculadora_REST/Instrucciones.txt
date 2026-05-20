@@ -1,0 +1,2 @@
+# Lanzar aplicación
+node calculadora.js

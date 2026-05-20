@@ -1,0 +1,5 @@
+# Instalar Node.js
+sudo apt install nodejs
+
+# Lanzar aplicación
+node helloworld.js

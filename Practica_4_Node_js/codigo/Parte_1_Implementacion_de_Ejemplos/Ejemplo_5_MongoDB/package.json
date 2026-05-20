@@ -1,0 +1,16 @@
+{
+  "name": "ejemplo-5---mongo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "mongo-test.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "mongodb": "^5.9.2",
+    "socket.io": "^4.8.3"
+  }
+}

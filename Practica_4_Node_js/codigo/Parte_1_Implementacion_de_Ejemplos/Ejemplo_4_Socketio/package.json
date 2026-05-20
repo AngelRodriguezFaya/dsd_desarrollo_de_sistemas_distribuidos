@@ -1,0 +1,15 @@
+{
+  "name": "ejemplo-4---socketio",
+  "version": "1.0.0",
+  "description": "",
+  "main": "connections.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "socket.io": "^4.8.3"
+  }
+}

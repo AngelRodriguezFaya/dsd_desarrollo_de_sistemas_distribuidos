@@ -1,0 +1,9 @@
+# Instalar Socket.io
+cd a Ejemplo 4 - Socketio
+
+sudo apt install npm
+npm init -y
+npm install socket.io
+
+# Lanzar aplicación
+node connections.js

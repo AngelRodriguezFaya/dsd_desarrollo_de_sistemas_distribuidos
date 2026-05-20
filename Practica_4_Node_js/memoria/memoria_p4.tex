@@ -1,0 +1,253 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage{graphicx} 			% Para insertar imagenes
+\usepackage{indentfirst} 	% Para sangrar párrafos después de secciones
+\setlength{\parindent}{1.5cm} 	% Sangría de 1.5 cm
+\usepackage{minted} 	% Para insertar código 
+\usepackage{float}
+\usepackage[spanish, es-tabla]{babel}
+\usepackage{tcolorbox} % Para secciones en destacado
+
+\title{Práctica 4: Node.js}
+\author{Ángel Rodríguez Faya}
+\date{20 de mayo de 2026}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\begin{document}
+	
+	% --- PÁGINA 1: LA PORTADA ---
+	\begin{titlepage}
+		\centering
+		\vspace*{1cm}
+		
+		{\huge\bfseries Práctica 4. Node.js \par}
+		\vspace{1.5 cm}
+		
+		{\Large Desarrollo de Sistemas Distribuidos. Grupo DSD-3. \par}
+		\vspace{0.25cm}
+		{\Large Grado en Ingeniería Informática \par}
+		\vspace{0.25cm}
+		{\Large Curso 2025-2026.\par}
+		\vspace{0.25cm}
+		{\Large ETSIIT. Universidad de Granada.\par}
+		\vspace{1 cm}
+		
+		\noindent % Evita la sangría para que aproveche todo el ancho
+		\begin{minipage}[c]{0.55\textwidth}
+			% La imagen ocupa el 100% del ancho DE ESTA CAJA (no de la hoja)
+			\includegraphics[width=\linewidth]{./imagenes_necesarias/Logotipo_ETSIIT_Horizontal_color.png}
+		\end{minipage}% <--- Este % es importante para que no añada espacios extra
+		\hfill % Rellena el espacio en medio empujando las cajas a los extremos
+		\begin{minipage}[c]{0.40\textwidth}
+			\raggedleft % Alinea esta imagen a la derecha dentro de su caja
+			\includegraphics[width=\linewidth]{./imagenes_necesarias/UGR-LOGO-color.png}
+		\end{minipage}
+		
+		\vspace{0.5 cm}
+		
+		{\large\bfseries Autor: \par}
+		{\large Ángel Rodríguez Faya \par}
+		\vspace{0.5cm}
+		
+		{\large\bfseries Profesor: \par}
+		{\large José Ángel Segura Muros \par}
+		\vspace{1 cm}
+		
+		{\large\bfseries Fecha de entrega: \par}
+		{\large 22 de mayo de 2026\par}
+		
+	\end{titlepage}
+	% El entorno 'titlepage' hace el salto de página automáticamente al cerrar.
+	
+	% --- PÁGINA 2: EL ÍNDICE ---
+	\tableofcontents
+	\newpage % <--- Fuerza el salto a la página 3
+	
+	% --- RESTO DE PÁGINAS:
+	
+	% ====================================================================
+	% 1. INTRODUCCIÓN DE LA MEMORIA
+	% ====================================================================
+	\section{Introducción.}	
+		Este documento constituye la memoria de la Práctica 4 de la asignatura \textit{Desarrollo de Sistemas Distribuidos}. El objetivo central de este proyecto radica en el diseño, implementación y evaluación experimental de un sistema domótico distribuido, cooperativo y en tiempo real, haciendo uso de tres pilares tecnológicos esenciales:
+		
+		\begin{itemize}
+			\item \textbf{Node.js:} Es una plataforma de ejecución de JavaScript del lado del servidor basada en el motor V8 de Google. Destaca por su modelo de operaciones de I/O no bloqueantes y su arquitectura orientada a eventos (\textit{event-driven}), controlada por un único hilo de ejecución centralizado (\textit{Event Loop}). Esto permite mitigar la sobrecarga asociada a la creación de hilos tradicionales por cada conexión entrante.
+			
+			\item \textbf{Socket.io:} Es una biblioteca especializada en habilitar una capa de comunicación bidireccional, síncrona y de alta velocidad entre clientes y servidores sobre el protocolo WebSocket. Su modelo basado en eventos encaja de forma nativa con el patrón de diseño Publicación/Suscripción, idóneo para la propagación inmediata de estados concurrentes.
+			
+			\item \textbf{MongoDB:} Es un sistema de base de datos \texttt{NoSQL} orientado a documentos que almacena la información en esquemas flexibles de tipo \texttt{BSON/JSON}. Proporciona un mecanismo de persistencia ideal para el flujo heterogéneo de telemetría y logs de eventos generados de forma asíncrona en entornos distribuidos.
+		\end{itemize}
+		
+		El propósito último de este proyecto/práctica es el despliegue de una infraestructura inteligente donde múltiples procesos independientes — como nodos sensores, nodos actuadores, un agente lógico de control supervisado y paneles web de usuario (o \textit{dashboards})— cooperen de manera asíncrona y transparente para garantizar la habitabilidad y eficiencia del entorno que está siendo monitorizado.
+		
+		\newpage
+		
+	% ====================================================================
+	% 2. PARTE 1: IMPLEMENTACIÓN DE EJEMPLOS
+	% ====================================================================
+	\section{Parte 1.- Implementación de ejemplos.}
+		Antes de abordar el diseño de la arquitectura completa del sistema domótico, es fundamental que asimilemos los fundamentos de red y los patrones de concurrencia asíncrona que manejan el entorno de Node.js. Por este motivo, la primera fase o parte de la práctica se centra en la implementación, despliegue y análisis de una serie de servicios y ejemplos base propuestos en el guion.
+		
+		A continuación, vamos a ir viendo cada uno de los ejemplos. Para ello, analizaremos el  código fuente de cada uno de los ejemplos, verificar su correcto funcionamiento mediante capturas de pantalla, y la correspondiente justificación técnica de los fenómenos observados.
+		
+		\subsection{Ejemplo 1.- Hola Mundo.}
+			Para poner en marcha este primer ejemplo, abrimos la terminal en el directorio del archivo (que es \newline \texttt{Parte\_1\_Implementacion\_de\_Ejemplos/Ejemplo\_1\_Hola\_Mundo} ) y ejecutamos el comando:
+			\begin{verbatim}
+				$ node helloworld.js
+			\end{verbatim}
+			
+			\subsubsection*{Capturas de funcionamiento}
+				A continuación se adjuntan las capturas de pantalla que verifican el correcto despliegue del servidor y su respuesta:
+				
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=0.8\textwidth]{./imagenes_necesarias/ejemplos_ejecucion/parte_1/ejemplo1_1.png}
+					\caption{Visualización en el navegador de la respuesta enviada por el servidor.}
+					\label{fig:ejemplo1_navegador}
+				\end{figure}
+				
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=0.8\textwidth]{./imagenes_necesarias/ejemplos_ejecucion/parte_1/ejemplo1_2.png}
+					\caption{Salida por terminal del servidor mostrando el inicio y las cabeceras recibidas.}
+					\label{fig:ejemplo1_terminal}
+				\end{figure}
+				
+				Vemos que el script utiliza el módulo nativo \texttt{http} de Node.js para levantar un servidor web básico que se queda escuchando peticiones en el puerto \texttt{8080}. Cada vez que un cliente (como el navegador) accede, el servidor imprime en la consola las cabeceras de la petición y devuelve un mensaje de texto plano con el contenido ``Hola mundo''.
+				
+				Lo más relevante a destacar de este ejemplo es:
+				\begin{itemize}
+					\item \textbf{La petición no bloqueante (Asíncrona):} El mensaje \texttt{'Servicio HTTP iniciado'} se muestra en la terminal de forma inmediata al lanzar el script. Esto demuestra que el método \texttt{.listen(8080)} es asíncrono y no detiene la ejecución del programa a esperar conexiones.
+					\item \textbf{Uso de Callbacks:} La función interna de \texttt{createServer} actúa como un \textit{callback}. No se ejecuta al arrancar el programa, sino que el \textit{Event Loop} (bucle de eventos) la invoca únicamente cuando entra una petición HTTP, gestionando así la concurrencia de forma eficiente en un solo hilo o hebar.
+				\end{itemize}
+
+		\subsection{Ejemplo 2.- Calculadora REST.}
+			Para este segundo ejemplo, lo podemos poner en marcha abriendo en la terminal el directorio del archivo (que es \newline \texttt{Parte\_1\_Implementacion\_de\_Ejemplos/Ejemplo\_2\_Calculadora\_REST} ) y ejecutamos el comando:
+			
+			\begin{verbatim}
+				$ node calculadora.js
+			\end{verbatim}
+			
+			\subsubsection*{Capturas de funcionamiento}
+				A continuación se adjuntan las capturas de pantalla:
+				
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=0.8\textwidth]{./imagenes_necesarias/ejemplos_ejecucion/parte_1/ejemplo2_1.png}
+					\caption{Visualización en el navegador del resultado de restar 33-3}
+					\label{fig:ejemplo2_navegador}
+				\end{figure}
+				
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=0.8\textwidth]{./imagenes_necesarias/ejemplos_ejecucion/parte_1/ejemplo2_2.png}
+					\caption{Salida por terminal del servidor mostrando el inicio.}
+					\label{fig:ejemplo2_terminal}
+				\end{figure}
+				
+				Viendo el código fuente y la figura~\ref{fig:ejemplo2_navegador} podemos sacar varias conclusiones/apuntes sobre Node.js:
+				\begin{itemize}
+					\item El servidor tiene que \textbf{procesar la URL} como una cadena de texto, para descomponer la ruta de la petición en un array de parámetros. 
+					
+					\item Como todo lo que viaja por HTTP es texto, necesitamos \textbf{deserializar los datos }mediante \texttt{parseFloat()} para operar con ellos numéricamente y, posteriormente, convertirlos de nuevo a texto (\texttt{result.toString()}) para poder transmitirlos en la respuesta HTTP.
+					
+					\item Se realiza un \textbf{control de errores}. Se comprueba que el array de parámetros extraído de la URL tenga $>= 3$ parámetros para poder realizar la operación. En caso de que tenga menos, el sistema no se cae (no hace \textit{crash}), si no que responde con un mensaje de error controlado manteniendo así la \textbf{disponibilidad del servicio}
+				\end{itemize}
+				
+				Este ejemplo es una calculadora \textbf{REST}. Esto quiere decir que el servidor actúa como una \textbf{API}. Solo espera recibir comandos en la URL (ej. /sumar/5/3) y devuelve datos puros (el resultado en texto plano). No tiene diseño, ni botones, ni colores. Está pensado para comunicación máquina a máquina (por ejemplo, para que otro programa o un comando de terminal interactúe con él), tal y cómo hemos visto en las capturas de pantalla.
+
+		\subsection{Ejemplo 3.- Calculadora WEB.}
+			En este ejemplo, vemos otra calculadora pero a diferencia de la anterior, esta es una calculadora WEB. Es decir, el servidor actúa como un \textbf{Servidor Web tradicional y además como API}. Está orientado a humanos y no a máquinas como el ejemplo anterior. Cuando entras a la ruta base (/), el servidor lee del disco duro y nos devuelve una página web completa (\texttt{calc.html}). Esa página web tiene una interfaz visual (un formulario, un desplegable) y contiene código JavaScript que, de forma invisible (usando peticiones \texttt{fetch}), hace las llamadas REST al servidor para obtener el resultado sin tener que recargar la página.
+			
+			Para poder ejecutar este ejemplo, abrimos la terminal y nos situamos en el directorio del archivo (que es \newline \texttt{Parte\_1\_Implementacion\_de\_Ejemplos/Ejemplo\_3\_Calculadora\_WEB} ) y ejecutamos el comando:
+			
+			\begin{verbatim}
+				$ node calculadora-web.js
+			\end{verbatim}
+			
+			\subsubsection*{Capturas de funcionamiento}
+				A continuación se adjuntan las capturas de pantalla:
+				
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=0.8\textwidth]{./imagenes_necesarias/ejemplos_ejecucion/parte_1/ejemplo3_1.png}
+					\caption{Visualización en el navegador de la calculadora comportándose como una página web normal. Divide $45/6$.}
+					\label{fig:ejemplo3-1_navegador}
+				\end{figure}
+				
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=0.8\textwidth]{./imagenes_necesarias/ejemplos_ejecucion/parte_1/ejemplo3_2.png}
+					\caption{Visualización en el navegador de la calculadora comportándose como una API. Divide $45/6$.}
+					\label{fig:ejemplo3-2_navegador}
+				\end{figure}
+				
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=0.8\textwidth]{./imagenes_necesarias/ejemplos_ejecucion/parte_1/ejemplo3_3.png}
+					\caption{Salida por terminal del servidor mostrando el inicio.}
+					\label{fig:ejemplo3_terminal}
+				\end{figure}
+				
+				Este ejemplo da un paso más hacia una arquitectura web real al separar el \textit{Frontend} (interfaz) del \textit{Backend} (lógica). El servidor ahora realiza dos funciones distintas dependiendo de la ruta (\textit{routing}) solicitada:
+				
+				\begin{itemize}
+					\item  En la figura ~\ref{fig:ejemplo3-1_navegador} podemos ver el \textbf{servicio de archivos estáticos (I/O Asíncrono)}. Si el cliente accede a la raíz (\texttt{/}), el servidor utiliza los módulos nativos \texttt{path} y \texttt{fs} (File System) para buscar el archivo \texttt{calc.html} en el disco duro. Emplea la función asíncrona \texttt{readFile} junto con un \textit{callback} \texttt{(err, data)} para leer el archivo sin bloquear el hilo principal, y lo devuelve al cliente con la cabecera \texttt{text/html}. Comportándose como una página web real.
+					
+					\item En cambio, en la figura ~\ref{fig:ejemplo3-2_navegador}, vemos en acción el \textbf{consumo de API mediante AJAX (\texttt{fetch}).} En el lado del cliente (el navegador), el archivo HTML contiene un script que intercepta el envío del formulario (\texttt{submit}). En lugar de recargar la página, utiliza la API \texttt{fetch} de JavaScript (basada en Promesas con \texttt{.then()}) para construir la URL dinámica (ej. \texttt{/sumar/5/3}), solicitar el resultado al servidor en segundo plano y actualizar únicamente la etiqueta \texttt{<span>} del resultado en el DOM. Este comportamiento es parecido al de la calculadora del ejemplo anterior.
+				\end{itemize}
+
+		\subsection{Ejemplo 4.- Socket.io.}
+			Ahora ya estamos ante una página web \textbf{en tiempo real y bidireccional}. En este ejemplo voy a comentar primero las anotaciones o cueriosidades y luego vemos los ejemplos.
+			
+			\begin{itemize}
+				 
+			\item  Ya nos olvidamos de las peticiones, pues ahora trabajaremos con \textbf{eventos}. Esto ocurre porque, a diferencia de  HTTP que obliga a que el navegador siempre pregunte primero para que el servidor responda, Socket.io (basado en WebSockets) mantiene un "tubo" de comunicación siempre abierto. Ahora, el servidor puede enviar datos al navegador por iniciativa propia sin que nadie se lo pida.
+			
+			\item Estamos ante el \textbf{Patrón de Suscripción/Emisión} (\texttt{emit} y \texttt{on}), que se diferencia con el \textbf{Patrón \textit{Observer}} en que los publicadores (emisores) y los suscriptores (receptores) no se comunican directamente entre sí. Utilizan un intermediario (\textit{Message Broker} o Bus de Eventos). Los publicadores envían mensajes a un "canal" o "tema" y los suscriptores escuchan ese canal.
+			Es por eso que la comunicación ya no se basa en URLs (rutas), sino en "eventos" con nombres inventados por el programador.
+			\begin{itemize}
+				\item  Usamos \texttt{.emit('nombre-evento', datos)} para disparar un mensaje por el "tubo".
+				
+				\item Usamos \texttt{.on('nombre-evento', callback)} para quedarnos escuchando.
+				
+				\item Por ejemplo, el navegador emite \texttt{output-evt} con el texto "¡Hola Servicio!", y el servidor lo escucha para contestar.
+			\end{itemize}
+			
+			\item Se realiza una\textbf{ Difusión o \textit{Broadcast}} (\texttt{io.sockets.emit}): El servidor de Node.js guarda un array llamado \texttt{allClients} con las direcciones IP y puertos de todos los conectados. Cuando alguien nuevo entra (o cuando alguien cierra la pestaña y se dispara el evento \texttt{disconnect}), el servidor usa \texttt{io.sockets.emit('all-connections', allClients}), para mantenerla lista actualizada a todos los clientes que están conectados a la vez.
+			
+			\item El \textbf{DOM es Dinámico} (Frontend): En el archivo HTML, encontramos código JavaScript que está "suscrito" al evento \texttt{all-connections}. Cada vez que el servidor lanza esa nueva lista, el cliente borra la lista antigua de la pantalla y dibuja la nueva al instante, sin tener que darle al botón de actualizar del navegador.
+			
+		\end{itemize}
+		
+		Para poder ejecutar este ejemplo, abrimos la terminal y nos situamos en el directorio del archivo (que es \newline \texttt{Parte\_1\_Implementacion\_de\_Ejemplos/Ejemplo\_4\_Socketio} ) y ejecutamos el comando:
+			
+		\begin{verbatim}
+			$ node connections.js 
+		\end{verbatim}
+		
+		\subsubsection*{Capturas de funcionamiento}
+			A continuación se adjuntan las capturas de pantalla:
+			
+			\begin{figure}[H]
+				\centering
+				\includegraphics[width=0.8\textwidth]{./imagenes_necesarias/ejemplos_ejecucion/parte_1/ejemplo4_1.png}
+				\caption{Visualización en el navegador de la dirección Ip y el puerto de los dos clientes conectados a nuestro servidor.}
+				\label{fig:ejemplo4_navegador}
+			\end{figure}
+			
+			\begin{figure}[H]
+				\centering
+				\includegraphics[width=0.8\textwidth]{./imagenes_necesarias/ejemplos_ejecucion/parte_1/ejemplo4_2.png}
+				\caption{Salida por terminal del servidor mostrando el inicio.}
+				\label{fig:ejemplo4_terminal}
+			\end{figure}
+			
+			Como podemos observar en las figuras, el cliente web muestra los clientes conectados. La dirección IP es la misma puesto que he abierto dos pestañas en mi misma máquina, eso sí, el puerto obviamente si que cambia
+				
+		\subsection{Ejemplo 5.- MongoDB.}
+			En este ejemplo vamos un paso más allá: incorporar una base de datos real.
+
+\end{document}
