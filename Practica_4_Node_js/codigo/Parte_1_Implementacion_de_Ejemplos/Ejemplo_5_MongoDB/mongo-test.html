@@ -11,6 +11,10 @@
     <script type="text/javascript">
         function actualizarLista(usuarios) {
             const listCont = document.getElementById('resultados');
+
+            // Bucle para eliminar todos los hijos del contenedor de resultados.
+            // Comprueba si hay un primer hijo en el contenedor, y si lo hay, lo elimina. 
+            // Esto se repite hasta que no queden más hijos, es decir, hasta que el contenedor esté vacío.
             while(listCont.firstChild && listCont.removeChild(listCont.firstChild));
 
             const listElement = document.createElement('ul');
@@ -19,13 +23,18 @@
             const num = usuarios.length;
             for(var i=0; i<num; i++) {
                 const listItem = document.createElement('li');
-                listItem.textContent = JSON.stringify(usuarios[i]);
+                listItem.textContent = JSON.stringify(usuarios[i]); // stringify convierte el objeto en una cadena de texto, para mostrarlo en la lista
                 listElement.appendChild(listItem);
             }
         }
 
         const serviceURL = document.URL;
         const socket = io(serviceURL);		
+
+        // Cada vez que ejecutamos socket.on('evento', callback), estamos diciendo que cada vez que el cliente 
+        // reciba un evento con el nombre 'evento', se ejecute la función callback, que recibe como argumento 
+        // los datos enviados por el servidor con ese evento.
+        
         socket.on('my-address', (data) => {
             var d = new Date();
             socket.emit('poner', {host:data.host, port:data.port, time:d});

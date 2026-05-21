@@ -248,6 +248,50 @@
 			Como podemos observar en las figuras, el cliente web muestra los clientes conectados. La dirección IP es la misma puesto que he abierto dos pestañas en mi misma máquina, eso sí, el puerto obviamente si que cambia
 				
 		\subsection{Ejemplo 5.- MongoDB.}
-			En este ejemplo vamos un paso más allá: incorporar una base de datos real.
+			En este ejemplo vamos un paso más allá: incorporar una base de datos real. Utilizaremos \texttt{MongoDB}, que es un sistema de gestión de bases de datos de tipo NoSQL . Este SGBD utiliza colecciones de entradas en formato JSON, en lugar de tablas que encontramos en SQL. Cada entrada puede tener un conjunto de claves y valores arbitrarios. Para obtener información, realizamos consultas similares a las utilizadas en SQL.
+			
+			En este caso se utiliza para almacenar los clientes que se han conectado en nuestro servidor. En el ejemplo 4, los clientes conectados se almacenaban en un array de JS. Tenía como inconveniente que los datos eran volátiles, pues cuando apagamos el servidor, el array obviamente se borraba. En este ejemplo, podemos ver en las capturas de pantalla que las direcciones de los clientes se almacenan en la BD, porque se almacenan junto a la fecha y hora en la que se conectaron, y vemos que hay dos fechas distintas: 24 de abril y 21 de mayo.
+			
+			Para poder ejecutar este ejemplo, abrimos la terminal y nos situamos en el directorio del archivo (que es \newline \texttt{Parte\_1\_Implementacion\_de\_Ejemplos/Ejemplo\_5\_MongoDB} ) y ejecutamos los comandos:
+			
+			\begin{itemize}
+				\item Para arrancar el servicio de MongoDB (previamente debe estar instalado en nuestro PC)
+					\begin{verbatim}
+						$ sudo systemctl start mongod
+					\end{verbatim}
+					
+				\item Para lanzar el servidor:
+					\begin{verbatim}
+						$ node mongo-test.js
+					\end{verbatim}
+				
+			\end{itemize}
+
+			\begin{figure}[H]
+				\centering
+				\includegraphics[width=0.8\textwidth]{./imagenes_necesarias/ejemplos_ejecucion/parte_1/ejemplo5_1.png}
+				\caption{Visualización en el navegador de os clientes que se han conectado alguna vez al servidor.}
+				\label{fig:ejemplo5_navegador}
+			\end{figure}
+			
+			\begin{figure}[H]
+				\centering
+				\includegraphics[width=0.8\textwidth]{./imagenes_necesarias/ejemplos_ejecucion/parte_1/ejemplo5_2.png}
+				\caption{Salida por terminal del servidor mostrando el inicio.}
+				\label{fig:ejemplo5_terminal}
+			\end{figure}
+			
+			Observando las figuras ~\ref{fig:ejemplo5_navegador} y ~\ref{fig:ejemplo5_terminal}, vemos que, a diferencia del Ejemplo 4 (donde solo imprimíamos texto plano formateado con la IP y el puerto), aquí vemos que los datos aparecen en pantalla como objetos JSON puros encadenados. El campo llamado \texttt{\_id} con un código alfanumérico largo (\texttt{ObjectId}). Este elemento no lo ha programado el cliente; lo genera e inyecta MongoDB automáticamente para que actúe como clave primaria única del documento dentro de la colección.
+			
+			Además, se utilizan Promesas o \textit{Promises} para un \textit{Flujo Asíncrono} , evitando bloquear el único hilo de ejecución de Node.js durante las operaciones de Entrada/Salida (I/O) con el disco. El driver de MongoDB utiliza las \textit{Promises}. Toda la lógica de red se anida secuencialmente dentro de métodos \texttt{.then()}, asegurando que el servidor pueda seguir escuchando nuevos sockets mientras procesa consultas concurrentes.
+			
+			En el Ejemplo 4, el servidor tomaba un rol activo enviando la lista de conexiones por iniciativa propia nada más establecerse el enlace. En el Ejemplo 5, el flujo lo conduce el cliente web de forma reactiva: 
+			\begin{enumerate}
+				\item El servidor le dice al cliente cuál es su dirección (\texttt{my-address}).
+				\item El cliente añade la fecha actual y ordena activamente guardarla (\texttt{poner}).
+				\item Finalmente, el cliente solicita expresamente recuperar el histórico (\texttt{obtener}).
+			\end{enumerate}
+			
+			Por último, destacar que el Servidor no tiene estado (\textit{Stateless}). Es lo que habíamos comentado al principio del ejemplo, dado que el servidor de Node.js ya no mantiene ninguna lista viva de sockets en su memoria volátil, se elimina por completo la necesidad de escuchar el evento \texttt{disconnect} en \texttt{mongo-test.js}. Al servidor le resulta indiferente si el usuario cierra el navegador, ya que el registro queda guardado de manera permanente e inmutable en MongoDB.
 
 \end{document}
