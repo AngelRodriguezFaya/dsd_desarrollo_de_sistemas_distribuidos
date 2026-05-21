@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard Domótico Central</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f0f4f8;
+            color: #333;
+        }
+        header {
+            background: #0b5d6b;
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        main {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 0 16px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 768px) {
+            main { grid-template-columns: 1fr; }
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+        }
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        h2 {
+            margin-top: 0;
+            color: #0b5d6b;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 8px;
+        }
+        .state-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .ON { color: #166534; }
+        .OFF { color: #b91c1c; }
+        .OPEN { color: #2563eb; }
+        .CLOSED { color: #475569; }
+        
+        button {
+            padding: 10px 16px;
+            font-size: 1rem;
+            border: 0;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            background: #0b5d6b;
+            color: white;
+            transition: background 0.2s;
+        }
+        button:hover { background: #084652; }
+        
+        /* Panel de Alertas */
+        #alert-container {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+            padding: 12px;
+            max-height: 150px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+        .alert-item {
+            color: #991b1b;
+            margin-bottom: 4px;
+        }
+        
+        /* Grid de sensores en tiempo real */
+        .sensor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+        }
+        .sensor-box {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .sensor-box .val {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #0f172a;
+        }
+
+        footer {
+            background: #0b5d6b;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            border-top: 1px solid #cbd5e1;
+        }
+        footer strong {
+            color: white;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🏠 Sistema Domótico Inteligente</h1>
+        <p>Panel de Control Central en Tiempo Real</p>
+    </header>
+
+    <main>
+        <section class="card full-width">
+            <h2>⚠️ Alertas Críticas del Sistema</h2>
+            <div id="alert-container">
+                <div style="color: #64748b;">No hay alertas activas en este momento.</div>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>📊 Sensores (Última Medida)</h2>
+            <div class="sensor-grid" id="sensors-realtime">
+                <p style="color: #64748b; grid-column: 1/-1;">Esperando telemetría de sensores...</p>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>⚙️ Control de Actuadores</h2>
+            <div style="margin-bottom: 20px;">
+                <label>Aire Acondicionado:</label>
+                <div id="state-ac" class="state-value OFF">APAGADO</div>
+                <button id="btn-toggle-ac">Conmutar A/C</button>
+            </div>
+            <div>
+                <label>Persiana Domótica:</label>
+                <div id="state-blind" class="state-value OPEN">ABIERTA</div>
+                <button id="btn-toggle-blind">Conmutar Persiana</button>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <strong>Ángel</strong><br>
+        Desarrollo de Sistemas Distribuidos. DSD-3<br>
+        Grado en Ingeniería Informática. UGR.<br>
+        Curso 2025-2026.
+    </footer>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        // Elementos del DOM
+        const alertContainer = document.getElementById('alert-container');
+        const sensorsRealtime = document.getElementById('sensors-realtime');
+        const stateAc = document.getElementById('state-ac');
+        const stateBlind = document.getElementById('state-blind');
+        
+        const btnToggleAc = document.getElementById('btn-toggle-ac');
+        const btnToggleBlind = document.getElementById('btn-toggle-blind');
+
+        // Estructura en memoria para no duplicar cards de sensores
+        const sensoresActivos = {};
+
+        // 1. Escuchar actualizaciones de sensores en tiempo real (Broadcast del servidor)
+        socket.on('dashboard:update-sensor', (medida) => {
+            // Si es la primera medida que llega, limpiamos el texto de espera
+            if (Object.keys(sensoresActivos).length === 0) {
+                sensorsRealtime.innerHTML = '';
+            }
+
+            // Guardamos o actualizamos la medida en nuestro objeto
+            sensoresActivos[medida.sensorId] = medida;
+
+            // Renderizamos las cards de los sensores actualizadas
+            renderSensors();
+        });
+
+        function renderSensors() {
+            sensorsRealtime.innerHTML = '';
+            for (const id in sensoresActivos) {
+                const s = sensoresActivos[id];
+                const unidad = s.type.toLowerCase() === 'temperatura' ? '°C' : ' Lux';
+                
+                sensorsRealtime.innerHTML += `
+                    <div class="sensor-box">
+                        <div style="font-size:0.8rem; color:#64748b; font-weight:bold;">${s.name}</div>
+                        <div class="val">${s.value}${unidad}</div>
+                        <div style="font-size:0.75rem; color:#94a3b8;">📍 ${s.location}</div>
+                    </div>
+                `;
+            }
+        }
+
+        // 2. Escuchar cambios de estado en los Actuadores
+        socket.on('dashboard:update-actuadores', (estadoActuadores) => {
+            // Actualizar interfaz del Aire Acondicionado
+            stateAc.textContent = estadoActuadores.aireAcondicionado;
+            stateAc.className = `state-value ${estadoActuadores.aireAcondicionado === 'ENCENDIDO' ? 'ON' : 'OFF'}`;
+
+            // Actualizar interfaz de la Persiana
+            stateBlind.textContent = estadoActuadores.persiana;
+            stateBlind.className = `state-value ${estadoActuadores.persiana === 'ABIERTA' ? 'OPEN' : 'CLOSED'}`;
+        });
+
+        // 3. Escuchar alertas disparadas por el Agente Lógico
+        socket.on('dashboard:alert', (msg) => {
+            // Si es la primera alerta, borramos el mensaje por defecto
+            if (alertContainer.innerHTML.includes('No hay alertas activas')) {
+                alertContainer.innerHTML = '';
+            }
+            
+            const time = new Date().toLocaleTimeString();
+            alertContainer.innerHTML = `<div class="alert-item">[${time}] ${msg}</div>` + alertContainer.innerHTML;
+        });
+
+        // 4. Interacción manual: Pulsar botones para cambiar estados
+        btnToggleAc.addEventListener('click', () => {
+            socket.emit('ui:toggle-ac');
+        });
+
+        btnToggleBlind.addEventListener('click', () => {
+            socket.emit('ui:toggle-blind');
+        });
+    </script>
+</body>
+</html>

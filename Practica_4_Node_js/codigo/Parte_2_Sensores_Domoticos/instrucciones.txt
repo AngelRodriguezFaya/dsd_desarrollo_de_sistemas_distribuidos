@@ -1,0 +1,5 @@
+npm install mongodb@5.x socket.io
+
+sudo systemctl start mongod
+
+node registro_sensores.js

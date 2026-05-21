@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sensor Domótico</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f7f7f7;
+            color: #222;
+        }
+
+        main {
+            max-width: 520px;
+            margin: 40px auto;
+            padding: 0 16px;
+        }
+
+        form, .panel-medidas {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 16px;
+            display: grid;
+            gap: 12px;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        input,
+        select,
+        button {
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        button {
+            border: 0;
+            cursor: pointer;
+            background: #0b5d6b;
+            color: #fff;
+            font-weight: 700;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #084652;
+        }
+
+        button.secondary {
+            background: #4b5563;
+        }
+        button.secondary:hover {
+            background: #374151;
+        }
+
+        #status {
+            margin-top: 12px;
+            min-height: 1.4rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .hidden { /* Sería como la clase OCULTO */
+            display: none !important;
+        }
+
+        .info-sensor {
+            background: #e0f2f1;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            border-left: 4px solid #0b5d6b;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>Sensor domótico</h1>
+
+        <section id="register-section">
+            <form id="register-form">
+                <h2>Registrar un dispositivo nuevo</h2>
+
+                <label for="name">Nombre del Sensor:</label>
+                <input id="name" name="name" type="text" required>
+
+                <label for="location">Ubicación:</label>
+                <select id="location" name="location" required>
+                    <option value="">Selecciona...</option>
+                    <option value="Salón">Salón</option>
+                    <option value="Cocina">Cocina</option>
+                    <option value="Dormitorio">Dormitorio</option>
+                    <option value="Baño">Baño</option>
+                </select>
+
+                <label for="type">Tipo de Sensor:</label>
+                <select id="type" name="type" required>
+					<option value="">Selecciona...</option>
+                    <option value="Temperatura">Temperatura</option>
+                    <option value="Luminosidad">Luminosidad</option>
+                    <!-- <option value="Apertura">Apertura</option>
+                    <option value="Calidad del aire">Calidad del aire</option> -->
+                </select>
+
+                <button type="submit">Registrar e Iniciar</button>
+            </form>
+
+            <div id="status"></div>
+        </section>
+
+        <section id="measurement-section" class="hidden">
+            <div class="panel-medidas">
+                <h2>Panel del Dispositivo</h2>
+                <div id="sensor-info-card" class="info-sensor"></div>
+                
+                <label for="measurement-value">Introducir Medida Manual:</label>
+                <input type="number" id="measurement-value" step="0.1">
+                
+                <button id="btn-send-manual">Enviar Medida</button>
+                
+                <hr style="width:100%; border:0; border-top:1px solid #ddd; margin:8px 0;">
+                
+                <!-- Toggle es un botón que funciona como un interruptor -->
+                <button id="btn-toggle-auto" class="secondary">Iniciar Simulación Automática (Cada 3s)</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Scripts de JavaScript -->
+
+    <script src="/socket.io/socket.io.js"></script> <!-- Lógica en JS de WebSockets -->
+    <script>
+        const socket = io();
+
+        // Elementos del DOM
+        const form = document.getElementById('register-form');
+        const status = document.getElementById('status');
+        const registerSection = document.getElementById('register-section');
+        const measurementSection = document.getElementById('measurement-section');
+        const sensorInfoCard = document.getElementById('sensor-info-card');
+
+        const measurementInput = document.getElementById('measurement-value');
+        const btnSendManual = document.getElementById('btn-send-manual');
+        const btnToggleAuto = document.getElementById('btn-toggle-auto');
+
+        // Datos del sensor registrado
+        let activeSensor = null; // Indica si el sensor está activo
+        let autoInterval = null; // Para almacenar el intervalo de la simulación automática
+
+        // ==============================================================
+        // Manejar el envio en el formulario de registro
+        // ==============================================================
+        form.addEventListener('submit', (event) => {
+            event.preventDefault(); // Evita que se recargue la página
+
+            // Obtenemos los datos del formulario, creando un objeto JSON
+            const payload = {
+                name: document.getElementById('name').value,
+                location: document.getElementById('location').value,
+                type: document.getElementById('type').value
+            };
+
+            // Los enviamos al servidor a través del evento 'sensor:register'
+            socket.emit('sensor:register', payload);
+        });
+
+        // ==============================================================
+        // Escuchamos los eventos que el servidor nos envíe
+        // ==============================================================
+
+        // Escuchamos la confirmacion de registro del sensor
+        socket.on('sensor:registered', (sensor) => {
+            status.style.color = '#166534';
+            status.textContent = `Sensor registrado: ${sensor.name} (${sensor.type}) en ${sensor.location}`;
+            
+            // Guardamos los datos del sensor en la memoria del cliente
+            activeSensor = sensor;
+
+            // Cambiamos la interfaz de usuario para mostrar el panel de medidas
+            form.reset();
+            registerSection.classList.add('hidden'); // Ocultamos el formulario de registro
+            measurementSection.classList.remove('hidden'); // Mostramos el panel de medidas
+        
+            // Mostramos una tarjeta con los datos del sensor registrado
+            sensorInfoCard.innerHTML = `
+                <strong>ID en la BD:</strong> ${sensor._id}<br>
+                <strong>Nombre:</strong> ${sensor.name}<br>
+                <strong>Tipo:</strong> ${sensor.type}<br>
+                <strong>Ubicación:</strong> ${sensor.location}<br>
+            `;
+
+            // Ponemos un valor por defecto en la caja segun el tipo de sensor, para facilitar las pruebas manuales
+            switch(sensor.type) {
+                case 'Temperatura':
+                    measurementInput.value = 22; // ºC
+                    break;
+                case 'Luminosidad':
+                    measurementInput.value = 300; // Lux
+                    break;
+                // case 'Apertura':
+                //     measurementInput.value = 0; // 0 cerrado, 1 abierto
+                //     break;
+                // case 'Calidad del aire':
+                //     measurementInput.value = 50; // Índice de calidad del aire
+                //     break;
+                default:
+                    measurementInput.value = 0;
+            }
+        });
+
+
+        // El servidor ha detectado un error al registrar el sensor
+        socket.on('sensor:error', (message) => {
+            status.style.color = '#b91c1c';
+            status.textContent = `Error: ${message}`;
+        });
+
+        // ==============================================================
+        // Envio de medidas al servidor
+        // ==============================================================
+
+        // Enviar la medida introducida al servidor
+        function enviarMedidaAlServidor(value) {
+            // Si no está activo el sensor, no hacemos nada
+            if(activeSensor){
+
+                const dataSensor = {
+                    sensorId: activeSensor._id, // Enlazamos la medida con el ID del sensor registrado
+                    name: activeSensor.name,
+                    type: activeSensor.type,
+                    location: activeSensor.location,
+                    value: parseFloat(value)
+                };
+
+                // Emitimos el evento al servidor
+                socket.emit('sensor:data', dataSensor);
+
+                // Mostramos un mensaje de confirmación en el cliente
+                // Efecto visual temporal en el status para saber que se ha enviado
+                status.style.color = '#1e3a8a';
+                status.textContent = `[${new Date().toLocaleTimeString()}] Medida enviada: ${valor}`;
+            }
+        }
+
+        // Envío manual mediante el botón
+        btnSendManual.addEventListener('click', () => {
+            const valor = measurementInput.value;
+            if(valor === '') {
+                alert('Por favor, introduce un valor para la medida.');
+            } else {
+                enviarMedidaAlServidor(valor);
+            }
+        });
+
+
+        // Envío automático cada 3 segundos al pulsar el botón de toggle
+        btnToggleAuto.addEventListener('click', () => {
+            if (autoInterval) { // Si ya estaba funcionando, lo paramos
+                clearInterval(autoInterval);
+                autoInterval = null;
+                btnToggleAuto.textContent = "Iniciar Simulación Automática (Cada 3s)";
+                btnToggleAuto.classList.remove('secondary');
+            } else {
+                // Si estaba parado, lo iniciamos
+                btnToggleAuto.textContent = "Detener Simulación Automática";
+                btnToggleAuto.classList.add('secondary');
+
+                autoInterval = setInterval(() => {
+                    let valorLeido;
+
+                    switch(activeSensor.type) {
+                        case 'Temperatura':
+                            // Simulamos una lectura de temperatura entre 15 y 30 grados
+                            valorLeido = (Math.random() * 15 + 15).toFixed(1);
+                            break;
+                        case 'Luminosidad':
+                            // Simulamos una lectura de luminosidad entre 100 y 1000 lux
+                            valorLeido = (Math.random() * 900 + 100).toFixed(1);
+                            break;
+                        // case 'Apertura':
+                        // case 'Calidad del aire':
+                        default:
+                            break;
+                    }
+
+                    measurementInput.value = valorLeido; // Actualizamos el input con el valor simulado
+                    enviarMedidaAlServidor(valorLeido); // Enviamos la medida al servidor
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>
