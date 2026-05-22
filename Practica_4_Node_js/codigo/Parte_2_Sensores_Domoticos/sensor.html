@@ -109,7 +109,7 @@
                     <option value="Dormitorio 1">Dormitorio 1</option>
                     <option value="Dormitorio 2">Dormitorio 2</option>
                     <option value="Bano">Baño</option>
-                    <option value="Exterior">Exterior</option>
+                    <option value="Portal">Portal</option>
                 </select>
 
                 <label for="type">Tipo de Sensor:</label>
@@ -119,6 +119,7 @@
                     <option value="Luminosidad">Luminosidad</option>
                     <option value="Gas">Gas</option>
                     <option value="Movimiento">Movimiento</option>
+                    <option value="Videovigilancia">Videovigilancia</option>
                 </select>
 
                 <button type="submit">Registrar e Iniciar</button>
@@ -275,6 +276,9 @@
                 case 'Movimiento':
                     measurementInput.value = 0; // 0 o 1 para simular movimiento (0 no, 1 sí)
                     break;
+                case 'Videovigilancia':
+                    measurementInput.value = 0; // 0 si no hay nadie, 1 si hay
+                    break;
                 default:
                     measurementInput.value = 0;
             }
@@ -357,6 +361,10 @@
                         case 'Movimiento':
                             // Simulamos detección de movimiento (0 o 1) el 40% de las veces
                             valorLeido = Math.random() < 0.4 ? 1 : 0;
+                            break;
+                        case 'Videovigilancia':
+                            // 20% de probabilidad de captar a alguien pasando
+                            valorLeido = Math.random() < 0.2 ? 1 : 0;
                             break;
                         default:
                             break;

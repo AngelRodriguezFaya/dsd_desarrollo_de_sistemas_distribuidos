@@ -146,10 +146,41 @@
                 <p style="color: #64748b;">Esperando actuadores del servidor...</p>
             </div>
         </section>
+
+        <section class="card full-width" style="margin-top: 10px;">
+            <h2>📹 Circuito Cerrado de Videovigilancia</h2>
+            <div 
+                style="
+                    text-align: center; 
+                    background: #1e293b; 
+                    border-radius: 8px; 
+                    padding: 15px; 
+                    position: relative; 
+                    box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);">
+                    <div 
+                        id="camera-status" 
+                        style="
+                            position: absolute; 
+                            top: 25px; 
+                            left: 25px; 
+                            color: #22c55e; 
+                            font-weight: bold; 
+                            font-family: monospace; 
+                            font-size: 1rem; 
+                            text-shadow: 1px 1px 2px black;">
+                        🟢 LIVE - PORTAL TRANQUILO
+                    </div>
+                    <img id="camera-feed" 
+                        src="https://media.giphy.com/media/H4buZ6PLgwsKjA9hlO/giphy.gif" 
+                        alt="CCTV Portal" 
+                        style="width: 100%; max-height: 380px; object-fit: cover; border-radius: 4px; border: 2px solid #475569;">
+            </div>
+        </section>
+
     </main>
 
     <footer>
-        <strong>Ángel</strong><br>
+        <strong>Ángel Rodríguez Faya</strong><br>
         Desarrollo de Sistemas Distribuidos. DSD-3<br>
         Grado en Ingeniería Informática. UGR.<br>
         Curso 2025-2026.
@@ -158,6 +189,10 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
+
+        // --- CONSTANTES GLOBALES DE VIDEOVIGILANCIA (URLs limpias) ---
+        const URL_CCV_TRANQUILO = "https://media.giphy.com/media/H4buZ6PLgwsKjA9hlO/giphy.gif";
+        const URL_CCV_ALERTA = "https://media.giphy.com/media/Pag51BshRuVqg/giphy.gif";
 
         // Elementos del DOM
         const alertContainer = document.getElementById('alert-container');
@@ -180,6 +215,24 @@
 
             // Renderizamos las cards de los sensores actualizadas
             renderSensors();
+
+            // Control dinámico de la cámara del Portal
+            if (medida.type === 'Videovigilancia' && medida.location === 'Portal') {
+                const feedImg = document.getElementById('camera-feed');
+                const statusDiv = document.getElementById('camera-status');
+
+                if (medida.value === 1) {
+                    // GIF de alerta: Alguien merodeando en el portal
+                    feedImg.src = URL_CCV_ALERTA;
+                    statusDiv.innerHTML = "🔴 ALERT - ACTIVIDAD DETECTADA";
+                    statusDiv.style.color = "#ef4444";
+                } else {
+                    // GIF estático: Portal vacío en blanco y negro
+                    feedImg.src = URL_CCV_TRANQUILO;
+                    statusDiv.innerHTML = "🟢 LIVE - PORTAL TRANQUILO";
+                    statusDiv.style.color = "#22c55e";
+                }
+            }
         });
 
         // 1. Función para renderizar las cards de sensores en el dashboard

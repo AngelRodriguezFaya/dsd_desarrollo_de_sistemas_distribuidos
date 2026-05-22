@@ -1,0 +1,36 @@
+@startuml envio_aviso
+skinparam style strictuml
+skinparam defaultFontName Arial
+autonumber
+
+participant "Sensor (Gas)" as Sensor
+participant "Agente Lógico (Servidor)" as Servidor
+participant "Dashboard (Web)" as Dashboard
+participant "API Telegram" as Telegram
+
+Sensor -> Servidor : emit('sensor:data', {tipo: 'Gas', valor: 450})
+activate Servidor
+
+note right of Servidor
+  Evalúa: valor > 300
+  Resultado: TRUE (Peligro)
+end note
+
+== Persistencia ==
+Servidor -> Servidor : Guarda registro en MongoDB (Asíncrono)
+
+== Difusión de Alertas (Concurrentes) ==
+par Notificación Web
+    Servidor -> Dashboard : emit('dashboard:alert', "⚠️ PELIGRO: Fuga de Gas...")
+    activate Dashboard
+    Dashboard -> Dashboard : Actualiza el DOM
+    deactivate Dashboard
+else Notificación Móvil
+    Servidor -> Telegram : sendMessage(chatId, "⚠️ [ALERTA ROJA] Nivel de Gas...")
+    activate Telegram
+    Telegram --> Servidor : 200 OK
+    deactivate Telegram
+end
+
+deactivate Servidor
+@enduml

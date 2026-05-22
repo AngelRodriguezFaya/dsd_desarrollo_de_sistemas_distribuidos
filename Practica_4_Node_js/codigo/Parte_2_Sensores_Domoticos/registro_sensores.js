@@ -458,9 +458,29 @@ function ejecutarAgente(medida) {
             }
         }
     }
+
+    // Regla del Videoportero: 
+    if(tipo === 'Videovigilancia' && ubicacion === 'Portal') {
+        if(valor === 1) { // Si se detecta movimiento en el portal, enviamos una alerta de que alguien está en la puerta.
+
+            // 1. Notificamos la alerta tanto en el dashboard como por Telegram
+            notificarAlerta(`📹 <strong>[SEGURIDAD]</strong> ¡Alerta de actividad en el Portal! La cámara de seguridad ha comenzado a grabar.`);
+
+            // 2. Enviamos el GIF visual exclusivamente por Telegram
+            if (miChatId) {
+                const gifAlerta = 'https://media.giphy.com/media/Pag51BshRuVqg/giphy.gif'; // GIF de alerta de seguridad
+                
+                telegramBot.sendAnimation(miChatId, gifAlerta, {
+                    caption: '👀 Esto es lo que ha capturado la cámara de seguridad en tiempo real. 👀'
+                }).catch(err => {
+                    console.error('[TELEGRAM ERROR] No se pudo enviar el GIF:', err.message);
+                });
+            }
+        }
+
+        
+    }
 }
-
-
 
 // ===========================================================================
 //   Cierre limpio de MongoDB al detener el proceso (Ctrl+C). 
