@@ -1,0 +1,382 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{c+cp}{\PYGZlt{}!doctype html\PYGZgt{}}
+\PYG{p}{\PYGZlt{}}\PYG{n+nt}{html} \PYG{n+na}{lang}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}es\PYGZdq{}}\PYG{p}{\PYGZgt{}}
+\PYG{p}{\PYGZlt{}}\PYG{n+nt}{head}\PYG{p}{\PYGZgt{}}
+    \PYG{p}{\PYGZlt{}}\PYG{n+nt}{meta} \PYG{n+na}{charset}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}utf\PYGZhy{}8\PYGZdq{}}\PYG{p}{\PYGZgt{}}
+    \PYG{p}{\PYGZlt{}}\PYG{n+nt}{meta} \PYG{n+na}{name}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}viewport\PYGZdq{}} \PYG{n+na}{content}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}width=device\PYGZhy{}width, initial\PYGZhy{}scale=1\PYGZdq{}}\PYG{p}{\PYGZgt{}}
+    \PYG{p}{\PYGZlt{}}\PYG{n+nt}{title}\PYG{p}{\PYGZgt{}}Sensor Domótico\PYG{p}{\PYGZlt{}/}\PYG{n+nt}{title}\PYG{p}{\PYGZgt{}}
+    \PYG{p}{\PYGZlt{}}\PYG{n+nt}{style}\PYG{p}{\PYGZgt{}}
+\PYG{+w}{        }\PYG{n+nt}{body}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{k}{margin}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{            }\PYG{k}{font\PYGZhy{}family}\PYG{p}{:}\PYG{+w}{ }\PYG{n}{Arial}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Helvetica}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kc}{sans\PYGZhy{}serif}\PYG{p}{;}
+\PYG{+w}{            }\PYG{k}{background}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mh}{\PYGZsh{}f7f7f7}\PYG{p}{;}
+\PYG{+w}{            }\PYG{k}{color}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mh}{\PYGZsh{}222}\PYG{p}{;}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{        }\PYG{n+nt}{main}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{k}{max\PYGZhy{}width}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mi}{520}\PYG{k+kt}{px}\PYG{p}{;}
+\PYG{+w}{            }\PYG{k}{margin}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mi}{40}\PYG{k+kt}{px}\PYG{+w}{ }\PYG{k+kc}{auto}\PYG{p}{;}
+\PYG{+w}{            }\PYG{k}{padding}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{+w}{ }\PYG{l+m+mi}{16}\PYG{k+kt}{px}\PYG{p}{;}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{        }\PYG{n+nt}{form}\PYG{o}{,}\PYG{+w}{ }\PYG{p}{.}\PYG{n+nc}{panel\PYGZhy{}medidas}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{k}{background}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mh}{\PYGZsh{}fff}\PYG{p}{;}
+\PYG{+w}{            }\PYG{k}{border}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{k+kt}{px}\PYG{+w}{ }\PYG{k+kc}{solid}\PYG{+w}{ }\PYG{l+m+mh}{\PYGZsh{}ddd}\PYG{p}{;}
+\PYG{+w}{            }\PYG{k}{border\PYGZhy{}radius}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mi}{8}\PYG{k+kt}{px}\PYG{p}{;}
+\PYG{+w}{            }\PYG{k}{padding}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mi}{16}\PYG{k+kt}{px}\PYG{p}{;}
+\PYG{+w}{            }\PYG{k}{display}\PYG{p}{:}\PYG{+w}{ }\PYG{k}{grid}\PYG{p}{;}
+\PYG{+w}{            }\PYG{k}{gap}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mi}{12}\PYG{k+kt}{px}\PYG{p}{;}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{        }\PYG{n+nt}{label}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{k}{font\PYGZhy{}weight}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mi}{600}\PYG{p}{;}
+\PYG{+w}{            }\PYG{k}{font\PYGZhy{}size}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mf}{0.95}\PYG{k+kt}{rem}\PYG{p}{;}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{        }\PYG{n+nt}{input}\PYG{o}{,}
+\PYG{+w}{        }\PYG{n+nt}{select}\PYG{o}{,}
+\PYG{+w}{        }\PYG{n+nt}{button}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{k}{padding}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mi}{10}\PYG{k+kt}{px}\PYG{p}{;}
+\PYG{+w}{            }\PYG{k}{font\PYGZhy{}size}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{k+kt}{rem}\PYG{p}{;}
+\PYG{+w}{            }\PYG{k}{border}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{k+kt}{px}\PYG{+w}{ }\PYG{k+kc}{solid}\PYG{+w}{ }\PYG{l+m+mh}{\PYGZsh{}ccc}\PYG{p}{;}
+\PYG{+w}{            }\PYG{k}{border\PYGZhy{}radius}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mi}{6}\PYG{k+kt}{px}\PYG{p}{;}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{        }\PYG{n+nt}{button}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{k}{border}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{;}
+\PYG{+w}{            }\PYG{k}{cursor}\PYG{p}{:}\PYG{+w}{ }\PYG{k+kc}{pointer}\PYG{p}{;}
+\PYG{+w}{            }\PYG{k}{background}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mh}{\PYGZsh{}0b5d6b}\PYG{p}{;}
+\PYG{+w}{            }\PYG{k}{color}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mh}{\PYGZsh{}fff}\PYG{p}{;}
+\PYG{+w}{            }\PYG{k}{font\PYGZhy{}weight}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mi}{700}\PYG{p}{;}
+\PYG{+w}{            }\PYG{k}{transition}\PYG{p}{:}\PYG{+w}{ }\PYG{k}{background}\PYG{+w}{ }\PYG{l+m+mf}{0.2}\PYG{k+kt}{s}\PYG{p}{;}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{        }\PYG{n+nt}{button}\PYG{p}{:}\PYG{n+nd}{hover}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{k}{background}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mh}{\PYGZsh{}084652}\PYG{p}{;}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{        }\PYG{n+nt}{button}\PYG{p}{.}\PYG{n+nc}{secondary}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{k}{background}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mh}{\PYGZsh{}4b5563}\PYG{p}{;}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{        }\PYG{n+nt}{button}\PYG{p}{.}\PYG{n+nc}{secondary}\PYG{p}{:}\PYG{n+nd}{hover}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{k}{background}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mh}{\PYGZsh{}374151}\PYG{p}{;}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{        }\PYG{p}{\PYGZsh{}}\PYG{n+nn}{status}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{k}{margin\PYGZhy{}top}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mi}{12}\PYG{k+kt}{px}\PYG{p}{;}
+\PYG{+w}{            }\PYG{k}{min\PYGZhy{}height}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mf}{1.4}\PYG{k+kt}{rem}\PYG{p}{;}
+\PYG{+w}{            }\PYG{k}{font\PYGZhy{}size}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mf}{0.95}\PYG{k+kt}{rem}\PYG{p}{;}
+\PYG{+w}{            }\PYG{k}{font\PYGZhy{}weight}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mi}{600}\PYG{p}{;}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{        }\PYG{p}{.}\PYG{n+nc}{hidden}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{+w}{ }\PYG{c}{/* Sería como la clase OCULTO */}
+\PYG{+w}{            }\PYG{k}{display}\PYG{p}{:}\PYG{+w}{ }\PYG{k+kc}{none}\PYG{+w}{ }\PYG{c+cp}{!important}\PYG{p}{;}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{        }\PYG{p}{.}\PYG{n+nc}{info\PYGZhy{}sensor}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{k}{background}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mh}{\PYGZsh{}e0f2f1}\PYG{p}{;}
+\PYG{+w}{            }\PYG{k}{padding}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mi}{10}\PYG{k+kt}{px}\PYG{p}{;}
+\PYG{+w}{            }\PYG{k}{border\PYGZhy{}radius}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mi}{6}\PYG{k+kt}{px}\PYG{p}{;}
+\PYG{+w}{            }\PYG{k}{font\PYGZhy{}size}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mf}{0.9}\PYG{k+kt}{rem}\PYG{p}{;}
+\PYG{+w}{            }\PYG{k}{border\PYGZhy{}left}\PYG{p}{:}\PYG{+w}{ }\PYG{l+m+mi}{4}\PYG{k+kt}{px}\PYG{+w}{ }\PYG{k+kc}{solid}\PYG{+w}{ }\PYG{l+m+mh}{\PYGZsh{}0b5d6b}\PYG{p}{;}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{    }\PYG{p}{\PYGZlt{}/}\PYG{n+nt}{style}\PYG{p}{\PYGZgt{}}
+\PYG{p}{\PYGZlt{}/}\PYG{n+nt}{head}\PYG{p}{\PYGZgt{}}
+\PYG{p}{\PYGZlt{}}\PYG{n+nt}{body}\PYG{p}{\PYGZgt{}}
+    \PYG{p}{\PYGZlt{}}\PYG{n+nt}{main}\PYG{p}{\PYGZgt{}}
+        \PYG{p}{\PYGZlt{}}\PYG{n+nt}{h1}\PYG{p}{\PYGZgt{}}Sensor domótico\PYG{p}{\PYGZlt{}/}\PYG{n+nt}{h1}\PYG{p}{\PYGZgt{}}
+
+        \PYG{p}{\PYGZlt{}}\PYG{n+nt}{section} \PYG{n+na}{id}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}register\PYGZhy{}section\PYGZdq{}}\PYG{p}{\PYGZgt{}}
+            \PYG{p}{\PYGZlt{}}\PYG{n+nt}{div} \PYG{n+na}{class}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}panel\PYGZhy{}medidas\PYGZdq{}} \PYG{n+na}{id}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}panel\PYGZhy{}existentes\PYGZdq{}} \PYG{n+na}{style}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}margin\PYGZhy{}bottom: 20px;\PYGZdq{}}\PYG{p}{\PYGZgt{}}
+                \PYG{p}{\PYGZlt{}}\PYG{n+nt}{h2}\PYG{p}{\PYGZgt{}}Cargar un dispositivo nuevo\PYG{p}{\PYGZlt{}/}\PYG{n+nt}{h2}\PYG{p}{\PYGZgt{}}
+                \PYG{p}{\PYGZlt{}}\PYG{n+nt}{label} \PYG{n+na}{for}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}select\PYGZhy{}sensores\PYGZdq{}}\PYG{p}{\PYGZgt{}}¿Deseas usar un sensor ya creado anteriormente?\PYG{p}{\PYGZlt{}/}\PYG{n+nt}{label}\PYG{p}{\PYGZgt{}}
+                \PYG{p}{\PYGZlt{}}\PYG{n+nt}{select} \PYG{n+na}{id}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}select\PYGZhy{}sensores\PYGZdq{}}\PYG{p}{\PYGZgt{}}
+                    \PYG{p}{\PYGZlt{}}\PYG{n+nt}{option} \PYG{n+na}{value}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}\PYGZdq{}}\PYG{p}{\PYGZgt{}}\PYGZhy{}\PYGZhy{} Selecciona un sensor de la base de datos \PYGZhy{}\PYGZhy{}\PYG{p}{\PYGZlt{}/}\PYG{n+nt}{option}\PYG{p}{\PYGZgt{}}
+                \PYG{p}{\PYGZlt{}/}\PYG{n+nt}{select}\PYG{p}{\PYGZgt{}}
+                \PYG{p}{\PYGZlt{}}\PYG{n+nt}{button} \PYG{n+na}{type}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}button\PYGZdq{}} \PYG{n+na}{id}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}btn\PYGZhy{}cargar\PYGZhy{}existente\PYGZdq{}}\PYG{p}{\PYGZgt{}}Cargar Sensor Seleccionado\PYG{p}{\PYGZlt{}/}\PYG{n+nt}{button}\PYG{p}{\PYGZgt{}}
+            \PYG{p}{\PYGZlt{}/}\PYG{n+nt}{div}\PYG{p}{\PYGZgt{}}
+
+            \PYG{p}{\PYGZlt{}}\PYG{n+nt}{form} \PYG{n+na}{id}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}register\PYGZhy{}form\PYGZdq{}}\PYG{p}{\PYGZgt{}}
+                \PYG{p}{\PYGZlt{}}\PYG{n+nt}{h2}\PYG{p}{\PYGZgt{}}Registrar un dispositivo nuevo\PYG{p}{\PYGZlt{}/}\PYG{n+nt}{h2}\PYG{p}{\PYGZgt{}}
+
+                \PYG{p}{\PYGZlt{}}\PYG{n+nt}{label} \PYG{n+na}{for}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}name\PYGZdq{}}\PYG{p}{\PYGZgt{}}Nombre del Sensor:\PYG{p}{\PYGZlt{}/}\PYG{n+nt}{label}\PYG{p}{\PYGZgt{}}
+                \PYG{p}{\PYGZlt{}}\PYG{n+nt}{input} \PYG{n+na}{id}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}name\PYGZdq{}} \PYG{n+na}{name}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}name\PYGZdq{}} \PYG{n+na}{type}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}text\PYGZdq{}} \PYG{n+na}{required}\PYG{p}{\PYGZgt{}}
+
+                \PYG{p}{\PYGZlt{}}\PYG{n+nt}{label} \PYG{n+na}{for}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}location\PYGZdq{}}\PYG{p}{\PYGZgt{}}Ubicación:\PYG{p}{\PYGZlt{}/}\PYG{n+nt}{label}\PYG{p}{\PYGZgt{}}
+                \PYG{p}{\PYGZlt{}}\PYG{n+nt}{select} \PYG{n+na}{id}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}location\PYGZdq{}} \PYG{n+na}{name}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}location\PYGZdq{}} \PYG{n+na}{required}\PYG{p}{\PYGZgt{}}
+                    \PYG{p}{\PYGZlt{}}\PYG{n+nt}{option} \PYG{n+na}{value}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}\PYGZdq{}}\PYG{p}{\PYGZgt{}}Selecciona...\PYG{p}{\PYGZlt{}/}\PYG{n+nt}{option}\PYG{p}{\PYGZgt{}}
+                    \PYG{p}{\PYGZlt{}}\PYG{n+nt}{option} \PYG{n+na}{value}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}Salon\PYGZdq{}}\PYG{p}{\PYGZgt{}}Salón\PYG{p}{\PYGZlt{}/}\PYG{n+nt}{option}\PYG{p}{\PYGZgt{}}
+                    \PYG{p}{\PYGZlt{}}\PYG{n+nt}{option} \PYG{n+na}{value}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}Cocina\PYGZdq{}}\PYG{p}{\PYGZgt{}}Cocina\PYG{p}{\PYGZlt{}/}\PYG{n+nt}{option}\PYG{p}{\PYGZgt{}}
+                    \PYG{p}{\PYGZlt{}}\PYG{n+nt}{option} \PYG{n+na}{value}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}Dormitorio 1\PYGZdq{}}\PYG{p}{\PYGZgt{}}Dormitorio 1\PYG{p}{\PYGZlt{}/}\PYG{n+nt}{option}\PYG{p}{\PYGZgt{}}
+                    \PYG{p}{\PYGZlt{}}\PYG{n+nt}{option} \PYG{n+na}{value}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}Dormitorio 2\PYGZdq{}}\PYG{p}{\PYGZgt{}}Dormitorio 2\PYG{p}{\PYGZlt{}/}\PYG{n+nt}{option}\PYG{p}{\PYGZgt{}}
+                    \PYG{p}{\PYGZlt{}}\PYG{n+nt}{option} \PYG{n+na}{value}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}Bano\PYGZdq{}}\PYG{p}{\PYGZgt{}}Baño\PYG{p}{\PYGZlt{}/}\PYG{n+nt}{option}\PYG{p}{\PYGZgt{}}
+                    \PYG{p}{\PYGZlt{}}\PYG{n+nt}{option} \PYG{n+na}{value}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}Portal\PYGZdq{}}\PYG{p}{\PYGZgt{}}Portal\PYG{p}{\PYGZlt{}/}\PYG{n+nt}{option}\PYG{p}{\PYGZgt{}}
+                \PYG{p}{\PYGZlt{}/}\PYG{n+nt}{select}\PYG{p}{\PYGZgt{}}
+
+                \PYG{p}{\PYGZlt{}}\PYG{n+nt}{label} \PYG{n+na}{for}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}type\PYGZdq{}}\PYG{p}{\PYGZgt{}}Tipo de Sensor:\PYG{p}{\PYGZlt{}/}\PYG{n+nt}{label}\PYG{p}{\PYGZgt{}}
+                \PYG{p}{\PYGZlt{}}\PYG{n+nt}{select} \PYG{n+na}{id}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}type\PYGZdq{}} \PYG{n+na}{name}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}type\PYGZdq{}} \PYG{n+na}{required}\PYG{p}{\PYGZgt{}}
+					\PYG{p}{\PYGZlt{}}\PYG{n+nt}{option} \PYG{n+na}{value}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}\PYGZdq{}}\PYG{p}{\PYGZgt{}}Selecciona...\PYG{p}{\PYGZlt{}/}\PYG{n+nt}{option}\PYG{p}{\PYGZgt{}}
+                    \PYG{p}{\PYGZlt{}}\PYG{n+nt}{option} \PYG{n+na}{value}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}Temperatura\PYGZdq{}}\PYG{p}{\PYGZgt{}}Temperatura\PYG{p}{\PYGZlt{}/}\PYG{n+nt}{option}\PYG{p}{\PYGZgt{}}
+                    \PYG{p}{\PYGZlt{}}\PYG{n+nt}{option} \PYG{n+na}{value}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}Luminosidad\PYGZdq{}}\PYG{p}{\PYGZgt{}}Luminosidad\PYG{p}{\PYGZlt{}/}\PYG{n+nt}{option}\PYG{p}{\PYGZgt{}}
+                    \PYG{p}{\PYGZlt{}}\PYG{n+nt}{option} \PYG{n+na}{value}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}Gas\PYGZdq{}}\PYG{p}{\PYGZgt{}}Gas\PYG{p}{\PYGZlt{}/}\PYG{n+nt}{option}\PYG{p}{\PYGZgt{}}
+                    \PYG{p}{\PYGZlt{}}\PYG{n+nt}{option} \PYG{n+na}{value}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}Movimiento\PYGZdq{}}\PYG{p}{\PYGZgt{}}Movimiento\PYG{p}{\PYGZlt{}/}\PYG{n+nt}{option}\PYG{p}{\PYGZgt{}}
+                    \PYG{p}{\PYGZlt{}}\PYG{n+nt}{option} \PYG{n+na}{value}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}Videovigilancia\PYGZdq{}}\PYG{p}{\PYGZgt{}}Videovigilancia\PYG{p}{\PYGZlt{}/}\PYG{n+nt}{option}\PYG{p}{\PYGZgt{}}
+                \PYG{p}{\PYGZlt{}/}\PYG{n+nt}{select}\PYG{p}{\PYGZgt{}}
+
+                \PYG{p}{\PYGZlt{}}\PYG{n+nt}{button} \PYG{n+na}{type}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}submit\PYGZdq{}}\PYG{p}{\PYGZgt{}}Registrar e Iniciar\PYG{p}{\PYGZlt{}/}\PYG{n+nt}{button}\PYG{p}{\PYGZgt{}}
+            \PYG{p}{\PYGZlt{}/}\PYG{n+nt}{form}\PYG{p}{\PYGZgt{}}
+
+            \PYG{p}{\PYGZlt{}}\PYG{n+nt}{div} \PYG{n+na}{id}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}status\PYGZdq{}}\PYG{p}{\PYGZgt{}\PYGZlt{}/}\PYG{n+nt}{div}\PYG{p}{\PYGZgt{}}
+        \PYG{p}{\PYGZlt{}/}\PYG{n+nt}{section}\PYG{p}{\PYGZgt{}}
+
+        \PYG{p}{\PYGZlt{}}\PYG{n+nt}{section} \PYG{n+na}{id}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}measurement\PYGZhy{}section\PYGZdq{}} \PYG{n+na}{class}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}hidden\PYGZdq{}}\PYG{p}{\PYGZgt{}} \PYG{c+cm}{\PYGZlt{}!\PYGZhy{}\PYGZhy{} Panel de mediciones \PYGZhy{}\PYGZhy{}\PYGZgt{}}
+            \PYG{p}{\PYGZlt{}}\PYG{n+nt}{div} \PYG{n+na}{class}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}panel\PYGZhy{}medidas\PYGZdq{}}\PYG{p}{\PYGZgt{}}
+                \PYG{p}{\PYGZlt{}}\PYG{n+nt}{h2}\PYG{p}{\PYGZgt{}}Panel del Dispositivo\PYG{p}{\PYGZlt{}/}\PYG{n+nt}{h2}\PYG{p}{\PYGZgt{}}
+                \PYG{p}{\PYGZlt{}}\PYG{n+nt}{div} \PYG{n+na}{id}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}sensor\PYGZhy{}info\PYGZhy{}card\PYGZdq{}} \PYG{n+na}{class}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}info\PYGZhy{}sensor\PYGZdq{}}\PYG{p}{\PYGZgt{}\PYGZlt{}/}\PYG{n+nt}{div}\PYG{p}{\PYGZgt{}}
+                
+                \PYG{p}{\PYGZlt{}}\PYG{n+nt}{label} \PYG{n+na}{for}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}measurement\PYGZhy{}value\PYGZdq{}}\PYG{p}{\PYGZgt{}}Introducir Medida Manual:\PYG{p}{\PYGZlt{}/}\PYG{n+nt}{label}\PYG{p}{\PYGZgt{}}
+                \PYG{p}{\PYGZlt{}}\PYG{n+nt}{input} \PYG{n+na}{type}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}number\PYGZdq{}} \PYG{n+na}{id}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}measurement\PYGZhy{}value\PYGZdq{}} \PYG{n+na}{step}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}0.1\PYGZdq{}}\PYG{p}{\PYGZgt{}}
+                
+                \PYG{p}{\PYGZlt{}}\PYG{n+nt}{button} \PYG{n+na}{id}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}btn\PYGZhy{}send\PYGZhy{}manual\PYGZdq{}}\PYG{p}{\PYGZgt{}}Enviar Medida\PYG{p}{\PYGZlt{}/}\PYG{n+nt}{button}\PYG{p}{\PYGZgt{}}
+                
+                \PYG{p}{\PYGZlt{}}\PYG{n+nt}{hr} \PYG{n+na}{style}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}width:100\PYGZpc{}; border:0; border\PYGZhy{}top:1px solid \PYGZsh{}ddd; margin:8px 0;\PYGZdq{}}\PYG{p}{\PYGZgt{}}
+                
+                \PYG{c+cm}{\PYGZlt{}!\PYGZhy{}\PYGZhy{} Toggle es un botón que funciona como un interruptor \PYGZhy{}\PYGZhy{}\PYGZgt{}}
+                \PYG{p}{\PYGZlt{}}\PYG{n+nt}{button} \PYG{n+na}{id}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}btn\PYGZhy{}toggle\PYGZhy{}auto\PYGZdq{}} \PYG{n+na}{class}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}secondary\PYGZdq{}}\PYG{p}{\PYGZgt{}}Iniciar Simulación Automática (Cada 5s)\PYG{p}{\PYGZlt{}/}\PYG{n+nt}{button}\PYG{p}{\PYGZgt{}}
+            \PYG{p}{\PYGZlt{}/}\PYG{n+nt}{div}\PYG{p}{\PYGZgt{}}
+        \PYG{p}{\PYGZlt{}/}\PYG{n+nt}{section}\PYG{p}{\PYGZgt{}}
+    \PYG{p}{\PYGZlt{}/}\PYG{n+nt}{main}\PYG{p}{\PYGZgt{}}
+
+    \PYG{c+cm}{\PYGZlt{}!\PYGZhy{}\PYGZhy{} Scripts de JavaScript \PYGZhy{}\PYGZhy{}\PYGZgt{}}
+
+    \PYG{p}{\PYGZlt{}}\PYG{n+nt}{script} \PYG{n+na}{src}\PYG{o}{=}\PYG{l+s}{\PYGZdq{}/socket.io/socket.io.js\PYGZdq{}}\PYG{p}{\PYGZgt{}\PYGZlt{}/}\PYG{n+nt}{script}\PYG{p}{\PYGZgt{}} \PYG{c+cm}{\PYGZlt{}!\PYGZhy{}\PYGZhy{} Lógica en JS de WebSockets \PYGZhy{}\PYGZhy{}\PYGZgt{}}
+    \PYG{p}{\PYGZlt{}}\PYG{n+nt}{script}\PYG{p}{\PYGZgt{}}
+\PYG{+w}{        }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{socket}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{io}\PYG{p}{();}\PYG{+w}{ }\PYG{c+c1}{// Conexión al servidor de WebSockets}
+
+\PYG{+w}{        }\PYG{c+c1}{// Elementos del DOM}
+\PYG{+w}{        }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{form}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nb}{document}\PYG{p}{.}\PYG{n+nx}{getElementById}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}register\PYGZhy{}form\PYGZsq{}}\PYG{p}{);}
+\PYG{+w}{        }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{status}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nb}{document}\PYG{p}{.}\PYG{n+nx}{getElementById}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}status\PYGZsq{}}\PYG{p}{);}
+\PYG{+w}{        }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{registerSection}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nb}{document}\PYG{p}{.}\PYG{n+nx}{getElementById}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}register\PYGZhy{}section\PYGZsq{}}\PYG{p}{);}
+\PYG{+w}{        }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{measurementSection}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nb}{document}\PYG{p}{.}\PYG{n+nx}{getElementById}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}measurement\PYGZhy{}section\PYGZsq{}}\PYG{p}{);}
+\PYG{+w}{        }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{sensorInfoCard}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nb}{document}\PYG{p}{.}\PYG{n+nx}{getElementById}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}sensor\PYGZhy{}info\PYGZhy{}card\PYGZsq{}}\PYG{p}{);}
+
+\PYG{+w}{        }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{measurementInput}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nb}{document}\PYG{p}{.}\PYG{n+nx}{getElementById}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}measurement\PYGZhy{}value\PYGZsq{}}\PYG{p}{);}
+\PYG{+w}{        }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{btnSendManual}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nb}{document}\PYG{p}{.}\PYG{n+nx}{getElementById}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}btn\PYGZhy{}send\PYGZhy{}manual\PYGZsq{}}\PYG{p}{);}
+\PYG{+w}{        }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{btnToggleAuto}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nb}{document}\PYG{p}{.}\PYG{n+nx}{getElementById}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}btn\PYGZhy{}toggle\PYGZhy{}auto\PYGZsq{}}\PYG{p}{);}
+\PYG{+w}{        }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{btnCargarExistente}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nb}{document}\PYG{p}{.}\PYG{n+nx}{getElementById}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}btn\PYGZhy{}cargar\PYGZhy{}existente\PYGZsq{}}\PYG{p}{);}
+\PYG{+w}{        }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{selectSensores}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nb}{document}\PYG{p}{.}\PYG{n+nx}{getElementById}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}select\PYGZhy{}sensores\PYGZsq{}}\PYG{p}{);}
+
+\PYG{+w}{        }\PYG{c+c1}{// Datos del sensor registrado}
+\PYG{+w}{        }\PYG{k+kd}{let}\PYG{+w}{ }\PYG{n+nx}{activeSensor}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k+kc}{null}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// Indica si el sensor está activo}
+\PYG{+w}{        }\PYG{k+kd}{let}\PYG{+w}{ }\PYG{n+nx}{autoInterval}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k+kc}{null}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// Para almacenar el intervalo de la simulación automática}
+
+\PYG{+w}{        }\PYG{c+c1}{// ==============================================================}
+\PYG{+w}{        }\PYG{c+c1}{//      CARGAR SENSORES EXISTENTES DESDE LA BASE DE DATOS}
+\PYG{+w}{        }\PYG{c+c1}{// ==============================================================}
+
+\PYG{+w}{        }\PYG{c+c1}{// 1. Nada más conectar, le pedimos al servidor los sensores que ya existen en MongoDB}
+\PYG{+w}{        }\PYG{n+nx}{socket}\PYG{p}{.}\PYG{n+nx}{emit}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}sensor:request\PYGZhy{}sensors\PYGZsq{}}\PYG{p}{);}
+
+\PYG{+w}{        }\PYG{c+c1}{// 2. Escuchamos la respuesta del servidor con la lista de sensores antiguos}
+\PYG{+w}{        }\PYG{n+nx}{socket}\PYG{p}{.}\PYG{n+nx}{on}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}sensor:response\PYGZhy{}sensors\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{p}{(}\PYG{n+nx}{lista}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }
+\PYG{+w}{            }\PYG{c+c1}{// Limpiamos opciones antiguas excepto la primera}
+\PYG{+w}{            }\PYG{n+nx}{selectSensores}\PYG{p}{.}\PYG{n+nx}{innerHTML}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}\PYGZlt{}option value=\PYGZdq{}\PYGZdq{}\PYGZgt{}\PYGZhy{}\PYGZhy{} Selecciona un sensor de la base de datos \PYGZhy{}\PYGZhy{}\PYGZlt{}/option\PYGZgt{}\PYGZsq{}}\PYG{p}{;}
+\PYG{+w}{            }
+\PYG{+w}{            }\PYG{c+c1}{// Rellenamos el desplegable con los sensores de la BD}
+\PYG{+w}{            }\PYG{n+nx}{lista}\PYG{p}{.}\PYG{n+nx}{forEach}\PYG{p}{(}\PYG{n+nx}{sensor}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{option}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nb}{document}\PYG{p}{.}\PYG{n+nx}{createElement}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}option\PYGZsq{}}\PYG{p}{);}
+\PYG{+w}{                }\PYG{c+c1}{// Guardamos el objeto entero como un string JSON para leerlo luego fácilmente}
+\PYG{+w}{                }\PYG{n+nx}{option}\PYG{p}{.}\PYG{n+nx}{value}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nb}{JSON}\PYG{p}{.}\PYG{n+nx}{stringify}\PYG{p}{(}\PYG{n+nx}{sensor}\PYG{p}{);}
+\PYG{+w}{                }\PYG{n+nx}{option}\PYG{p}{.}\PYG{n+nx}{textContent}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s+sb}{`}\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{sensor}\PYG{p}{.}\PYG{n+nx}{name}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{ (}\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{sensor}\PYG{p}{.}\PYG{n+nx}{type}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{ en }\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{sensor}\PYG{p}{.}\PYG{n+nx}{location}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{)`}\PYG{p}{;}
+\PYG{+w}{                }\PYG{n+nx}{selectSensores}\PYG{p}{.}\PYG{n+nx}{appendChild}\PYG{p}{(}\PYG{n+nx}{option}\PYG{p}{);}
+\PYG{+w}{            }\PYG{p}{\PYGZcb{});}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{});}
+
+\PYG{+w}{        }\PYG{c+c1}{// 3. Acción al pulsar el botón \PYGZdq{}Cargar Sensor Seleccionado\PYGZdq{}}
+\PYG{+w}{        }\PYG{n+nx}{btnCargarExistente}\PYG{p}{.}\PYG{n+nx}{addEventListener}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}click\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{p}{()}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{o}{!}\PYG{n+nx}{selectSensores}\PYG{p}{.}\PYG{n+nx}{value}\PYG{p}{)}\PYG{+w}{ }
+\PYG{+w}{                }\PYG{k}{return}\PYG{+w}{ }\PYG{n+nx}{alert}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}Por favor, selecciona un sensor válido.\PYGZsq{}}\PYG{p}{);}
+
+\PYG{+w}{            }\PYG{c+c1}{// Convertimos el string JSON de nuevo a objeto}
+\PYG{+w}{            }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{sensorSeleccionado}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nb}{JSON}\PYG{p}{.}\PYG{n+nx}{parse}\PYG{p}{(}\PYG{n+nx}{selectSensores}\PYG{p}{.}\PYG{n+nx}{value}\PYG{p}{);}
+
+\PYG{+w}{            }\PYG{c+c1}{// Asignamos el ID de Mongo y lo guardamos en activeSensor}
+\PYG{+w}{            }\PYG{n+nx}{activeSensor}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                }\PYG{n+nx}{\PYGZus{}id}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nx}{sensorSeleccionado}\PYG{p}{.}\PYG{n+nx}{\PYGZus{}id}\PYG{p}{,}
+\PYG{+w}{                }\PYG{n+nx}{name}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nx}{sensorSeleccionado}\PYG{p}{.}\PYG{n+nx}{name}\PYG{p}{,}
+\PYG{+w}{                }\PYG{n+nx}{location}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nx}{sensorSeleccionado}\PYG{p}{.}\PYG{n+nx}{location}\PYG{p}{,}
+\PYG{+w}{                }\PYG{n+nx}{type}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nx}{sensorSeleccionado}\PYG{p}{.}\PYG{n+nx}{type}
+\PYG{+w}{            }\PYG{p}{\PYGZcb{};}
+
+\PYG{+w}{            }\PYG{c+c1}{// Ocultamos el registro y mostramos las medidas}
+\PYG{+w}{            }\PYG{n+nx}{registerSection}\PYG{p}{.}\PYG{n+nx}{classList}\PYG{p}{.}\PYG{n+nx}{add}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}hidden\PYGZsq{}}\PYG{p}{);}\PYG{+w}{ }
+\PYG{+w}{            }\PYG{n+nx}{measurementSection}\PYG{p}{.}\PYG{n+nx}{classList}\PYG{p}{.}\PYG{n+nx}{remove}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}hidden\PYGZsq{}}\PYG{p}{);}\PYG{+w}{ }
+\PYG{+w}{            }
+\PYG{+w}{            }\PYG{c+c1}{// Rellenamos la card de información al igual que si hubiéramos registrado un sensor nuevo.}
+\PYG{+w}{            }\PYG{n+nx}{sensorInfoCard}\PYG{p}{.}\PYG{n+nx}{innerHTML}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s+sb}{`}
+\PYG{l+s+sb}{                \PYGZlt{}strong\PYGZgt{}ID en la BD:\PYGZlt{}/strong\PYGZgt{} }\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{activeSensor}\PYG{p}{.}\PYG{n+nx}{\PYGZus{}id}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{\PYGZlt{}br\PYGZgt{}}
+\PYG{l+s+sb}{                \PYGZlt{}strong\PYGZgt{}Nombre:\PYGZlt{}/strong\PYGZgt{} }\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{activeSensor}\PYG{p}{.}\PYG{n+nx}{name}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{\PYGZlt{}br\PYGZgt{}}
+\PYG{l+s+sb}{                \PYGZlt{}strong\PYGZgt{}Tipo:\PYGZlt{}/strong\PYGZgt{} }\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{activeSensor}\PYG{p}{.}\PYG{n+nx}{type}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{\PYGZlt{}br\PYGZgt{}}
+\PYG{l+s+sb}{                \PYGZlt{}strong\PYGZgt{}Ubicación:\PYGZlt{}/strong\PYGZgt{} }\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{activeSensor}\PYG{p}{.}\PYG{n+nx}{location}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{\PYGZlt{}br\PYGZgt{}}
+\PYG{l+s+sb}{            `}\PYG{p}{;}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{});}
+
+
+\PYG{+w}{        }\PYG{c+c1}{// ==============================================================}
+\PYG{+w}{        }\PYG{c+c1}{//      FORMULARIO DE REGISTRO DE SENSORES NUEVOS}
+\PYG{+w}{        }\PYG{c+c1}{// ==============================================================}
+\PYG{+w}{        }\PYG{n+nx}{form}\PYG{p}{.}\PYG{n+nx}{addEventListener}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}submit\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{p}{(}\PYG{n+nx}{event}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{n+nx}{event}\PYG{p}{.}\PYG{n+nx}{preventDefault}\PYG{p}{();}\PYG{+w}{ }\PYG{c+c1}{// Evita que se recargue la página}
+
+\PYG{+w}{            }\PYG{c+c1}{// Obtenemos los datos del formulario, creando un objeto JSON}
+\PYG{+w}{            }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{payload}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                }\PYG{n+nx}{name}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nb}{document}\PYG{p}{.}\PYG{n+nx}{getElementById}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}name\PYGZsq{}}\PYG{p}{).}\PYG{n+nx}{value}\PYG{p}{,}
+\PYG{+w}{                }\PYG{n+nx}{location}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nb}{document}\PYG{p}{.}\PYG{n+nx}{getElementById}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}location\PYGZsq{}}\PYG{p}{).}\PYG{n+nx}{value}\PYG{p}{,}
+\PYG{+w}{                }\PYG{n+nx}{type}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nb}{document}\PYG{p}{.}\PYG{n+nx}{getElementById}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}type\PYGZsq{}}\PYG{p}{).}\PYG{n+nx}{value}
+\PYG{+w}{            }\PYG{p}{\PYGZcb{};}
+
+\PYG{+w}{            }\PYG{c+c1}{// Los enviamos al servidor a través del evento \PYGZsq{}sensor:register\PYGZsq{}}
+\PYG{+w}{            }\PYG{n+nx}{socket}\PYG{p}{.}\PYG{n+nx}{emit}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}sensor:register\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{payload}\PYG{p}{);}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{});}
+
+\PYG{+w}{        }\PYG{c+c1}{// \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{} Escuchamos los eventos que el servidor nos envíe \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}}
+
+\PYG{+w}{        }\PYG{c+c1}{// Escuchamos la confirmacion de registro del sensor}
+\PYG{+w}{        }\PYG{n+nx}{socket}\PYG{p}{.}\PYG{n+nx}{on}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}sensor:registered\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{p}{(}\PYG{n+nx}{sensor}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{n+nx}{status}\PYG{p}{.}\PYG{n+nx}{style}\PYG{p}{.}\PYG{n+nx}{color}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}\PYGZsh{}166534\PYGZsq{}}\PYG{p}{;}
+\PYG{+w}{            }\PYG{n+nx}{status}\PYG{p}{.}\PYG{n+nx}{textContent}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s+sb}{`Sensor registrado: }\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{sensor}\PYG{p}{.}\PYG{n+nx}{name}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{ (}\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{sensor}\PYG{p}{.}\PYG{n+nx}{type}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{) en }\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{sensor}\PYG{p}{.}\PYG{n+nx}{location}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{`}\PYG{p}{;}
+\PYG{+w}{            }
+\PYG{+w}{            }\PYG{c+c1}{// Guardamos los datos del sensor en la memoria del cliente}
+\PYG{+w}{            }\PYG{n+nx}{activeSensor}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{sensor}\PYG{p}{;}
+
+\PYG{+w}{            }\PYG{c+c1}{// Cambiamos la interfaz de usuario para mostrar el panel de medidas}
+\PYG{+w}{            }\PYG{n+nx}{form}\PYG{p}{.}\PYG{n+nx}{reset}\PYG{p}{();}
+\PYG{+w}{            }\PYG{n+nx}{registerSection}\PYG{p}{.}\PYG{n+nx}{classList}\PYG{p}{.}\PYG{n+nx}{add}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}hidden\PYGZsq{}}\PYG{p}{);}\PYG{+w}{ }\PYG{c+c1}{// Ocultamos el formulario de registro}
+\PYG{+w}{            }\PYG{n+nx}{measurementSection}\PYG{p}{.}\PYG{n+nx}{classList}\PYG{p}{.}\PYG{n+nx}{remove}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}hidden\PYGZsq{}}\PYG{p}{);}\PYG{+w}{ }\PYG{c+c1}{// Mostramos el panel de medidas}
+\PYG{+w}{        }
+\PYG{+w}{            }\PYG{c+c1}{// Mostramos una tarjeta con los datos del sensor registrado}
+\PYG{+w}{            }\PYG{n+nx}{sensorInfoCard}\PYG{p}{.}\PYG{n+nx}{innerHTML}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s+sb}{`}
+\PYG{l+s+sb}{                \PYGZlt{}strong\PYGZgt{}ID en la BD:\PYGZlt{}/strong\PYGZgt{} }\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{sensor}\PYG{p}{.}\PYG{n+nx}{\PYGZus{}id}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{\PYGZlt{}br\PYGZgt{}}
+\PYG{l+s+sb}{                \PYGZlt{}strong\PYGZgt{}Nombre:\PYGZlt{}/strong\PYGZgt{} }\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{sensor}\PYG{p}{.}\PYG{n+nx}{name}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{\PYGZlt{}br\PYGZgt{}}
+\PYG{l+s+sb}{                \PYGZlt{}strong\PYGZgt{}Tipo:\PYGZlt{}/strong\PYGZgt{} }\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{sensor}\PYG{p}{.}\PYG{n+nx}{type}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{\PYGZlt{}br\PYGZgt{}}
+\PYG{l+s+sb}{                \PYGZlt{}strong\PYGZgt{}Ubicación:\PYGZlt{}/strong\PYGZgt{} }\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{sensor}\PYG{p}{.}\PYG{n+nx}{location}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{\PYGZlt{}br\PYGZgt{}}
+\PYG{l+s+sb}{            `}\PYG{p}{;}
+
+\PYG{+w}{            }\PYG{c+c1}{// Ponemos un valor por defecto en la caja segun el tipo de sensor, para facilitar las pruebas manuales}
+\PYG{+w}{            }\PYG{k}{switch}\PYG{p}{(}\PYG{n+nx}{sensor}\PYG{p}{.}\PYG{n+nx}{type}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                }\PYG{k}{case}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}Temperatura\PYGZsq{}}\PYG{o}{:}
+\PYG{+w}{                    }\PYG{n+nx}{measurementInput}\PYG{p}{.}\PYG{n+nx}{value}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mf}{22}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// ºC}
+\PYG{+w}{                    }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                }\PYG{k}{case}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}Luminosidad\PYGZsq{}}\PYG{o}{:}
+\PYG{+w}{                    }\PYG{n+nx}{measurementInput}\PYG{p}{.}\PYG{n+nx}{value}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mf}{300}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// Lux}
+\PYG{+w}{                    }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                }\PYG{k}{case}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}Gas\PYGZsq{}}\PYG{o}{:}
+\PYG{+w}{                    }\PYG{n+nx}{measurementInput}\PYG{p}{.}\PYG{n+nx}{value}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mf}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// ppm (partes por millón)}
+\PYG{+w}{                    }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                }\PYG{k}{case}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}Movimiento\PYGZsq{}}\PYG{o}{:}
+\PYG{+w}{                    }\PYG{n+nx}{measurementInput}\PYG{p}{.}\PYG{n+nx}{value}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mf}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// 0 o 1 para simular movimiento (0 no, 1 sí)}
+\PYG{+w}{                    }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                }\PYG{k}{case}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}Videovigilancia\PYGZsq{}}\PYG{o}{:}
+\PYG{+w}{                    }\PYG{n+nx}{measurementInput}\PYG{p}{.}\PYG{n+nx}{value}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mf}{0}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// 0 si no hay nadie, 1 si hay}
+\PYG{+w}{                    }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                }\PYG{k}{default}\PYG{o}{:}
+\PYG{+w}{                    }\PYG{n+nx}{measurementInput}\PYG{p}{.}\PYG{n+nx}{value}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mf}{0}\PYG{p}{;}
+\PYG{+w}{            }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{});}
+
+
+\PYG{+w}{        }\PYG{c+c1}{// El servidor ha detectado un error al registrar el sensor}
+\PYG{+w}{        }\PYG{n+nx}{socket}\PYG{p}{.}\PYG{n+nx}{on}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}sensor:error\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{p}{(}\PYG{n+nx}{message}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{n+nx}{status}\PYG{p}{.}\PYG{n+nx}{style}\PYG{p}{.}\PYG{n+nx}{color}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}\PYGZsh{}b91c1c\PYGZsq{}}\PYG{p}{;}
+\PYG{+w}{            }\PYG{n+nx}{status}\PYG{p}{.}\PYG{n+nx}{textContent}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s+sb}{`Error: }\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{message}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{`}\PYG{p}{;}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{});}
+
+\PYG{+w}{        }\PYG{c+c1}{// ==============================================================}
+\PYG{+w}{        }\PYG{c+c1}{// Envio de medidas al servidor}
+\PYG{+w}{        }\PYG{c+c1}{// ==============================================================}
+
+\PYG{+w}{        }\PYG{c+c1}{// Enviar la medida introducida al servidor}
+\PYG{+w}{        }\PYG{k+kd}{function}\PYG{+w}{ }\PYG{n+nx}{enviarMedidaAlServidor}\PYG{p}{(}\PYG{n+nx}{value}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{c+c1}{// Si no está activo el sensor, no hacemos nada}
+\PYG{+w}{            }\PYG{k}{if}\PYG{p}{(}\PYG{n+nx}{activeSensor}\PYG{p}{)\PYGZob{}}
+
+\PYG{+w}{                }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{dataSensor}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                    }\PYG{n+nx}{sensorId}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nx}{activeSensor}\PYG{p}{.}\PYG{n+nx}{\PYGZus{}id}\PYG{p}{,}\PYG{+w}{ }\PYG{c+c1}{// Enlazamos la medida con el ID del sensor registrado}
+\PYG{+w}{                    }\PYG{n+nx}{name}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nx}{activeSensor}\PYG{p}{.}\PYG{n+nx}{name}\PYG{p}{,}
+\PYG{+w}{                    }\PYG{n+nx}{type}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nx}{activeSensor}\PYG{p}{.}\PYG{n+nx}{type}\PYG{p}{,}
+\PYG{+w}{                    }\PYG{n+nx}{location}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nx}{activeSensor}\PYG{p}{.}\PYG{n+nx}{location}\PYG{p}{,}
+\PYG{+w}{                    }\PYG{n+nx}{value}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nb}{parseFloat}\PYG{p}{(}\PYG{n+nx}{value}\PYG{p}{)}
+\PYG{+w}{                }\PYG{p}{\PYGZcb{};}
+
+\PYG{+w}{                }\PYG{c+c1}{// Emitimos el evento al servidor}
+\PYG{+w}{                }\PYG{n+nx}{socket}\PYG{p}{.}\PYG{n+nx}{emit}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}sensor:data\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{dataSensor}\PYG{p}{);}
+
+\PYG{+w}{                }\PYG{c+c1}{// Mostramos un mensaje de confirmación en el cliente}
+\PYG{+w}{                }\PYG{c+c1}{// Efecto visual temporal en el status para saber que se ha enviado}
+\PYG{+w}{                }\PYG{n+nx}{status}\PYG{p}{.}\PYG{n+nx}{style}\PYG{p}{.}\PYG{n+nx}{color}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}\PYGZsh{}1e3a8a\PYGZsq{}}\PYG{p}{;}
+\PYG{+w}{                }\PYG{n+nx}{status}\PYG{p}{.}\PYG{n+nx}{textContent}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s+sb}{`[}\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{o+ow}{new}\PYG{+w}{ }\PYG{n+nb}{Date}\PYG{p}{().}\PYG{n+nx}{toLocaleTimeString}\PYG{p}{()}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{] Medida enviada: }\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{value}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{`}\PYG{p}{;}
+\PYG{+w}{            }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{        }\PYG{c+c1}{// Envío manual mediante el botón}
+\PYG{+w}{        }\PYG{n+nx}{btnSendManual}\PYG{p}{.}\PYG{n+nx}{addEventListener}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}click\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{p}{()}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{valor}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{measurementInput}\PYG{p}{.}\PYG{n+nx}{value}\PYG{p}{;}
+\PYG{+w}{            }\PYG{k}{if}\PYG{p}{(}\PYG{n+nx}{valor}\PYG{+w}{ }\PYG{o}{===}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}\PYGZsq{}}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                }\PYG{n+nx}{alert}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}Por favor, introduce un valor para la medida.\PYGZsq{}}\PYG{p}{);}
+\PYG{+w}{            }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{else}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                }\PYG{n+nx}{enviarMedidaAlServidor}\PYG{p}{(}\PYG{n+nx}{valor}\PYG{p}{);}
+\PYG{+w}{            }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{});}
+
+
+\PYG{+w}{        }\PYG{c+c1}{// Envío automático cada 5 segundos al pulsar el botón de toggle}
+\PYG{+w}{        }\PYG{n+nx}{btnToggleAuto}\PYG{p}{.}\PYG{n+nx}{addEventListener}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}click\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{p}{()}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n+nx}{autoInterval}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{+w}{ }\PYG{c+c1}{// Si ya estaba funcionando, lo paramos}
+\PYG{+w}{                }\PYG{n+nx}{clearInterval}\PYG{p}{(}\PYG{n+nx}{autoInterval}\PYG{p}{);}
+\PYG{+w}{                }\PYG{n+nx}{autoInterval}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k+kc}{null}\PYG{p}{;}
+\PYG{+w}{                }\PYG{n+nx}{btnToggleAuto}\PYG{p}{.}\PYG{n+nx}{textContent}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}Iniciar Simulación Automática (Cada 5s)\PYGZdq{}}\PYG{p}{;}
+\PYG{+w}{                }\PYG{n+nx}{btnToggleAuto}\PYG{p}{.}\PYG{n+nx}{classList}\PYG{p}{.}\PYG{n+nx}{remove}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}secondary\PYGZsq{}}\PYG{p}{);}
+\PYG{+w}{            }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{else}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                }\PYG{c+c1}{// Si estaba parado, lo iniciamos}
+\PYG{+w}{                }\PYG{n+nx}{btnToggleAuto}\PYG{p}{.}\PYG{n+nx}{textContent}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s+s2}{\PYGZdq{}Detener Simulación Automática\PYGZdq{}}\PYG{p}{;}
+\PYG{+w}{                }\PYG{n+nx}{btnToggleAuto}\PYG{p}{.}\PYG{n+nx}{classList}\PYG{p}{.}\PYG{n+nx}{add}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}secondary\PYGZsq{}}\PYG{p}{);}
+
+\PYG{+w}{                }\PYG{n+nx}{autoInterval}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{setInterval}\PYG{p}{(()}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                    }\PYG{k+kd}{let}\PYG{+w}{ }\PYG{n+nx}{valorLeido}\PYG{p}{;}
+
+\PYG{+w}{                    }\PYG{k}{switch}\PYG{p}{(}\PYG{n+nx}{activeSensor}\PYG{p}{.}\PYG{n+nx}{type}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                        }\PYG{k}{case}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}Temperatura\PYGZsq{}}\PYG{o}{:}
+\PYG{+w}{                            }\PYG{c+c1}{// Simulamos una lectura de temperatura entre 7 y 35 grados}
+\PYG{+w}{                            }\PYG{n+nx}{valorLeido}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{n+nb}{Math}\PYG{p}{.}\PYG{n+nx}{random}\PYG{p}{()}\PYG{+w}{ }\PYG{o}{*}\PYG{+w}{ }\PYG{l+m+mf}{28}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{l+m+mf}{7}\PYG{p}{).}\PYG{n+nx}{toFixed}\PYG{p}{(}\PYG{l+m+mf}{1}\PYG{p}{);}
+\PYG{+w}{                            }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                        }\PYG{k}{case}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}Luminosidad\PYGZsq{}}\PYG{o}{:}
+\PYG{+w}{                            }\PYG{c+c1}{// Simulamos una lectura de luminosidad entre 0 y 800 lux}
+\PYG{+w}{                            }\PYG{n+nx}{valorLeido}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{n+nb}{Math}\PYG{p}{.}\PYG{n+nx}{random}\PYG{p}{()}\PYG{+w}{ }\PYG{o}{*}\PYG{+w}{ }\PYG{l+m+mf}{800}\PYG{p}{).}\PYG{n+nx}{toFixed}\PYG{p}{(}\PYG{l+m+mf}{1}\PYG{p}{);}
+\PYG{+w}{                            }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                        }\PYG{k}{case}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}Gas\PYGZsq{}}\PYG{o}{:}
+\PYG{+w}{                            }\PYG{c+c1}{// Simulamos nivel de gas (ej. partículas por millón). Lo normal es cerca de 0, }
+\PYG{+w}{                            }\PYG{c+c1}{// pero pondremos picos aleatorios para que salte la alarma.}
+\PYG{+w}{                            }\PYG{n+nx}{valorLeido}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{n+nb}{Math}\PYG{p}{.}\PYG{n+nx}{random}\PYG{p}{()}\PYG{+w}{ }\PYG{o}{*}\PYG{+w}{ }\PYG{l+m+mf}{500}\PYG{p}{).}\PYG{n+nx}{toFixed}\PYG{p}{(}\PYG{l+m+mf}{1}\PYG{p}{);}\PYG{+w}{ }
+\PYG{+w}{                            }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                        }\PYG{k}{case}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}Movimiento\PYGZsq{}}\PYG{o}{:}
+\PYG{+w}{                            }\PYG{c+c1}{// Simulamos detección de movimiento (0 o 1) el 40\PYGZpc{} de las veces}
+\PYG{+w}{                            }\PYG{n+nx}{valorLeido}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nb}{Math}\PYG{p}{.}\PYG{n+nx}{random}\PYG{p}{()}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{l+m+mf}{0.4}\PYG{+w}{ }\PYG{o}{?}\PYG{+w}{ }\PYG{l+m+mf}{1}\PYG{+w}{ }\PYG{o}{:}\PYG{+w}{ }\PYG{l+m+mf}{0}\PYG{p}{;}
+\PYG{+w}{                            }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                        }\PYG{k}{case}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}Videovigilancia\PYGZsq{}}\PYG{o}{:}
+\PYG{+w}{                            }\PYG{c+c1}{// 20\PYGZpc{} de probabilidad de captar a alguien pasando}
+\PYG{+w}{                            }\PYG{n+nx}{valorLeido}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nb}{Math}\PYG{p}{.}\PYG{n+nx}{random}\PYG{p}{()}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{l+m+mf}{0.2}\PYG{+w}{ }\PYG{o}{?}\PYG{+w}{ }\PYG{l+m+mf}{1}\PYG{+w}{ }\PYG{o}{:}\PYG{+w}{ }\PYG{l+m+mf}{0}\PYG{p}{;}
+\PYG{+w}{                            }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                        }\PYG{k}{default}\PYG{o}{:}
+\PYG{+w}{                            }\PYG{k}{break}\PYG{p}{;}
+\PYG{+w}{                    }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{                    }\PYG{n+nx}{measurementInput}\PYG{p}{.}\PYG{n+nx}{value}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{valorLeido}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// Actualizamos el input con el valor simulado}
+\PYG{+w}{                    }\PYG{n+nx}{enviarMedidaAlServidor}\PYG{p}{(}\PYG{n+nx}{valorLeido}\PYG{p}{);}\PYG{+w}{ }\PYG{c+c1}{// Enviamos la medida al servidor}
+\PYG{+w}{                }\PYG{p}{\PYGZcb{},}\PYG{+w}{ }\PYG{l+m+mf}{5000}\PYG{p}{);}
+\PYG{+w}{            }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{});}
+\PYG{+w}{    }\PYG{p}{\PYGZlt{}/}\PYG{n+nt}{script}\PYG{p}{\PYGZgt{}}
+\PYG{p}{\PYGZlt{}/}\PYG{n+nt}{body}\PYG{p}{\PYGZgt{}}
+\PYG{p}{\PYGZlt{}/}\PYG{n+nt}{html}\PYG{p}{\PYGZgt{}}
+\end{Verbatim}

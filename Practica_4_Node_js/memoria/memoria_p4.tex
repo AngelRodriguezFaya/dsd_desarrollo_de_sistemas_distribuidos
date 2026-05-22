@@ -6,6 +6,8 @@
 \usepackage{float}
 \usepackage[spanish, es-tabla]{babel}
 \usepackage{tcolorbox} % Para secciones en destacado
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, calc, babel}
 
 \title{Práctica 4: Node.js}
 \author{Ángel Rodríguez Faya}
@@ -293,5 +295,359 @@
 			\end{enumerate}
 			
 			Por último, destacar que el Servidor no tiene estado (\textit{Stateless}). Es lo que habíamos comentado al principio del ejemplo, dado que el servidor de Node.js ya no mantiene ninguna lista viva de sockets en su memoria volátil, se elimina por completo la necesidad de escuchar el evento \texttt{disconnect} en \texttt{mongo-test.js}. Al servidor le resulta indiferente si el usuario cierra el navegador, ya que el registro queda guardado de manera permanente e inmutable en MongoDB.
+	
+	\newpage
+	% ====================================================================
+	% 3. PARTE 2: S	istema domótico
+	% ====================================================================
+	\section{Parte 2.- Sistema Domótico.}
+		
+		\subsection{Introducción}
+		
+			El objetivo de esta segunda parte de la práctica radica en el diseño, implementación y evaluación experimental de un sistema domótico distribuido, cooperativo y en tiempo real, haciendo uso de los pilares tecnológicos que ya comentamos en la sección anterior:  \textbf{Node.js}, \textbf{Socket.io} y \textbf{MongoDB}. 
+			
+			El motivo de realizar esta parte sobre un sistema domótico es la de simular el despliegue de una infraestructura inteligente donde múltiples procesos independientes cooperen de manera asíncrona y transparente. Para ello, el sistema se ha diseñado cumpliendo los siguientes requisitos y características arquitectónicas:
+		
+			\begin{enumerate}
+				\item \textbf{Emulación de Nodos Sensores y Actuadores:} Creación de clientes web independientes que actúan como sensores físicos (Temperatura, Luminosidad, Gas, Movimiento y Videovigilancia), publicando telemetría tanto de forma periódica (5 segundos), como de forma manual; hacia el servidor central.
+				
+				\item \textbf{Agente Lógico Centralizado:} Implementación de un motor de reglas en el servidor que evalúa la telemetría entrante en tiempo real para tomar decisiones sobre los actuadores (ej. encender el aire acondicionado, bajar persianas o activar alarmas de gas). Se incluyen tanto reglas simples puramente reactivas, como \textbf{reglas complejas con memoria} (ej. mantener las luces encendidas un tiempo determinado tras dejar de detectar movimiento).
+				
+				\item \textbf{Patrón de ``Gemelo Digital'':} El servidor mantiene una representación en memoria (\textit{Digital Twin}) del estado físico real de los actuadores por zonas de la casa, asegurando la consistencia de los datos y evitando ''fantasmas'' en la interfaz web`. Un \textbf{Gemelo Digital} (\textit{Digital Twin}) es una réplica virtual de un objeto, sistema o proceso físico del mundo real. No es solo un dibujo o un modelo estático en 3D; \textbf{es una representación informática dinámica que se actualiza en tiempo real utilizando los datos que envían los sensores del mundo físico.}
+				
+				\item \textbf{Panel de Control (Dashboard):} Una interfaz web central, separada de la lógica de negocio y diseñada para el \textbf{usuario} , que se actualiza reactivamente mediante \textit{broadcast} mostrando la lectura de los sensores, el estado de los actuadores y un registro de alertas críticas, así como un panel que muestra en tiempo real el \textbf{Circuito Cerrado de Videovigilancia}.
+				
+				\item \textbf{Telegram Bot API.} Se ha desarrollado una Plataforma de integración a través de peticiones HTTP REST que permite expandir los límites físicos del sistema domótico, enviando alertas críticas (al igual que en el \textit{Dashboard}) y contenido multimedia del Circuito de Videovigilancia directamente al dispositivo del usuario de forma instantánea.
+			\end{enumerate}
+			
+			Con estas implementaciones añadidas (además de la implementación básica), se cubren todos los requisitos que se piden en el guion de prácticas. A continuación, se detalla la arquitectura del sistema y su modelo de funcionamiento.
+			
+		\subsection{Arquitectura del Sistema}
+		
+			El sistema domótico se ha diseñado siguiendo un patrón de arquitectura \textit{Cliente-Servidor Distribuido} y \textit{Orientado a Eventos}. La comunicación principal se basa sobre conexiones persistentes de baja latencia mediante el protocolo WebSocket (gestionado a través de \textit{Socket.io}), rompiendo con el esquema tradicional de petición/respuesta síncrona de HTTP. 
+			
+			A continuación, se desglosan los componentes del sistema divididos de forma lógica entre el núcleo central (Servidor) y los procesos periféricos (Clientes).
+			
+			\subsubsection{El Servidor Central (\texttt{registro\_sensores.js})}
+				El servidor central  actúa como el cerebro de toda la casa inteligente (es el \textbf{Bus de Evnetos} y el \textbf{Agente Lógico} que toma las decisiones). Sus tareas principales dentro de nuestro sistema son las siguientes:
+				
+				\begin{itemize}
+					\item \textbf{Atender a los clientes:} Escucha en el puerto \texttt{8080} y mantiene abiertas las conexiones en tiempo real (mediante WebSockets) con todos los dispositivos. Además, es capaz de identificar si el que se ha conectado es un sensor enviando datos o es el panel de control del usuario.
+					
+					\item \textbf{Mantener el ``Gemelo Digital'':} Para evitar fallos o desincronizaciones, el servidor guarda en su propia memoria una copia exacta (un reflejo) del estado actual de todos los actuadores de la casa (luces, persianas, etc.). Cualquier cambio pasa primero por aquí.
+					
+					\item \textbf{Tomar decisiones (Agente Lógico):} Analiza al vuelo cada dato que le llega de los sensores. Si detecta algo fuera de lo normal (por ejemplo, que el nivel de gas supera los 300 o que hay movimiento en el portal), ejecuta automáticamente las reglas que hemos programado para lanzar alertas o cambiar el estado de los actuadores.
+					
+					\item \textbf{Guardar el historial:} Utiliza la base de datos de \texttt{MongoDB} para ir anotando todo lo que ocurre. Lo hace de forma asíncrona (usando Promesas), lo que significa que el servidor puede seguir guardando registros sin quedarse "congelado" ni desatender al resto de la casa.
+				\end{itemize}
+				
+				Su código es el siguiente:
+				
+				%\inputminted[linenos, frame=lines, fontsize=\scriptsize]{JavaScript}{../codigo/Parte_2_Sensores_Domoticos/registro_sensores.js}
+				
+				Para entender cómo funciona este servidor más allá de los comentarios de su código, podemos destacar cinco bloques de implementación clave que estructuran su lógica:
+				
+				\begin{itemize}
+					\item \textbf{Definición Estricta de Estados y Gemelo Digital:} Se hace uso de \texttt{Object.freeze} para definir los estados de los actuadores (como \texttt{ENCENDIDO}, \texttt{APAGADO}, \texttt{ABIERTA} o \texttt{CERRADA}) de forma inmutable. Esto evita errores de escritura en el código. Estos estados se agrupan en el objeto global \texttt{estadoActuadores}, que actúa como el \textit{Digital Twin} en memoria. Cada vez que una interfaz se conecta, lo primero que hace el servidor es enviarle este objeto para asegurar que el usuario vea exactamente lo que está pasando en la casa.
+					
+					\item \textbf{Servidor HTTP Nativo :} El servidor lee los archivos HTML directamente desde el disco (\textit{sensor.html} y \textit{dashboard.html}) y los sirve según la ruta que pida el navegador, manejando los errores de carga manualmente.
+					
+					\item \textbf{Gestión de Eventos Bidireccionales (Socket.IO):} El corazón de la comunicación en tiempo real se divide en dos tipos de eventos bien diferenciados:
+					\begin{itemize}
+						\item \textit{Eventos de entrada (\texttt{sensor:data}):} Reciben las lecturas, las guardan en la colección \texttt{historial} de MongoDB y las reenvían al instante a los paneles de control mediante un \texttt{broadcast} global (\texttt{io.sockets.emit}).
+						
+						\item \textit{Eventos de control manual (\texttt{ui:toggle-*}):} Escuchan las órdenes directas que el usuario pulsa en el Dashboard (como encender el aire o bajar una persiana), modifican el Gemelo Digital en el servidor y vuelven a avisar a todas las pantallas abiertas para que se actualicen a la vez.
+					\end{itemize}
+					
+					\item \textbf{El Agente Lógico:} La función \texttt{ejecutarAgente} centraliza la inteligencia del sistema evaluando los umbrales críticos. Encontramos tanto reglas puramente reactivas (apagar el aire si la temperatura baja de 17°C) como \textbf{reglas complejas con memoria}. Un ejemplo claro es la regla de movimiento, que consulta primero el objeto \texttt{memoriaLuminosidad} para comprobar si la última lectura de luz era baja (< 200 lux), evitando así encender bombillas de forma innecesaria durante el día. Otra curiosidad de este agente es que, dependiendo de si la ubicacion de la medida que se pasa como parámetro tiene un actuador para ese sensor o no, se gestiona de una forma u otra. Esto hace que, si nosotros queremos registrar un nuevo sensor(por ej: un sensor de gas en el baño), no nos ponga ningún inconveniente y por tanto, cada vez que se detecte una anomalía se nos notificará en forma de aviso mediante el \textit{Dashboard} y por el bot de Telegram (\textbf{DomoBot Angel}). Ahora bien, como en el Gemelo Digital (\texttt{estadoActuadores}) no hay definido un actuador para el gas en la ubicación de Baño, no se activará la correspondiente alarma y sólo nos llegará el aviso. \textbf{Con esto, se pretende hacer ver que, podemos añadir tantos sensores como queramos y de varios tipos, pero dependiendo de si tienen actuadores o no, se adaptarán las salidas}.
+						
+						\item \textbf{DomoBot Angel} (El bot de Telegram): Como ya hemos comentado, DomoBot Angel~\ref{fig:DomoBot Angel} es el bot que nos avisa sobre lo que está sucediendo en nuestro hogar, por si no podemos acceder en ese momento al \textit{Dashboard}. Es importante saber que \textbf{sólo sirve para notificar, NO para actuar}, es decir, el bot nos muestra avisos sobre anomalías detectadas por nuestros sensores, pero no es posible acceder a los actuadores, para eso hay que acceder al Dashboard. A pesar de esto, no deja de ser un añadido atractivo e importante en el proyecto.
+						
+						\begin{figure}[H]
+							\centering
+							\includegraphics[width=0.8\textwidth]{./imagenes_necesarias/ejemplos_ejecucion/parte_2/DomoBot_Angel_1.png}
+							\caption{Imagen sobre DomoBot Angel.}
+							\label{fig:DomoBot Angel}
+						\end{figure}
+					\end{itemize}
 
+			\subsubsection{Nodos Sensores y Emulación (\texttt{sensor.html})}
+				Los sensores son los "ojos" y "oídos" de la casa domotizada. Este cliente web está diseñado para emular el comportamiento de un hardware IoT real, y sus tareas principales son:
+				
+				\begin{itemize}
+					\item \textbf{Dar de alta el dispositivo:} Permite al usuario registrar un nuevo sensor indicando su nombre, en qué ubicación de la casa está y de qué tipo es (Luminosidad, Gas, Videovigilancia, etc.).
+					\item \textbf{Escoger un dispositivo existente:} Además de poder añadir sensores nuevos, también se puede acceder a los que ya están creados (y almacenados en la colección \texttt{sensores} de nuestra base de datos en MongoDB).
+					\item \textbf{Envío manual de datos:} Tiene un formulario para poder inyectar valores concretos al servidor y comprobar cómo reacciona el sistema (ideal para hacer pruebas de umbrales críticos).
+					\item \textbf{Simulación automática (Modo Piloto Automático):} Es capaz de generar ráfagas continuas de datos aleatorios realistas y enviarlos al servidor de forma constante sin intervención humana. En el código, está fijado a 5000 milisegundos (5 segundos)
+				\end{itemize}
+				
+				Su código es el siguiente:
+				
+			%	\inputminted[linenos, frame=lines, fontsize=\scriptsize]{HTML}{../codigo/Parte_2_Sensores_Domoticos/sensor.html}
+				
+				Más allá de la estructura visual en HTML y CSS, la verdadera lógica de este cliente reside en su script de JavaScript. Podemos destacar los siguientes bloques clave en su implementación:
+				
+				\begin{itemize}
+					\item \textbf{Validación y Registro Dinámico:} Antes de enviar nada, el cliente comprueba que los campos obligatorios del formulario estén completos. Si todo es correcto, emite el evento \texttt{sensor:register} y el servidor se encarga de guardarlo en MongoDB. Además, al cargar la página, el cliente pide al servidor la lista de sensores que ya existen en la base de datos para mostrarlos en un desplegable, evitando duplicados.
+					
+					\item \textbf{Motor de Simulación Automática:} Mediante la función \texttt{setInterval}, hemos creado un bucle que se repite cada 5 segundos, como ya hemos comentado. Dentro de este bucle, un bloque \texttt{switch} analiza de qué tipo es el sensor seleccionado y genera datos matemáticamente creíbles (por ejemplo, temperaturas con decimales entre 7ºC y 35ºC, o valores binarios 0/1 para el movimiento o la cámara). Esto satura de eventos al servidor para probar su rendimiento real.
+					
+					\item \textbf{Desacoplamiento Visual/Lógico:} El envío de datos (\texttt{enviarMedidaAlServidor}) está programado en una función independiente. Esto permite que tanto el botón manual como el bucle automático reciclen el mismo código para comunicarse con el servidor, manteniendo el script limpio.
+				\end{itemize}
+
+			\subsubsection{Panel de Control de Usuario (\texttt{dashboard.html})}
+				Es la interfaz visual diseñada para los habitantes de la casa. A diferencia de una página web tradicional que requiere recargarla para ver los cambios, este panel es una aplicación \textbf{100\% reactiva y asíncrona}. Sus tareas principales son:
+				
+				\begin{itemize}
+					\item \textbf{Monitorización en tiempo real:} Muestra las últimas lecturas de todos los sensores activos de la casa y el registro de alertas críticas.
+					\item \textbf{Control interactivo:} Ofrece botones para que el usuario pueda manejar los actuadores (encender o apagar luces, aires acondicionados y alarmas) manualmente
+					\item \textbf{CCTV Multimedia:} Muestra una transmisión simulada de la cámara de seguridad del portal. Cuando hay movimiento, el script machaca la propiedad \texttt{src} de la etiqueta de imagen para mostrar la alerta roja, y la restaura a verde cuando cesa la actividad.
+				\end{itemize}
+				
+				Su código es el siguiente:
+				
+				%\inputminted[linenos, frame=lines, fontsize=\scriptsize]{HTML}{../codigo/Parte_2_Sensores_Domoticos/dashboard.html}
+				
+				Este archivo es el mejor ejemplo de cómo consumir eventos de Socket.io en el Frontend. Los aspectos técnicos más destacables son:
+				
+				\begin{itemize}
+					\item \textbf{Reactividad sin recargas:} El panel es un espectador pasivo que está suscrito constantemente a los eventos globales del servidor (\texttt{dashboard:update-sensor} y \texttt{dashboard:alert}). Cuando entra un dato nuevo, no recarga la página, sino que utiliza JavaScript para inyectar nuevo código HTML directamente en el DOM, dando una sensación de fluidez instantánea.
+					
+					\item \textbf{Generación Dinámica de Actuadores:} Este es uno de los puntos fuertes del diseño. El panel no tiene botones programados (hardcodeados). En su lugar, recibe el Gemelo Digital (\texttt{estadoActuadores}) del servidor y utiliza un bucle para extraer qué zonas existen y qué actuadores hay en cada una. Si en el futuro añadimos un ventilador en el servidor, el panel lo dibujará automáticamente sin tener que tocar ni una línea de código HTML.
+				\end{itemize}
+		
+	\section{Diagramas de Secuencia}
+	
+		Para comprender de forma visual cómo interactúan los distintos componentes de nuestra aplicación distribuida, se han modelado tres diagramas de secuencia. Estos diagramas ilustran el ciclo de vida de los datos, desde que nacen en los sensores físicos (o emulados) hasta que el Agente Lógico decide qué hacer con ellos, destacando la naturaleza asíncrona de las comunicaciones.
+	
+		\subsection{Escenario 1: Registro de un Sensor y Telemetría}
+			Este primer flujo representa el escenario base. Cuando un sensor establece conexión mediante WebSockets. El sensor simplemente comienza a emitir sus datos (\texttt{sensor:data}). El servidor recibe la carga útil, le añade una marca de tiempo temporal (\textit{timestamp}) y delega la tarea de guardarlo en MongoDB de forma asíncrona mediante una Promesa. De este modo, el hilo principal de Node.js queda libre al instante para seguir atendiendo a otros dispositivos.
+			
+			\begin{figure}[H]
+				\centering
+				\includegraphics[width=0.85\textwidth]{./imagenes_necesarias/ejemplos_ejecucion/parte_2/DS_registrar_sensor.png}
+				\caption{Diagrama de secuencia: Registro y envío de primera telemetría.}
+				\label{fig:seq_registrar_sensor}
+			\end{figure}
+	
+		\subsection{Escenario 2: Evaluación y Envío de un Aviso (Alerta Crítica)}
+			En este escenario, se ilustra la intervención del Motor de Reglas (el Agente Lógico). Al recibir un dato que supera los umbrales de seguridad (por ejemplo, un nivel de gas excesivamente alto), el servidor ejecuta dos acciones concurrentes tras persistir el dato: emite un evento de \textit{broadcast} masivo para que todos los Dashboards conectados parpadeen con la alerta, y simultáneamente realiza una petición HTTP hacia la API de Telegram para notificar al dueño en su teléfono móvil.
+		
+			\begin{figure}[H]
+				\centering
+				\includegraphics[width=0.85\textwidth]{./imagenes_necesarias/ejemplos_ejecucion/parte_2/DS_enviar_aviso.png}
+				\caption{Diagrama de secuencia: Evaluación de reglas lógicas y difusión concurrente de alertas.}
+				\label{fig:seq_enviar_aviso}
+			\end{figure}
+		
+		\subsection{Escenario 3: Envío de Videovigilancia (Bypass Multimedia)}
+			Este es un caso especial dentro de nuestra lógica de control. Cuando la cámara del portal detecta movimiento, el aviso en el Dashboard local es inmediato. Sin embargo, para la alerta externa, el servidor no envía el archivo de vídeo completo desde su propia memoria, sino que hace un \textit{bypass}: le envía a la API de Telegram la URL directa de un CDN de imágenes (Giphy). Es la propia infraestructura de Telegram la que se encarga de descargar el archivo pesado y entregárselo al usuario final, ahorrando así ancho de banda en nuestro servidor domótico.
+			
+			\begin{figure}[H]
+				\centering
+				\includegraphics[width=0.9\textwidth]{./imagenes_necesarias/ejemplos_ejecucion/parte_2/DS_videovigilancia.png}
+				\caption{Diagrama de secuencia: Integración de alertas multimedia y consumo de CDN externo.}
+				\label{fig:seq_videovigilancia}
+			\end{figure}
+
+	\section{Guía de Uso y Ejemplos de Ejecución}
+		Para poner en marcha el sistema domótico y comprobar su correcto funcionamiento, se ha preparado esta guía práctica paso a paso. El objetivo es detallar desde el encendido inicial de los servicios hasta la simulación de situaciones críticas para ver cómo reacciona nuestro ecosistema distribuido en tiempo real.
+		
+		\subsection{Puesta en Marcha del Sistema}
+			En primer lugar, me gustaría comentar que, la práctica la he desarrollado en mi ordenador personal, que cuenta con las siguientes características:
+			
+			\begin{itemize}
+				\item \textbf{Procesador (CPU):} 11th Gen Intel i5-1135G7.
+				\item \textbf{Memoria RAM:} 16 GB DDR4.
+				\item \textbf{Sistema Operativo:} Ubuntu 24.04.4 LTS x86\_64.
+			\end{itemize}
+			
+			Para arrancar el proyecto, debemos seguir un orden lógico para asegurar que las conexiones entre los componentes (servidor, base de datos y clientes) se establezcan sin errores:
+		
+			\begin{enumerate}
+				\item \textbf{Iniciar la Base de Datos:} Lo primero es comprobar que el servicio de MongoDB está corriendo en nuestra máquina local en el puerto por defecto (\texttt{27017}). Esto se hace abriendo una terminal y ejecutando:
+				\begin{verbatim}
+					$ sudo systemctl status mongod
+				\end{verbatim}
+				Si está corriendo ¡Perfecto! Ya puedes pasar al siguiente apartado. En caso contrario, arrancamos MongoDB con el siguiente comando: 
+				\begin{verbatim}
+					$ sudo systemctl start mongod
+				\end{verbatim}
+
+				\item \textbf{Encender el Servidor Central (Backend):} En una nueva ventana de la terminal, nos situamos en la carpeta del proyecto y lanzamos nuestro script de Node.js. Al hacerlo, la consola nos confirmará que se ha conectado con éxito a MongoDB y que el servidor web ya está escuchando peticiones:
+				\begin{verbatim}
+					$ node registro_sensores.js
+				\end{verbatim}
+		
+				\item \textbf{Vincular DomoBot Angel:} Antes de abrir las webs, buscamos a nuestro bot en la aplicación de Telegram de nuestro móvil u ordenador y pulsamos el botón de \textbf{Iniciar} (lo que envía el comando \texttt{/start}). Veremos que la consola del servidor detecta el evento y registra nuestro \textit{Chat ID} para el envío de alertas. \textbf{Importante:} Tendremos que crearnos nosotros nuestro BOT y poner el token en la constante creada para ello en el Servidor (en \texttt{registro\_sensores.js})
+			\end{enumerate}
+	
+		\subsection{Uso de las Interfaces de Usuario}
+			Con el núcleo del sistema en marcha, abrimos nuestro navegador web e interactuamos con los dos clientes disponibles:
+			
+			\begin{itemize}
+				\item \textbf{Simulador de Sensores:} (Figura~\ref{fig:panel_sensor}) Accedemos a la URL \texttt{http://localhost:8080/} (o \texttt{/sensor.html}). Desde aquí podemos dar de alta un sensor rellenando el formulario o seleccionar uno ya existente del desplegable. Si activamos el "Modo Piloto Automático", el cliente empezará a mandar datos inventados pero realistas cada 5 segundos de forma ininterrumpida.
+				
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=0.7\linewidth]{./imagenes_necesarias/ejemplos_ejecucion/parte_2/Panel_sensor.png}
+					\caption{Panel de registro de un sensor \texttt{http://localhost:8080/}}
+					\label{fig:panel_sensor}
+				\end{figure}
+		
+				\item \textbf{Panel de Control (Dashboard):} (Figura ~\ref{fig:dashboard}) En otra pestaña del navegador, entramos en \texttt{http://localhost:8080/dashboard.html}. Veremos cómo se dibuja la casa dinámicamente gracias al Gemelo Digital y cómo las tarjetas de cada habitación empiezan a actualizarse solas con las medidas que envía el simulador, sin necesidad de refrescar la página.
+					
+					\begin{figure}[H]
+						\centering
+						\includegraphics[width=1\linewidth]{./imagenes_necesarias/ejemplos_ejecucion/parte_2/Dashboard.png}
+						\caption{Dashboard de un usuario/habitante de la casa domotizada \texttt{http://localhost:8080/dashboard.html}}
+						\label{fig:dashboard}
+					\end{figure}
+				
+				\item \textbf{Iniciar el bot de Telegram}: Le mandamos el comando \texttt{/start} (Figura ~\ref{fig:inicio_bot})
+				
+					\begin{figure}[H]
+						\centering
+						\includegraphics[width=0.4\linewidth]{./imagenes_necesarias/ejemplos_ejecucion/parte_2/inicio_bot.jpg}
+						\caption{Inicio de conversación con DomoBot Angel}
+						\label{fig:inicio_bot}
+					\end{figure}
+					
+			\end{itemize}
+	
+		\subsection{Ejemplos de Ejecución y Casos de Prueba}
+			Para demostrar el comportamiento inteligente del Agente Lógico y la perfecta sincronización de los clientes, vamos a ver cada uno de los pan exponen tres casos de prueba reales:
+			
+			\subsubsection{Caso de Prueba 1: Alerta Crítica por Fuga de Gas en la Cocina}
+				En primer lugar registramos el \textbf{sensor de gas en la cocina} (Figuras ~\ref{fig:p1_1} y ~\ref{fig:p1_2}). 
+				
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=0.7\linewidth]{./imagenes_necesarias/ejemplos_ejecucion/parte_2/prueba_1/1.png}
+					\caption{Registramos un sensor de gas para la cocina.}
+					\label{fig:p1_1}
+				\end{figure}
+				
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=0.7\linewidth]{./imagenes_necesarias/ejemplos_ejecucion/parte_2/prueba_1/2.png}
+					\caption{Salida en la terminal al registrar un sensor de gas para la cocina.}
+					\label{fig:p1_2}
+				\end{figure}
+				
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=0.7\linewidth]{./imagenes_necesarias/ejemplos_ejecucion/parte_2/prueba_1/3.png}
+					\caption{Insertamos una medida de 450ppm para el sensor de gas para la cocina.}
+					\label{fig:p1_3}
+				\end{figure}
+				
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=0.7\linewidth]{./imagenes_necesarias/ejemplos_ejecucion/parte_2/prueba_1/4.png}
+					\caption{Salida en la terminal al insertar una medida de 450ppm para el sensor de gas para la cocina.}
+					\label{fig:p1_4}
+				\end{figure}
+				
+				Si desde la interfaz del sensor inyectamos un valor de gas superior a las 300 ppm (por ejemplo, 450 ppm) (Figuras ~\ref{fig:p1_3} y  ~\ref{fig:p1_4} ) en la ubicación de la cocina, ocurre la siguiente reacción en cadena instantánea:
+				\begin{itemize}
+					\item El servidor persiste la lectura en la colección \texttt{historial} de MongoDB. Ya lo hemos visto en la Figura ~\ref{fig:p1_4} 
+					\item El \textit{Dashboard} intercepta el aviso (Figura ~\ref{fig:p1_5}), añade una alerta roja en el historial de pantallas y conmuta de forma automática el estado de la Alarma de Gas de la cocina a \texttt{ACTIVA}.
+						\begin{figure}[H]
+							\centering
+							\includegraphics[width=1\linewidth]{./imagenes_necesarias/ejemplos_ejecucion/parte_2/prueba_1/5.png}
+							\caption{Dashboard muestra el aviso de fuga de gas detectado por el sensor de la cocina}
+							\label{fig:p1_5}
+						\end{figure}
+					\item El usuario recibe una notificación en su teléfono móvil mediante Telegram advirtiéndole del peligro de forma inmediata (Figura ~\ref{fig:p1_6}).
+						\begin{figure}[H]
+							\centering
+							\includegraphics[width=0.4\linewidth]{./imagenes_necesarias/ejemplos_ejecucion/parte_2/prueba_1/6.jpg}
+							\caption{DomoBot Angel nos avisa de la fuga de gas detectado por el sensor de la cocina}
+							\label{fig:p1_6}
+						\end{figure}
+				\end{itemize}
+				
+			\newpage
+		\subsubsection{Caso de Prueba 2: Regla Compleja Cruzada (Luminosidad y Movimiento)}
+				Para comprobar que el Agente Lógico tiene memoria asociativa y toma decisiones eficientes, realizamos la siguiente prueba:
+				\begin{enumerate}
+					\item Enviamos desde un sensor una lectura de \texttt{Luminosidad} alta (por ejemplo, 600 lux) en el \texttt{Salón}. Acto seguido, simulamos presencia (\texttt{1}) con un sensor de \texttt{Movimiento} en esa misma zona (Figura ~\ref{fig:p2_1}). El servidor registra el movimiento, pero como sabe que hay luz de día, decide no hacer nada. (Figura ~\ref{fig:p2_2})
+					
+					\begin{figure}[H]
+						\centering
+						\includegraphics[width=1\linewidth]{./imagenes_necesarias/ejemplos_ejecucion/parte_2/prueba_2/1.png}
+						\caption{Sensor de Luminosidad y Movimiento en Dormitorio 1 envían su telemetría}
+						\label{fig:p2_1}
+					\end{figure}
+					
+					\begin{figure}[H]
+						\centering
+						\includegraphics[width=1\linewidth]{./imagenes_necesarias/ejemplos_ejecucion/parte_2/prueba_2/2.png}
+						\caption{Dashboard con nuevas telemetrías}
+						\label{fig:p2_2}
+					\end{figure}
+				
+				\item Ahora (Figura ~\ref{fig:p2_3}), cambiamos la \texttt{Luminosidad} a un valor bajo (por ejemplo, 80 lux) simulando que ha anochecido. Volvemos a mandar un evento de \texttt{Movimiento}. Al cruzar ambos datos en memoria, el Agente determina que está oscuro y hay presencia, por lo que cambia el estado de la Luz del Salón a \texttt{ENCENDIDA} en el Gemelo Digital, el botón del Dashboard (Figura ~\ref{fig:p2_4}) cambia de color solo y nos llega el aviso. DomoBot Angel también nos avisa (Figura ~\ref{fig:p2_5})
+				
+					\begin{figure}[H]
+						\centering
+						\includegraphics[width=1\linewidth]{./imagenes_necesarias/ejemplos_ejecucion/parte_2/prueba_2/3.png}
+						\caption{Sensor de Luminosidad y Movimiento en Dormitorio 1 envían su telemetría de nuevo}
+						\label{fig:p2_3}
+					\end{figure}
+					
+					\begin{figure}[H]
+						\centering
+						\includegraphics[width=1\linewidth]{./imagenes_necesarias/ejemplos_ejecucion/parte_2/prueba_2/4.png}
+						\caption{Dashboard con nuevas telemetrías, nuevo aviso y cambio en el actuador de la Luz del Dormitorio 1.}
+						\label{fig:p2_4}
+					\end{figure}
+					
+					\begin{figure}[H]
+						\centering
+						\includegraphics[width=0.4\linewidth]{./imagenes_necesarias/ejemplos_ejecucion/parte_2/prueba_2/5.jpg}
+						\caption{DomoBot Angel nos avisa de que ha enendido la luz debido al evento complejo}
+						\label{fig:p2_5}
+					\end{figure}
+					
+			\end{enumerate}
+		
+		\newpage
+		
+		\subsubsection{Caso de Prueba 3: Seguridad en el Portal (Videovigilancia Activa)}
+			Cuando el sensor de \texttt{Videovigilancia} del \texttt{Portal} detecta actividad (Figura  ~\ref{fig:p3_1}) (un valor igual a \texttt{1}), el sistema se pone en modo alerta de seguridad:
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=1\linewidth]{./imagenes_necesarias/ejemplos_ejecucion/parte_2/prueba_3/1.png}
+					\caption{El sensor de Videovigilancia ubicado en el Portal detecta movimiento}
+					\label{fig:p3_1}
+				\end{figure}
+				
+			\begin{itemize}
+				\item El \textit{Dashboard} reacciona (de la Figura  ~\ref{fig:p3_2}) cambiando el estilo del circuito cerrado de videovigilancia (CCV) (Figura ~\ref{fig:p3_3}), sustituyendo la imagen estática por una animación interactiva con un marco rojo que simula que la cámara está grabando al intruso.
+					\begin{figure}[H]
+						\centering
+						\includegraphics[width=1\linewidth]{./imagenes_necesarias/ejemplos_ejecucion/parte_2/prueba_2/4.png}
+						\caption{CCV normal, sin detectar movimiento.}
+						\label{fig:p3_2}
+					\end{figure}
+					
+					\begin{figure}[H]
+						\centering
+						\includegraphics[width=1\linewidth]{./imagenes_necesarias/ejemplos_ejecucion/parte_2/prueba_2/4.png}
+						\caption{CCV al detectar movimiento.}
+						\label{fig:p3_3}
+					\end{figure}
+					
+				\item El servidor realiza el \textit{bypass} multimedia y le envía al usuario por Telegram un mensaje HTML junto con un GIF animado en tiempo real, permitiendo al dueño ver una simulación visual de lo que ocurre en su puerta desde cualquier parte del mundo.  (Figura ~\ref{fig:p3_4})
+					\begin{figure}[H]
+						\centering
+						\includegraphics[width=0.4\linewidth]{./imagenes_necesarias/ejemplos_ejecucion/parte_2/prueba_3/4.jpg}
+						\caption{DomoBot Angel nos avisa de que hay alguien en el portal y nos envia un pequeño clip de lo que graban las cámaras}
+						\label{fig:p3_4}
+					\end{figure}
+			\end{itemize}
+			
+				
 \end{document}

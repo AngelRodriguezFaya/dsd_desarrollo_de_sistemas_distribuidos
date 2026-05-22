@@ -1,0 +1,505 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{http}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{require}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}node:http\PYGZsq{}}\PYG{p}{);}
+\PYG{k+kd}{const}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{n+nx}{join}\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{require}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}node:path\PYGZsq{}}\PYG{p}{);}
+\PYG{k+kd}{const}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{n+nx}{readFile}\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{require}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}node:fs\PYGZsq{}}\PYG{p}{);}
+\PYG{k+kd}{const}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{n+nx}{MongoClient}\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{require}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}mongodb\PYGZsq{}}\PYG{p}{);}
+\PYG{k+kd}{const}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{n+nx}{Server}\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{require}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}socket.io\PYGZsq{}}\PYG{p}{);}
+
+\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{TelegramBot}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{require}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}node\PYGZhy{}telegram\PYGZhy{}bot\PYGZhy{}api\PYGZsq{}}\PYG{p}{);}
+
+\PYG{c+c1}{// ===========================================================================}
+\PYG{c+c1}{//                  Configuración y variables globales.}
+\PYG{c+c1}{// ===========================================================================}
+
+\PYG{c+c1}{// \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{} Configuración básica: puerto y conexión a MongoDB. \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}}
+\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{PORT}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{process}\PYG{p}{.}\PYG{n+nx}{env}\PYG{p}{.}\PYG{n+nx}{PORT}\PYG{+w}{ }\PYG{o}{||}\PYG{+w}{ }\PYG{l+m+mf}{8080}\PYG{p}{;}
+\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{MONGODB\PYGZus{}URI}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{process}\PYG{p}{.}\PYG{n+nx}{env}\PYG{p}{.}\PYG{n+nx}{MONGODB\PYGZus{}URI}\PYG{+w}{ }\PYG{o}{||}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}mongodb://127.0.0.1:27017\PYGZsq{}}\PYG{p}{;}
+\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{MONGODB\PYGZus{}DB\PYGZus{}NAME}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{process}\PYG{p}{.}\PYG{n+nx}{env}\PYG{p}{.}\PYG{n+nx}{MONGODB\PYGZus{}DB\PYGZus{}NAME}\PYG{+w}{ }\PYG{o}{||}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}domotica\PYGZsq{}}\PYG{p}{;}
+
+\PYG{c+c1}{// \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{} Objetos \PYGZdq{}freeze\PYGZdq{} para el estado de los actuadores \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}}
+
+\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{EstadoAC}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nb}{Object}\PYG{p}{.}\PYG{n+nx}{freeze}\PYG{p}{(\PYGZob{}}
+\PYG{+w}{    }\PYG{n+nx}{APAGADO}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}APAGADO\PYGZsq{}}\PYG{p}{,}
+\PYG{+w}{    }\PYG{n+nx}{ENCENDIDO}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}ENCENDIDO\PYGZsq{}}
+\PYG{p}{\PYGZcb{});}
+
+\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{EstadoPersiana}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nb}{Object}\PYG{p}{.}\PYG{n+nx}{freeze}\PYG{p}{(\PYGZob{}}
+\PYG{+w}{    }\PYG{n+nx}{ABIERTA}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}ABIERTA\PYGZsq{}}\PYG{p}{,}
+\PYG{+w}{    }\PYG{n+nx}{CERRADA}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}CERRADA\PYGZsq{}}
+\PYG{p}{\PYGZcb{});}
+
+\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{EstadoAlarmaGas}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nb}{Object}\PYG{p}{.}\PYG{n+nx}{freeze}\PYG{p}{(\PYGZob{}}
+\PYG{+w}{    }\PYG{n+nx}{INACTIVA}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}INACTIVA\PYGZsq{}}\PYG{p}{,}
+\PYG{+w}{    }\PYG{n+nx}{ACTIVA}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}ACTIVA\PYGZsq{}}
+\PYG{p}{\PYGZcb{});}
+
+\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{EstadoLuz}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nb}{Object}\PYG{p}{.}\PYG{n+nx}{freeze}\PYG{p}{(\PYGZob{}}
+\PYG{+w}{    }\PYG{n+nx}{APAGADA}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}APAGADA\PYGZsq{}}\PYG{p}{,}
+\PYG{+w}{    }\PYG{n+nx}{ENCENDIDA}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}ENCENDIDA\PYGZsq{}}
+\PYG{p}{\PYGZcb{});}
+
+\PYG{c+c1}{// \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{} Variables globales compartidas para reutilizar la conexion y la coleccion a la base de datos. \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}}
+\PYG{k+kd}{let}\PYG{+w}{ }\PYG{n+nx}{mongoClient}\PYG{p}{;}\PYG{+w}{        }\PYG{c+c1}{// Cliente de MongoDB}
+\PYG{k+kd}{let}\PYG{+w}{ }\PYG{n+nx}{sensoresCollection}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// Colección de MongoDB donde se almacenarán los sensores registrados. }
+\PYG{k+kd}{let}\PYG{+w}{ }\PYG{n+nx}{historialCollection}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// Colección de MongoDB donde se almacenarán las mediciones de los sensores.}
+
+\PYG{k+kd}{let}\PYG{+w}{ }\PYG{n+nx}{estadoActuadores}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{+w}{  }\PYG{c+c1}{// Estado actual de los actuadores, compartido para que el agente de control y el dashboard puedan acceder a él.}
+\PYG{+w}{    }\PYG{n+nx}{aireAcondicionado}\PYG{o}{:}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }\PYG{l+s+s2}{\PYGZdq{}Salon\PYGZdq{}}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nx}{EstadoAC}\PYG{p}{.}\PYG{n+nx}{APAGADO}\PYG{p}{,}
+\PYG{+w}{        }\PYG{l+s+s2}{\PYGZdq{}Dormitorio 1\PYGZdq{}}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nx}{EstadoAC}\PYG{p}{.}\PYG{n+nx}{APAGADO}\PYG{p}{,}
+\PYG{+w}{        }\PYG{l+s+s2}{\PYGZdq{}Cocina\PYGZdq{}}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nx}{EstadoAC}\PYG{p}{.}\PYG{n+nx}{APAGADO}\PYG{p}{,}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{},}
+\PYG{+w}{    }\PYG{n+nx}{persiana}\PYG{o}{:}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }\PYG{l+s+s2}{\PYGZdq{}Salon\PYGZdq{}}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nx}{EstadoPersiana}\PYG{p}{.}\PYG{n+nx}{ABIERTA}\PYG{p}{,}
+\PYG{+w}{        }\PYG{l+s+s2}{\PYGZdq{}Dormitorio 1\PYGZdq{}}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nx}{EstadoPersiana}\PYG{p}{.}\PYG{n+nx}{ABIERTA}\PYG{p}{,}
+\PYG{+w}{        }\PYG{l+s+s2}{\PYGZdq{}Dormitorio 2\PYGZdq{}}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nx}{EstadoPersiana}\PYG{p}{.}\PYG{n+nx}{ABIERTA}\PYG{p}{,}
+\PYG{+w}{        }\PYG{l+s+s2}{\PYGZdq{}Cocina\PYGZdq{}}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nx}{EstadoPersiana}\PYG{p}{.}\PYG{n+nx}{ABIERTA}\PYG{p}{,}
+\PYG{+w}{        }\PYG{l+s+s2}{\PYGZdq{}Bano\PYGZdq{}}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nx}{EstadoPersiana}\PYG{p}{.}\PYG{n+nx}{ABIERTA}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{},}
+\PYG{+w}{    }\PYG{n+nx}{alarmaGas}\PYG{o}{:}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }\PYG{l+s+s2}{\PYGZdq{}Cocina\PYGZdq{}}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nx}{EstadoAlarmaGas}\PYG{p}{.}\PYG{n+nx}{INACTIVA}\PYG{p}{,}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{},}
+\PYG{+w}{    }\PYG{n+nx}{luz}\PYG{o}{:}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }\PYG{l+s+s2}{\PYGZdq{}Salon\PYGZdq{}}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nx}{EstadoLuz}\PYG{p}{.}\PYG{n+nx}{APAGADA}\PYG{p}{,}
+\PYG{+w}{        }\PYG{l+s+s2}{\PYGZdq{}Dormitorio 1\PYGZdq{}}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nx}{EstadoLuz}\PYG{p}{.}\PYG{n+nx}{APAGADA}\PYG{p}{,}
+\PYG{+w}{        }\PYG{l+s+s2}{\PYGZdq{}Dormitorio 2\PYGZdq{}}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nx}{EstadoLuz}\PYG{p}{.}\PYG{n+nx}{APAGADA}\PYG{p}{,}
+\PYG{+w}{        }\PYG{l+s+s2}{\PYGZdq{}Cocina\PYGZdq{}}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nx}{EstadoLuz}\PYG{p}{.}\PYG{n+nx}{APAGADA}\PYG{p}{,}
+\PYG{+w}{        }\PYG{l+s+s2}{\PYGZdq{}Bano\PYGZdq{}}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nx}{EstadoLuz}\PYG{p}{.}\PYG{n+nx}{APAGADA}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{};}
+
+\PYG{c+c1}{// Memoria para eventos complejos: Guardamos la última luminosidad conocida de cada zona}
+\PYG{k+kd}{let}\PYG{+w}{ }\PYG{n+nx}{memoriaLuminosidad}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{\PYGZob{}\PYGZcb{};}
+
+\PYG{c+c1}{// \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{} Constantes/Umbrales para el agente de control \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}}
+\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{MAX\PYGZus{}TEMP}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mf}{30.0}\PYG{p}{;}\PYG{+w}{  }\PYG{c+c1}{// grados Celsius}
+\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{MIN\PYGZus{}TEMP}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mf}{17.0}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// grados Celsius}
+\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{MAX\PYGZus{}LUMINOSIDAD}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mf}{700}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// Lux}
+\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{MAX\PYGZus{}PPM\PYGZus{}GAS}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mf}{300}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// Partículas por millón (ppm)}
+
+\PYG{c+c1}{// \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{} Configuración del bot de Telegram \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}}
+\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{TELEGRAM\PYGZus{}TOKEN}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}8702302349:AAHUwKTa4EM73Qedbv9qeDpPYKl3dvwu2sc\PYGZsq{}}\PYG{p}{;}
+\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{telegramBot}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{o+ow}{new}\PYG{+w}{ }\PYG{n+nx}{TelegramBot}\PYG{p}{(}\PYG{n+nx}{TELEGRAM\PYGZus{}TOKEN}\PYG{p}{,}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{n+nx}{polling}\PYG{o}{:}\PYG{+w}{ }\PYG{k+kc}{true}\PYG{p}{\PYGZcb{});}
+
+\PYG{c+c1}{// Para comprobar si hay errores en la conexión con Telegram}
+\PYG{n+nx}{telegramBot}\PYG{p}{.}\PYG{n+nx}{on}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}polling\PYGZus{}error\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{p}{(}\PYG{n+nx}{error}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{    }\PYG{n+nx}{console}\PYG{p}{.}\PYG{n+nx}{log}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}[ERROR TELEGRAM]\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{error}\PYG{p}{.}\PYG{n+nx}{message}\PYG{p}{);}
+\PYG{p}{\PYGZcb{});}
+
+\PYG{k+kd}{let}\PYG{+w}{ }\PYG{n+nx}{miChatId}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k+kc}{null}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// Variable para almacenar el chat ID del usuario que interactúa con el bot}
+
+\PYG{c+c1}{// Cuando el cliente hable por primera vez con el bot, guardamos su chat ID para enviarle alertas posteriormente.}
+\PYG{n+nx}{telegramBot}\PYG{p}{.}\PYG{n+nx}{onText}\PYG{p}{(}\PYG{l+s+sr}{/\PYGZbs{}/start/}\PYG{p}{,}\PYG{+w}{ }\PYG{p}{(}\PYG{n+nx}{msg}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{    }\PYG{n+nx}{miChatId}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{msg}\PYG{p}{.}\PYG{n+nx}{chat}\PYG{p}{.}\PYG{n+nx}{id}\PYG{p}{;}
+\PYG{+w}{    }\PYG{n+nx}{telegramBot}\PYG{p}{.}\PYG{n+nx}{sendMessage}\PYG{p}{(}\PYG{n+nx}{miChatId}\PYG{p}{,}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}¡Hola! Soy tu asistente de domótica. Te enviaré alertas importantes sobre el estado de tu hogar.\PYGZsq{}}\PYG{p}{);}
+\PYG{+w}{    }\PYG{n+nx}{console}\PYG{p}{.}\PYG{n+nx}{log}\PYG{p}{(}\PYG{l+s+sb}{`[TELEGRAM] Usuario registrado para alertas: }\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{miChatId}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{`}\PYG{p}{);}
+\PYG{p}{\PYGZcb{});}
+
+\PYG{c+c1}{// ===========================================================================}
+\PYG{c+c1}{//                  Funciones para manejar MongoDB.}
+\PYG{c+c1}{// ===========================================================================}
+
+\PYG{c+c1}{// Abre la conexion con MongoDB y guarda la coleccion a utilizar.}
+\PYG{k}{async}\PYG{+w}{ }\PYG{k+kd}{function}\PYG{+w}{ }\PYG{n+nx}{connectToMongo}\PYG{p}{()}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}\PYG{c+c1}{//Inicializamos el cliente de la base de datos}
+\PYG{+w}{    }\PYG{n+nx}{mongoClient}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{o+ow}{new}\PYG{+w}{ }\PYG{n+nx}{MongoClient}\PYG{p}{(}\PYG{n+nx}{MONGODB\PYGZus{}URI}\PYG{p}{);}
+
+\PYG{+w}{	}\PYG{c+c1}{//Esperamos a que conecte}
+\PYG{+w}{    }\PYG{k}{await}\PYG{+w}{ }\PYG{n+nx}{mongoClient}\PYG{p}{.}\PYG{n+nx}{connect}\PYG{p}{();}
+
+\PYG{+w}{	}\PYG{c+c1}{//Obtenemos la base de datos y creamos/cargamos las colecciones necesarias}
+\PYG{+w}{    }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{db}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{mongoClient}\PYG{p}{.}\PYG{n+nx}{db}\PYG{p}{(}\PYG{n+nx}{MONGODB\PYGZus{}DB\PYGZus{}NAME}\PYG{p}{);}
+\PYG{+w}{    }\PYG{n+nx}{sensoresCollection}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{db}\PYG{p}{.}\PYG{n+nx}{collection}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}sensores\PYGZsq{}}\PYG{p}{);}
+\PYG{+w}{    }\PYG{n+nx}{historialCollection}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{db}\PYG{p}{.}\PYG{n+nx}{collection}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}historial\PYGZsq{}}\PYG{p}{);}
+\PYG{p}{\PYGZcb{}}
+
+
+\PYG{c+c1}{// Inserta un sensor nuevo en MongoDB y devuelve el documento insertado.}
+\PYG{k}{async}\PYG{+w}{ }\PYG{k+kd}{function}\PYG{+w}{ }\PYG{n+nx}{registerSensor}\PYG{p}{(}\PYG{n+nx}{sensorData}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}\PYG{c+c1}{//Creamos la entrada de la tabla a partir de los datos pasados en el parametro sensorData}
+\PYG{+w}{    }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{sensor}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }\PYG{n+nx}{name}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nx}{sensorData}\PYG{p}{.}\PYG{n+nx}{name}\PYG{p}{,}
+\PYG{+w}{        }\PYG{n+nx}{location}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nx}{sensorData}\PYG{p}{.}\PYG{n+nx}{location}\PYG{p}{,}
+\PYG{+w}{        }\PYG{n+nx}{type}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nx}{sensorData}\PYG{p}{.}\PYG{n+nx}{type}\PYG{p}{,}
+\PYG{+w}{        }\PYG{n+nx}{registeredAt}\PYG{o}{:}\PYG{+w}{ }\PYG{o+ow}{new}\PYG{+w}{ }\PYG{n+nb}{Date}\PYG{p}{()}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{};}
+
+\PYG{+w}{	}\PYG{c+c1}{//Insertamos la entrada en la coleccion \PYGZdq{}sensores\PYGZdq{}}
+\PYG{+w}{    }\PYG{k}{await}\PYG{+w}{ }\PYG{n+nx}{sensoresCollection}\PYG{p}{.}\PYG{n+nx}{insertOne}\PYG{p}{(}\PYG{n+nx}{sensor}\PYG{p}{);}
+\PYG{+w}{    }\PYG{k}{return}\PYG{+w}{ }\PYG{n+nx}{sensor}\PYG{p}{;}
+\PYG{p}{\PYGZcb{}}
+
+
+\PYG{c+c1}{// Muestra por consola todos los sensores registrados.}
+\PYG{k}{async}\PYG{+w}{ }\PYG{k+kd}{function}\PYG{+w}{ }\PYG{n+nx}{logRegisteredSensors}\PYG{p}{()}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}\PYG{c+c1}{//Obtenemos todas las entradas de la coleccion \PYGZdq{}sensores\PYGZdq{}}
+\PYG{+w}{    }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{sensors}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{await}\PYG{+w}{ }\PYG{n+nx}{sensoresCollection}
+\PYG{+w}{        }\PYG{p}{.}\PYG{n+nx}{find}\PYG{p}{(\PYGZob{}\PYGZcb{},}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{n+nx}{projection}\PYG{o}{:}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{n+nx}{\PYGZus{}id}\PYG{o}{:}\PYG{+w}{ }\PYG{l+m+mf}{0}\PYG{p}{\PYGZcb{}\PYGZcb{})}
+\PYG{+w}{        }\PYG{p}{.}\PYG{n+nx}{sort}\PYG{p}{(\PYGZob{}}\PYG{n+nx}{registeredAt}\PYG{o}{:}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{l+m+mf}{1}\PYG{p}{\PYGZcb{})}
+\PYG{+w}{        }\PYG{p}{.}\PYG{n+nx}{toArray}\PYG{p}{();}
+
+\PYG{+w}{	}\PYG{c+c1}{//Las mostramos por consola en formato tabla}
+\PYG{+w}{    }\PYG{n+nx}{console}\PYG{p}{.}\PYG{n+nx}{log}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}Sensores registrados actualmente en la base de datos:\PYGZsq{}}\PYG{p}{);}
+\PYG{+w}{    }\PYG{n+nx}{console}\PYG{p}{.}\PYG{n+nx}{table}\PYG{p}{(}\PYG{n+nx}{sensors}\PYG{p}{);}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{c+c1}{// ===========================================================================}
+\PYG{c+c1}{//                       SERVIDOR HTTP (Servir archivos)}
+\PYG{c+c1}{// ===========================================================================}
+
+\PYG{c+c1}{// Creamos el servidor http.}
+\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{httpServer}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{http}\PYG{p}{.}\PYG{n+nx}{createServer}\PYG{p}{((}\PYG{n+nx}{request}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{response}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{    }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{n+nx}{method}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{url}\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{request}\PYG{p}{;}
+\PYG{+w}{    }\PYG{k+kd}{let}\PYG{+w}{ }\PYG{n+nx}{filePath}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k+kc}{null}\PYG{p}{;}
+
+\PYG{+w}{	}\PYG{c+c1}{//Para el home y la pagina sensores, cargar sensor.html, para la pagina dashboard, cargar dashboard.html}
+\PYG{+w}{    }\PYG{k}{if}\PYG{p}{(}\PYG{n+nx}{method}\PYG{+w}{ }\PYG{o}{===}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}GET\PYGZsq{}}\PYG{+w}{ }\PYG{o}{\PYGZam{}\PYGZam{}}\PYG{+w}{ }\PYG{p}{(}\PYG{n+nx}{url}\PYG{+w}{ }\PYG{o}{===}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}/\PYGZsq{}}\PYG{+w}{ }\PYG{o}{||}\PYG{+w}{ }\PYG{n+nx}{url}\PYG{+w}{ }\PYG{o}{===}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}/sensor.html\PYGZsq{}}\PYG{p}{))}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }\PYG{n+nx}{filePath}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{join}\PYG{p}{(}\PYG{n+nx}{process}\PYG{p}{.}\PYG{n+nx}{cwd}\PYG{p}{(),}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}sensor.html\PYGZsq{}}\PYG{p}{);}
+
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{else}\PYG{+w}{ }\PYG{k}{if}\PYG{p}{(}\PYG{+w}{ }\PYG{n+nx}{method}\PYG{+w}{ }\PYG{o}{===}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}GET\PYGZsq{}}\PYG{+w}{ }\PYG{o}{\PYGZam{}\PYGZam{}}\PYG{+w}{ }\PYG{n+nx}{url}\PYG{+w}{ }\PYG{o}{===}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}/dashboard.html\PYGZsq{}}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }\PYG{n+nx}{filePath}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{join}\PYG{p}{(}\PYG{n+nx}{process}\PYG{p}{.}\PYG{n+nx}{cwd}\PYG{p}{(),}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}dashboard.html\PYGZsq{}}\PYG{p}{);}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{    }\PYG{k}{if}\PYG{p}{(}\PYG{n+nx}{filePath}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }\PYG{c+c1}{//Leemos el contenido de sensor.html y lo guardamos en data}
+\PYG{+w}{        }\PYG{n+nx}{readFile}\PYG{p}{(}\PYG{n+nx}{filePath}\PYG{p}{,}\PYG{+w}{ }\PYG{p}{(}\PYG{n+nx}{err}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{data}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{k}{if}\PYG{p}{(}\PYG{n+nx}{err}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                }\PYG{n+nx}{response}\PYG{p}{.}\PYG{n+nx}{writeHead}\PYG{p}{(}\PYG{l+m+mf}{500}\PYG{p}{,}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{l+s+s1}{\PYGZsq{}Content\PYGZhy{}Type\PYGZsq{}}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}text/plain; charset=utf\PYGZhy{}8\PYGZsq{}}\PYG{p}{\PYGZcb{});}
+\PYG{+w}{                }\PYG{n+nx}{response}\PYG{p}{.}\PYG{n+nx}{end}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}No se pudo cargar el HTML.\PYGZsq{}}\PYG{p}{);}
+\PYG{+w}{            }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{else}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                }\PYG{c+c1}{//Devolvemos al navegador una página creada a partir de data}
+\PYG{+w}{                }\PYG{n+nx}{response}\PYG{p}{.}\PYG{n+nx}{writeHead}\PYG{p}{(}\PYG{l+m+mf}{200}\PYG{p}{,}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{l+s+s1}{\PYGZsq{}Content\PYGZhy{}Type\PYGZsq{}}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}text/html; charset=utf\PYGZhy{}8\PYGZsq{}}\PYG{p}{\PYGZcb{});}
+\PYG{+w}{                }\PYG{n+nx}{response}\PYG{p}{.}\PYG{n+nx}{end}\PYG{p}{(}\PYG{n+nx}{data}\PYG{p}{);}
+\PYG{+w}{            }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{            }\PYG{n+nx}{response}\PYG{p}{.}\PYG{n+nx}{end}\PYG{p}{();}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{});}\PYG{+w}{    }
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{else}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }\PYG{c+c1}{//En caso de que la ruta no sea ni \PYGZsq{}/\PYGZsq{} ni \PYGZsq{}/dashboard.html\PYGZsq{}, devolvemos un error 404}
+\PYG{+w}{        }\PYG{n+nx}{response}\PYG{p}{.}\PYG{n+nx}{writeHead}\PYG{p}{(}\PYG{l+m+mf}{404}\PYG{p}{,}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{l+s+s1}{\PYGZsq{}Content\PYGZhy{}Type\PYGZsq{}}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}text/plain; charset=utf\PYGZhy{}8\PYGZsq{}}\PYG{p}{\PYGZcb{});}
+\PYG{+w}{        }\PYG{n+nx}{response}\PYG{p}{.}\PYG{n+nx}{end}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}Ruta no encontrada.\PYGZsq{}}\PYG{p}{);}
+\PYG{+w}{        }\PYG{n+nx}{response}\PYG{p}{.}\PYG{n+nx}{end}\PYG{p}{();}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{});}
+
+\PYG{c+c1}{// ===========================================================================}
+\PYG{c+c1}{//                  SERVIDOR EN TIEMPO REAL (Socket.IO)}
+\PYG{c+c1}{// ===========================================================================}
+
+\PYG{c+c1}{// Iniciamos el servidor HTTP y Socket.IO.}
+\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{io}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{o+ow}{new}\PYG{+w}{ }\PYG{n+nx}{Server}\PYG{p}{(}\PYG{n+nx}{httpServer}\PYG{p}{);}\PYG{+w}{ }\PYG{c+c1}{// Engancha Socket.io al servidor HTTP, abriendo el canal para WebSockets}
+
+\PYG{c+c1}{// \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{} Inicializamos la infraestructura del servidor \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}}
+\PYG{k}{async}\PYG{+w}{ }\PYG{k+kd}{function}\PYG{+w}{ }\PYG{n+nx}{startServer}\PYG{p}{()}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{    }\PYG{k}{try}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{		}\PYG{c+c1}{//Levantamos mongo}
+\PYG{+w}{        }\PYG{k}{await}\PYG{+w}{ }\PYG{n+nx}{connectToMongo}\PYG{p}{();}
+
+\PYG{+w}{		}\PYG{c+c1}{// Levantamos el servidor web en el puerto}
+\PYG{+w}{        }\PYG{n+nx}{httpServer}\PYG{p}{.}\PYG{n+nx}{listen}\PYG{p}{(}\PYG{n+nx}{PORT}\PYG{p}{,}\PYG{+w}{ }\PYG{p}{()}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{n+nx}{console}\PYG{p}{.}\PYG{n+nx}{log}\PYG{p}{(}\PYG{l+s+sb}{`Servidor basico escuchando en http://localhost:}\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{PORT}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{`}\PYG{p}{);}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{});}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{catch}\PYG{p}{(}\PYG{n+nx}{err}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }\PYG{n+nx}{console}\PYG{p}{.}\PYG{n+nx}{error}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}No se pudo iniciar el servidor:\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{err}\PYG{p}{.}\PYG{n+nx}{message}\PYG{p}{);}
+\PYG{+w}{        }\PYG{n+nx}{process}\PYG{p}{.}\PYG{n+nx}{exit}\PYG{p}{(}\PYG{l+m+mf}{1}\PYG{p}{);}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{c+c1}{// Manejar la conexion de Socket.IO}
+\PYG{n+nx}{io}\PYG{p}{.}\PYG{n+nx}{on}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}connection\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{p}{(}\PYG{n+nx}{socket}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{    }\PYG{n+nx}{console}\PYG{p}{.}\PYG{n+nx}{log}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}Nuevo nodo conectado: \PYGZsq{}}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n+nx}{socket}\PYG{p}{.}\PYG{n+nx}{id}\PYG{p}{);}
+
+\PYG{+w}{    }\PYG{c+c1}{// Al conectarse el Dashboard, le enviamos el estado actual de los actuadores para que se muestre correctamente en la interfaz.}
+\PYG{+w}{    }\PYG{n+nx}{socket}\PYG{p}{.}\PYG{n+nx}{emit}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}dashboard:update\PYGZhy{}actuadores\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{estadoActuadores}\PYG{p}{);}
+
+\PYG{+w}{    }\PYG{c+c1}{// [Evento 1]: Registro de sensores }
+\PYG{+w}{    }\PYG{n+nx}{socket}\PYG{p}{.}\PYG{n+nx}{on}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}sensor:register\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{k}{async}\PYG{+w}{ }\PYG{p}{(}\PYG{n+nx}{payload}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{+w}{ }\PYG{c+c1}{// payload son los datos del formulario enviados por el cliente}
+\PYG{+w}{        }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{sensorData}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{c+c1}{//Extraemos los datos del payload, asegurándonos de que sean strings y eliminando espacios innecesarios.}
+\PYG{+w}{            }\PYG{n+nx}{name}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nb}{String}\PYG{p}{(}\PYG{n+nx}{payload}\PYG{o}{?}\PYG{p}{.}\PYG{n+nx}{name}\PYG{+w}{ }\PYG{o}{||}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}\PYGZsq{}}\PYG{p}{).}\PYG{n+nx}{trim}\PYG{p}{(),}
+\PYG{+w}{            }\PYG{n+nx}{location}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nb}{String}\PYG{p}{(}\PYG{n+nx}{payload}\PYG{o}{?}\PYG{p}{.}\PYG{n+nx}{location}\PYG{+w}{ }\PYG{o}{||}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}\PYGZsq{}}\PYG{p}{).}\PYG{n+nx}{trim}\PYG{p}{(),}
+\PYG{+w}{            }\PYG{n+nx}{type}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nb}{String}\PYG{p}{(}\PYG{n+nx}{payload}\PYG{o}{?}\PYG{p}{.}\PYG{n+nx}{type}\PYG{+w}{ }\PYG{o}{||}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}\PYGZsq{}}\PYG{p}{).}\PYG{n+nx}{trim}\PYG{p}{()}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{};}
+
+\PYG{+w}{        }\PYG{c+c1}{// Validamos que se hayan proporcionado los campos obligatorios.}
+\PYG{+w}{        }\PYG{k}{if}\PYG{p}{(}\PYG{o}{!}\PYG{n+nx}{sensorData}\PYG{p}{.}\PYG{n+nx}{name}\PYG{+w}{ }\PYG{o}{||}\PYG{+w}{ }\PYG{o}{!}\PYG{n+nx}{sensorData}\PYG{p}{.}\PYG{n+nx}{location}\PYG{+w}{ }\PYG{o}{||}\PYG{+w}{ }\PYG{o}{!}\PYG{n+nx}{sensorData}\PYG{p}{.}\PYG{n+nx}{type}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{c+c1}{// Emitimos un evento de error al cliente que intenta registrar el sensor.}
+\PYG{+w}{			}\PYG{n+nx}{socket}\PYG{p}{.}\PYG{n+nx}{emit}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}sensor:error\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}Faltan campos obligatorios.\PYGZsq{}}\PYG{p}{);}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{else}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{			}\PYG{k}{try}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{				}\PYG{c+c1}{//Intentamos incluir el sensor en la BD}
+\PYG{+w}{				}\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{sensor}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{await}\PYG{+w}{ }\PYG{n+nx}{registerSensor}\PYG{p}{(}\PYG{n+nx}{sensorData}\PYG{p}{);}
+
+\PYG{+w}{				}\PYG{c+c1}{//Mostramos la colección de sensores completa}
+\PYG{+w}{				}\PYG{k}{await}\PYG{+w}{ }\PYG{n+nx}{logRegisteredSensors}\PYG{p}{();}
+\PYG{+w}{				}\PYG{n+nx}{socket}\PYG{p}{.}\PYG{n+nx}{emit}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}sensor:registered\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{sensor}\PYG{p}{);}
+
+\PYG{+w}{			}\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{catch}\PYG{p}{(}\PYG{n+nx}{err}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{				}\PYG{c+c1}{//En caso de error, emitir evento de error al sensor.}
+\PYG{+w}{				}\PYG{n+nx}{socket}\PYG{p}{.}\PYG{n+nx}{emit}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}sensor:error\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}Error registrando el sensor en la base de datos.\PYGZsq{}}\PYG{p}{);}
+\PYG{+w}{			}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{		}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{});}
+
+\PYG{+w}{    }\PYG{c+c1}{// [Evento 2]: Recepción de medidas del sensor}
+\PYG{+w}{    }\PYG{n+nx}{socket}\PYG{p}{.}\PYG{n+nx}{on}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}sensor:data\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{k}{async}\PYG{+w}{ }\PYG{p}{(}\PYG{n+nx}{payload}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }\PYG{k}{try}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{c+c1}{// Creamos el documento }
+\PYG{+w}{            }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{medidaNueva}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                }\PYG{n+nx}{sensorId}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nx}{payload}\PYG{p}{.}\PYG{n+nx}{sensorId}\PYG{p}{,}\PYG{+w}{ }
+\PYG{+w}{                }\PYG{n+nx}{name}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nx}{payload}\PYG{p}{.}\PYG{n+nx}{name}\PYG{p}{,}
+\PYG{+w}{                }\PYG{n+nx}{type}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nx}{payload}\PYG{p}{.}\PYG{n+nx}{type}\PYG{p}{,}
+\PYG{+w}{                }\PYG{n+nx}{location}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nx}{payload}\PYG{p}{.}\PYG{n+nx}{location}\PYG{p}{,}
+\PYG{+w}{                }\PYG{n+nx}{value}\PYG{o}{:}\PYG{+w}{ }\PYG{n+nb}{parseFloat}\PYG{p}{(}\PYG{n+nx}{payload}\PYG{p}{.}\PYG{n+nx}{value}\PYG{p}{),}\PYG{+w}{ }
+\PYG{+w}{                }\PYG{n+nx}{timestamp}\PYG{o}{:}\PYG{+w}{ }\PYG{o+ow}{new}\PYG{+w}{ }\PYG{n+nb}{Date}\PYG{p}{()}\PYG{+w}{ }
+\PYG{+w}{            }\PYG{p}{\PYGZcb{};}
+
+\PYG{+w}{            }\PYG{c+c1}{// 1. Insertamos el documento en la colección \PYGZdq{}historial\PYGZdq{}}
+\PYG{+w}{            }\PYG{k}{await}\PYG{+w}{ }\PYG{n+nx}{historialCollection}\PYG{p}{.}\PYG{n+nx}{insertOne}\PYG{p}{(}\PYG{n+nx}{medidaNueva}\PYG{p}{);}
+\PYG{+w}{            }\PYG{n+nx}{console}\PYG{p}{.}\PYG{n+nx}{log}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}[BD] Nueva medida registrada:\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{medidaNueva}\PYG{p}{);}
+\PYG{+w}{            }
+\PYG{+w}{            }\PYG{c+c1}{// 2. Reenviamos (en tiempo real) la medida a todos los clientes conectados (incluido el que la envió) para que puedan actualizar su dashboard.}
+\PYG{+w}{            }\PYG{n+nx}{io}\PYG{p}{.}\PYG{n+nx}{sockets}\PYG{p}{.}\PYG{n+nx}{emit}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}dashboard:update\PYGZhy{}sensor\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{medidaNueva}\PYG{p}{);}
+
+\PYG{+w}{            }\PYG{c+c1}{// 3. Llamamos al agente}
+\PYG{+w}{            }\PYG{n+nx}{ejecutarAgente}\PYG{p}{(}\PYG{n+nx}{medidaNueva}\PYG{p}{);}
+
+\PYG{+w}{        }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{catch}\PYG{p}{(}\PYG{n+nx}{err}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{n+nx}{console}\PYG{p}{.}\PYG{n+nx}{error}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}[ERROR] Error registrando la medida en la base de datos:\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{err}\PYG{p}{.}\PYG{n+nx}{message}\PYG{p}{);}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{});}
+
+\PYG{+w}{    }\PYG{c+c1}{// ===========================================================================}
+\PYG{+w}{    }\PYG{c+c1}{//                  CONTROL MANUAL DESDE EL DASHBOARD}
+\PYG{+w}{    }\PYG{c+c1}{// ===========================================================================}
+\PYG{+w}{    }\PYG{c+c1}{// [Evento 3]: Control manual del AC desde el dashboard}
+\PYG{+w}{    }\PYG{n+nx}{socket}\PYG{p}{.}\PYG{n+nx}{on}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}ui:toggle\PYGZhy{}ac\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{p}{(}\PYG{n+nx}{ubicacion}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }\PYG{k}{if}\PYG{p}{(}\PYG{o}{!}\PYG{n+nx}{ubicacion}\PYG{p}{)}
+\PYG{+w}{            }\PYG{k}{return}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// Si no se especifica una ubicación, no hacemos nada}
+
+\PYG{+w}{        }\PYG{n+nx}{estadoActuadores}\PYG{p}{.}\PYG{n+nx}{aireAcondicionado}\PYG{p}{[}\PYG{n+nx}{ubicacion}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }
+\PYG{+w}{            }\PYG{p}{(}\PYG{n+nx}{estadoActuadores}\PYG{p}{.}\PYG{n+nx}{aireAcondicionado}\PYG{p}{[}\PYG{n+nx}{ubicacion}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{===}\PYG{+w}{ }\PYG{n+nx}{EstadoAC}\PYG{p}{.}\PYG{n+nx}{APAGADO}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{?}\PYG{+w}{ }\PYG{n+nx}{EstadoAC}\PYG{p}{.}\PYG{n+nx}{ENCENDIDO}\PYG{+w}{ }\PYG{o}{:}\PYG{+w}{ }\PYG{n+nx}{EstadoAC}\PYG{p}{.}\PYG{n+nx}{APAGADO}\PYG{p}{;}
+\PYG{+w}{        }
+\PYG{+w}{        }\PYG{n+nx}{console}\PYG{p}{.}\PYG{n+nx}{log}\PYG{p}{(}\PYG{l+s+sb}{`[MANUAL] A/C de }\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{ubicacion}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{ cambiado a: }\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{estadoActuadores}\PYG{p}{.}\PYG{n+nx}{aireAcondicionado}\PYG{p}{[}\PYG{n+nx}{ubicacion}\PYG{p}{]}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{`}\PYG{p}{);}
+\PYG{+w}{        }\PYG{n+nx}{io}\PYG{p}{.}\PYG{n+nx}{sockets}\PYG{p}{.}\PYG{n+nx}{emit}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}dashboard:update\PYGZhy{}actuadores\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{estadoActuadores}\PYG{p}{);}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{});}
+
+\PYG{+w}{    }\PYG{c+c1}{// [Evento 4]: Control manual de la persiana desde el dashboard}
+\PYG{+w}{    }\PYG{n+nx}{socket}\PYG{p}{.}\PYG{n+nx}{on}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}ui:toggle\PYGZhy{}blind\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{p}{(}\PYG{n+nx}{ubicacion}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }\PYG{k}{if}\PYG{p}{(}\PYG{o}{!}\PYG{n+nx}{ubicacion}\PYG{p}{)}
+\PYG{+w}{            }\PYG{k}{return}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// Si no se especifica una ubicación, no hacemos nada}
+
+\PYG{+w}{        }\PYG{n+nx}{estadoActuadores}\PYG{p}{.}\PYG{n+nx}{persiana}\PYG{p}{[}\PYG{n+nx}{ubicacion}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }
+\PYG{+w}{            }\PYG{p}{(}\PYG{n+nx}{estadoActuadores}\PYG{p}{.}\PYG{n+nx}{persiana}\PYG{p}{[}\PYG{n+nx}{ubicacion}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{===}\PYG{+w}{ }\PYG{n+nx}{EstadoPersiana}\PYG{p}{.}\PYG{n+nx}{ABIERTA}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{?}\PYG{+w}{ }\PYG{n+nx}{EstadoPersiana}\PYG{p}{.}\PYG{n+nx}{CERRADA}\PYG{+w}{ }\PYG{o}{:}\PYG{+w}{ }\PYG{n+nx}{EstadoPersiana}\PYG{p}{.}\PYG{n+nx}{ABIERTA}\PYG{p}{;}
+\PYG{+w}{            }
+\PYG{+w}{        }\PYG{n+nx}{console}\PYG{p}{.}\PYG{n+nx}{log}\PYG{p}{(}\PYG{l+s+sb}{`[MANUAL] Persiana de }\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{ubicacion}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{ cambiada a: }\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{estadoActuadores}\PYG{p}{.}\PYG{n+nx}{persiana}\PYG{p}{[}\PYG{n+nx}{ubicacion}\PYG{p}{]}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{`}\PYG{p}{);}
+\PYG{+w}{        }\PYG{n+nx}{io}\PYG{p}{.}\PYG{n+nx}{sockets}\PYG{p}{.}\PYG{n+nx}{emit}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}dashboard:update\PYGZhy{}actuadores\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{estadoActuadores}\PYG{p}{);}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{});}
+
+\PYG{+w}{    }\PYG{c+c1}{// [Evento 5]: Control manual de la alarma de gas desde el dashboard}
+\PYG{+w}{    }\PYG{n+nx}{socket}\PYG{p}{.}\PYG{n+nx}{on}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}ui:toggle\PYGZhy{}gas\PYGZhy{}alarm\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{p}{(}\PYG{n+nx}{ubicacion}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }\PYG{k}{if}\PYG{p}{(}\PYG{o}{!}\PYG{n+nx}{ubicacion}\PYG{p}{)}
+\PYG{+w}{            }\PYG{k}{return}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// Si no se especifica una ubicación, no hacemos nada}
+
+\PYG{+w}{        }\PYG{n+nx}{estadoActuadores}\PYG{p}{.}\PYG{n+nx}{alarmaGas}\PYG{p}{[}\PYG{n+nx}{ubicacion}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }
+\PYG{+w}{            }\PYG{p}{(}\PYG{n+nx}{estadoActuadores}\PYG{p}{.}\PYG{n+nx}{alarmaGas}\PYG{p}{[}\PYG{n+nx}{ubicacion}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{===}\PYG{+w}{ }\PYG{n+nx}{EstadoAlarmaGas}\PYG{p}{.}\PYG{n+nx}{INACTIVA}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{?}\PYG{+w}{ }\PYG{n+nx}{EstadoAlarmaGas}\PYG{p}{.}\PYG{n+nx}{ACTIVA}\PYG{+w}{ }\PYG{o}{:}\PYG{+w}{ }\PYG{n+nx}{EstadoAlarmaGas}\PYG{p}{.}\PYG{n+nx}{INACTIVA}\PYG{p}{;}
+\PYG{+w}{            }
+\PYG{+w}{        }\PYG{n+nx}{console}\PYG{p}{.}\PYG{n+nx}{log}\PYG{p}{(}\PYG{l+s+sb}{`[MANUAL] Alarma de gas de }\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{ubicacion}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{ cambiada a: }\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{estadoActuadores}\PYG{p}{.}\PYG{n+nx}{alarmaGas}\PYG{p}{[}\PYG{n+nx}{ubicacion}\PYG{p}{]}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{`}\PYG{p}{);}
+\PYG{+w}{        }\PYG{n+nx}{io}\PYG{p}{.}\PYG{n+nx}{sockets}\PYG{p}{.}\PYG{n+nx}{emit}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}dashboard:update\PYGZhy{}actuadores\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{estadoActuadores}\PYG{p}{);}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{});}
+
+\PYG{+w}{    }\PYG{c+c1}{// [Evento 6]: Enviar sensores existentes al abrir la página}
+\PYG{+w}{    }\PYG{n+nx}{socket}\PYG{p}{.}\PYG{n+nx}{on}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}sensor:request\PYGZhy{}sensors\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{k}{async}\PYG{+w}{ }\PYG{p}{()}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }\PYG{k}{try}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{listaSensores}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k}{await}\PYG{+w}{ }\PYG{n+nx}{sensoresCollection}\PYG{p}{.}\PYG{n+nx}{find}\PYG{p}{().}\PYG{n+nx}{toArray}\PYG{p}{();}
+\PYG{+w}{            }\PYG{c+c1}{// Solamente los enviamos al cliente que lo ha solicitado}
+\PYG{+w}{            }\PYG{n+nx}{socket}\PYG{p}{.}\PYG{n+nx}{emit}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}sensor:response\PYGZhy{}sensors\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{listaSensores}\PYG{p}{);}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{catch}\PYG{p}{(}\PYG{n+nx}{err}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{n+nx}{console}\PYG{p}{.}\PYG{n+nx}{error}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}[ERROR] Error obteniendo la lista de sensores de la base de datos:\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{err}\PYG{p}{.}\PYG{n+nx}{message}\PYG{p}{);}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{});}
+
+\PYG{+w}{    }\PYG{c+c1}{// [Evento 6]: Control manual de la luz desde el dashboard}
+\PYG{+w}{    }\PYG{n+nx}{socket}\PYG{p}{.}\PYG{n+nx}{on}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}ui:toggle\PYGZhy{}light\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{p}{(}\PYG{n+nx}{ubicacion}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }\PYG{k}{if}\PYG{p}{(}\PYG{o}{!}\PYG{n+nx}{ubicacion}\PYG{p}{)}\PYG{+w}{ }
+\PYG{+w}{            }\PYG{k}{return}\PYG{p}{;}
+
+\PYG{+w}{        }\PYG{n+nx}{estadoActuadores}\PYG{p}{.}\PYG{n+nx}{luz}\PYG{p}{[}\PYG{n+nx}{ubicacion}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }
+\PYG{+w}{            }\PYG{p}{(}\PYG{n+nx}{estadoActuadores}\PYG{p}{.}\PYG{n+nx}{luz}\PYG{p}{[}\PYG{n+nx}{ubicacion}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{===}\PYG{+w}{ }\PYG{n+nx}{EstadoLuz}\PYG{p}{.}\PYG{n+nx}{APAGADA}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{?}\PYG{+w}{ }\PYG{n+nx}{EstadoLuz}\PYG{p}{.}\PYG{n+nx}{ENCENDIDA}\PYG{+w}{ }\PYG{o}{:}\PYG{+w}{ }\PYG{n+nx}{EstadoLuz}\PYG{p}{.}\PYG{n+nx}{APAGADA}\PYG{p}{;}
+\PYG{+w}{            }
+\PYG{+w}{        }\PYG{n+nx}{console}\PYG{p}{.}\PYG{n+nx}{log}\PYG{p}{(}\PYG{l+s+sb}{`[MANUAL] Luz de }\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{ubicacion}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{ cambiada a: }\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{estadoActuadores}\PYG{p}{.}\PYG{n+nx}{luz}\PYG{p}{[}\PYG{n+nx}{ubicacion}\PYG{p}{]}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{`}\PYG{p}{);}
+\PYG{+w}{        }\PYG{n+nx}{io}\PYG{p}{.}\PYG{n+nx}{sockets}\PYG{p}{.}\PYG{n+nx}{emit}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}dashboard:update\PYGZhy{}actuadores\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{estadoActuadores}\PYG{p}{);}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{});}
+
+\PYG{+w}{    }\PYG{c+c1}{// [Evento X]: Manejar la desconexión del cliente.}
+\PYG{+w}{    }\PYG{n+nx}{socket}\PYG{p}{.}\PYG{n+nx}{on}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}disconnect\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{p}{()}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }\PYG{n+nx}{console}\PYG{p}{.}\PYG{n+nx}{log}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}El nodo \PYGZsq{}}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n+nx}{socket}\PYG{p}{.}\PYG{n+nx}{id}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{} se ha desconectado.\PYGZsq{}}\PYG{p}{);}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{});}
+\PYG{p}{\PYGZcb{});}
+
+\PYG{c+c1}{// ===========================================================================}
+\PYG{c+c1}{//                  AGENTE DE CONTROL}
+\PYG{c+c1}{// ===========================================================================}
+\PYG{k+kd}{function}\PYG{+w}{ }\PYG{n+nx}{notificarAlerta}\PYG{p}{(}\PYG{n+nx}{mensaje}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{    }\PYG{c+c1}{// 1. Enviar mensaje de alerta al dashboard}
+\PYG{+w}{    }\PYG{n+nx}{io}\PYG{p}{.}\PYG{n+nx}{sockets}\PYG{p}{.}\PYG{n+nx}{emit}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}dashboard:alert\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{mensaje}\PYG{p}{);}
+
+\PYG{+w}{    }\PYG{c+c1}{// 2. Enviar mensaje de alerta por Telegram (si el usuario se ha registrado)}
+\PYG{+w}{    }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n+nx}{miChatId}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }\PYG{n+nx}{telegramBot}\PYG{p}{.}\PYG{n+nx}{sendMessage}\PYG{p}{(}\PYG{n+nx}{miChatId}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{mensaje}\PYG{p}{,}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{n+nx}{parse\PYGZus{}mode}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}HTML\PYGZsq{}}\PYG{p}{\PYGZcb{});}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{else}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }\PYG{n+nx}{console}\PYG{p}{.}\PYG{n+nx}{log}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}[TELEGRAM] La Alerta ha sido retenida, no se ha inciado el bot con /start\PYGZsq{}}\PYG{p}{);}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{k+kd}{function}\PYG{+w}{ }\PYG{n+nx}{ejecutarAgente}\PYG{p}{(}\PYG{n+nx}{medida}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{    }
+\PYG{+w}{    }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{valor}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{medida}\PYG{p}{.}\PYG{n+nx}{value}\PYG{p}{;}
+\PYG{+w}{    }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{tipo}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{medida}\PYG{p}{.}\PYG{n+nx}{type}\PYG{p}{;}
+\PYG{+w}{    }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{ubicacion}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{medida}\PYG{p}{.}\PYG{n+nx}{location}\PYG{p}{;}
+
+\PYG{+w}{    }\PYG{c+c1}{// Reglas de control para el aire acondicionado basadas en la temperatura}
+\PYG{+w}{    }\PYG{k}{if}\PYG{p}{(}\PYG{n+nx}{tipo}\PYG{+w}{ }\PYG{o}{===}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}Temperatura\PYGZsq{}}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+
+\PYG{+w}{        }\PYG{c+c1}{// Regla 1: Si la temperatura es mayor que MAX\PYGZus{}TEMP \PYGZhy{}\PYGZgt{} Alerta}
+\PYG{+w}{        }\PYG{k}{if}\PYG{p}{(}\PYG{n+nx}{valor}\PYG{+w}{ }\PYG{o}{\PYGZgt{}}\PYG{+w}{ }\PYG{n+nx}{MAX\PYGZus{}TEMP}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{k+kd}{let}\PYG{+w}{ }\PYG{n+nx}{msg}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s+sb}{`⚠️ \PYGZlt{}strong\PYGZgt{}¡ALERTA!\PYGZlt{}/strong\PYGZgt{} Se ha detectado una temperatura (}\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{valor}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{°C) por encima del máximo en }\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{ubicacion}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{.`}\PYG{p}{;}
+
+\PYG{+w}{            }\PYG{c+c1}{// Si tiene actuador (A/C) y está apagado, lo encendemos automáticamente}
+\PYG{+w}{            }\PYG{k}{if}\PYG{p}{(}\PYG{n+nx}{estadoActuadores}\PYG{p}{.}\PYG{n+nx}{aireAcondicionado}\PYG{p}{[}\PYG{n+nx}{ubicacion}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{===}\PYG{+w}{ }\PYG{n+nx}{EstadoAC}\PYG{p}{.}\PYG{n+nx}{APAGADO}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{                }\PYG{n+nx}{estadoActuadores}\PYG{p}{.}\PYG{n+nx}{aireAcondicionado}\PYG{p}{[}\PYG{n+nx}{ubicacion}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{EstadoAC}\PYG{p}{.}\PYG{n+nx}{ENCENDIDO}\PYG{p}{;}
+\PYG{+w}{                }\PYG{n+nx}{io}\PYG{p}{.}\PYG{n+nx}{sockets}\PYG{p}{.}\PYG{n+nx}{emit}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}dashboard:update\PYGZhy{}actuadores\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{estadoActuadores}\PYG{p}{);}
+\PYG{+w}{                }\PYG{c+c1}{// Notificamos la alerta tanto en el dashboard como por Telegram}
+\PYG{+w}{                }\PYG{n+nx}{msg}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{msg}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{l+s+sb}{` \PYGZlt{}strong\PYGZgt{}Encendiendo A/C automáticamente.\PYGZlt{}/strong\PYGZgt{}`}\PYG{p}{;}
+\PYG{+w}{            }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{            }\PYG{c+c1}{// Enviamos la alerta al dashboard y por Telegram}
+\PYG{+w}{            }\PYG{n+nx}{notificarAlerta}\PYG{p}{(}\PYG{n+nx}{msg}\PYG{p}{);}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{        }\PYG{c+c1}{// Regla 2: Si la temperatura es menor que MIN\PYGZus{}TEMP \PYGZhy{}\PYGZgt{} Alerta}
+\PYG{+w}{        }\PYG{k}{if}\PYG{p}{(}\PYG{n+nx}{valor}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{n+nx}{MIN\PYGZus{}TEMP}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{k+kd}{let}\PYG{+w}{ }\PYG{n+nx}{msg}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s+sb}{`⚠️ \PYGZlt{}strong\PYGZgt{}¡ALERTA!\PYGZlt{}/strong\PYGZgt{} Se ha detectado una temperatura (}\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{valor}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{°C) por debajo del mínimo en }\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{ubicacion}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{.`}\PYG{p}{;}
+\PYG{+w}{            }
+\PYG{+w}{            }\PYG{c+c1}{// Si tiene actuador (A/C) y está encendido, lo apagamos automáticamente}
+\PYG{+w}{            }\PYG{k}{if}\PYG{p}{(}\PYG{n+nx}{estadoActuadores}\PYG{p}{.}\PYG{n+nx}{aireAcondicionado}\PYG{p}{[}\PYG{n+nx}{ubicacion}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{===}\PYG{+w}{ }\PYG{n+nx}{EstadoAC}\PYG{p}{.}\PYG{n+nx}{ENCENDIDO}\PYG{p}{)\PYGZob{}}
+\PYG{+w}{                }\PYG{n+nx}{estadoActuadores}\PYG{p}{.}\PYG{n+nx}{aireAcondicionado}\PYG{p}{[}\PYG{n+nx}{ubicacion}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{EstadoAC}\PYG{p}{.}\PYG{n+nx}{APAGADO}\PYG{p}{;}
+\PYG{+w}{                }\PYG{n+nx}{io}\PYG{p}{.}\PYG{n+nx}{sockets}\PYG{p}{.}\PYG{n+nx}{emit}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}dashboard:update\PYGZhy{}actuadores\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{estadoActuadores}\PYG{p}{);}
+\PYG{+w}{                }\PYG{n+nx}{msg}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{msg}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{l+s+sb}{` \PYGZlt{}strong\PYGZgt{}Apagando A/C automáticamente.\PYGZlt{}/strong\PYGZgt{}`}\PYG{p}{;}
+\PYG{+w}{            }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{            }\PYG{c+c1}{// Enviamos la alerta al dashboard y por Telegram}
+\PYG{+w}{            }\PYG{n+nx}{notificarAlerta}\PYG{p}{(}\PYG{n+nx}{msg}\PYG{p}{);}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{    }
+
+\PYG{+w}{    }\PYG{c+c1}{// Regla de control para la persiana}
+\PYG{+w}{    }\PYG{k}{if}\PYG{p}{(}\PYG{n+nx}{tipo}\PYG{+w}{ }\PYG{o}{===}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}Luminosidad\PYGZsq{}}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+
+\PYG{+w}{        }\PYG{c+c1}{// Guardamos el valor de luminosidad en la memoria para esta ubicación, para poder usarlo en reglas más complejas si queremos.}
+\PYG{+w}{        }\PYG{n+nx}{memoriaLuminosidad}\PYG{p}{[}\PYG{n+nx}{ubicacion}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{valor}\PYG{p}{;}
+
+\PYG{+w}{        }\PYG{c+c1}{// Regla 3: Si la luminosidad es mayor que MAX\PYGZus{}LUMINOSIDAD \PYGZhy{}\PYGZgt{} Alerta}
+\PYG{+w}{        }\PYG{k}{if}\PYG{p}{(}\PYG{n+nx}{valor}\PYG{+w}{ }\PYG{o}{\PYGZgt{}}\PYG{+w}{ }\PYG{n+nx}{MAX\PYGZus{}LUMINOSIDAD}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{k+kd}{let}\PYG{+w}{ }\PYG{n+nx}{msg}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s+sb}{`⚠️ \PYGZlt{}strong\PYGZgt{}¡ALERTA!\PYGZlt{}/strong\PYGZgt{} Luminosidad máxima superada (}\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{valor}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{ lux) en }\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{ubicacion}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{.`}\PYG{p}{;}
+
+\PYG{+w}{            }\PYG{c+c1}{// Si tiene actuador (persiana) y está abierta, la cerramos automáticamente}
+\PYG{+w}{            }\PYG{k}{if}\PYG{p}{(}\PYG{n+nx}{estadoActuadores}\PYG{p}{.}\PYG{n+nx}{persiana}\PYG{p}{[}\PYG{n+nx}{ubicacion}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{===}\PYG{+w}{ }\PYG{n+nx}{EstadoPersiana}\PYG{p}{.}\PYG{n+nx}{ABIERTA}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                }\PYG{n+nx}{estadoActuadores}\PYG{p}{.}\PYG{n+nx}{persiana}\PYG{p}{[}\PYG{n+nx}{ubicacion}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{EstadoPersiana}\PYG{p}{.}\PYG{n+nx}{CERRADA}\PYG{p}{;}
+\PYG{+w}{                }\PYG{n+nx}{io}\PYG{p}{.}\PYG{n+nx}{sockets}\PYG{p}{.}\PYG{n+nx}{emit}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}dashboard:update\PYGZhy{}actuadores\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{estadoActuadores}\PYG{p}{);}
+\PYG{+w}{                }\PYG{n+nx}{msg}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{msg}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{l+s+sb}{` \PYGZlt{}strong\PYGZgt{}Cerrando persiana automáticamente.\PYGZlt{}/strong\PYGZgt{}`}\PYG{p}{;}
+\PYG{+w}{            }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{            }
+\PYG{+w}{            }\PYG{c+c1}{// Enviamos la alerta al dashboard y por Telegram}
+\PYG{+w}{            }\PYG{n+nx}{notificarAlerta}\PYG{p}{(}\PYG{n+nx}{msg}\PYG{p}{);}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{    }\PYG{c+c1}{// Regla de control para el gas}
+\PYG{+w}{    }\PYG{k}{if}\PYG{p}{(}\PYG{n+nx}{tipo}\PYG{+w}{ }\PYG{o}{===}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}Gas\PYGZsq{}}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }
+\PYG{+w}{        }\PYG{c+c1}{// Regla 4: Si el nivel de gas es mayor que MAX\PYGZus{}PPM\PYGZus{}GAS \PYGZhy{}\PYGZgt{} Enviar alerta y sonar alarma}
+\PYG{+w}{        }\PYG{k}{if}\PYG{p}{(}\PYG{n+nx}{valor}\PYG{+w}{ }\PYG{o}{\PYGZgt{}}\PYG{+w}{ }\PYG{n+nx}{MAX\PYGZus{}PPM\PYGZus{}GAS}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{            }\PYG{k+kd}{let}\PYG{+w}{ }\PYG{n+nx}{msg}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s+sb}{`🚨 \PYGZlt{}strong\PYGZgt{}¡ALERTA CRÍTICA!\PYGZlt{}/strong\PYGZgt{} 🚨 Se ha detectado un nivel de gas elevado (}\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{valor}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{ ppm)`}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }
+\PYG{+w}{                }\PYG{l+s+sb}{` en }\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{ubicacion}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{.`}\PYG{p}{;}
+
+\PYG{+w}{            }\PYG{c+c1}{// Si tiene actuador (alarma de gas) y está inactiva, la activamos automáticamente}
+\PYG{+w}{            }\PYG{k}{if}\PYG{p}{(}\PYG{n+nx}{estadoActuadores}\PYG{p}{.}\PYG{n+nx}{alarmaGas}\PYG{p}{[}\PYG{n+nx}{ubicacion}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{===}\PYG{+w}{ }\PYG{n+nx}{EstadoAlarmaGas}\PYG{p}{.}\PYG{n+nx}{INACTIVA}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                }\PYG{n+nx}{estadoActuadores}\PYG{p}{.}\PYG{n+nx}{alarmaGas}\PYG{p}{[}\PYG{n+nx}{ubicacion}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{EstadoAlarmaGas}\PYG{p}{.}\PYG{n+nx}{ACTIVA}\PYG{p}{;}
+\PYG{+w}{                }\PYG{n+nx}{io}\PYG{p}{.}\PYG{n+nx}{sockets}\PYG{p}{.}\PYG{n+nx}{emit}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}dashboard:update\PYGZhy{}actuadores\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{estadoActuadores}\PYG{p}{);}
+\PYG{+w}{                }\PYG{n+nx}{msg}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{msg}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{l+s+sb}{` \PYGZlt{}strong\PYGZgt{}Se ha activado la alarma de gas. Por favor, revisa tu hogar inmediatamente.\PYGZlt{}/strong\PYGZgt{}`}\PYG{p}{;}
+\PYG{+w}{            }\PYG{p}{\PYGZcb{}}\PYG{+w}{   }
+
+\PYG{+w}{            }\PYG{c+c1}{// Enviamos la alerta al dashboard y por Telegram}
+\PYG{+w}{            }\PYG{n+nx}{notificarAlerta}\PYG{p}{(}\PYG{n+nx}{msg}\PYG{p}{);}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{}}\PYG{+w}{         }
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{    }
+\PYG{+w}{    }\PYG{c+c1}{// Regla de control compleja: Si hay poca luz y se detecta movimiento, encender la luz automáticamente (si existe el actuador)}
+\PYG{+w}{    }\PYG{k}{if}\PYG{p}{(}\PYG{n+nx}{tipo}\PYG{+w}{ }\PYG{o}{===}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}Movimiento\PYGZsq{}}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+
+\PYG{+w}{        }\PYG{k}{if}\PYG{p}{(}\PYG{n+nx}{valor}\PYG{+w}{ }\PYG{o}{===}\PYG{+w}{ }\PYG{l+m+mf}{1}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{+w}{ }\PYG{c+c1}{// Si se detecta movimiento}
+\PYG{+w}{            }\PYG{c+c1}{// notificarAlerta(`👀 Movimiento detectado en \PYGZdl{}\PYGZob{}ubicacion\PYGZcb{}.`);}
+
+\PYG{+w}{            }\PYG{c+c1}{// Comprobamos la luminosidad actual de esa ubicación en la memoria}
+\PYG{+w}{            }\PYG{c+c1}{// Si no tenemos un valor de luminosidad para esa ubicación, asumimos que está iluminada (500 lux)}
+\PYG{+w}{            }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{luminosidadActual}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{memoriaLuminosidad}\PYG{p}{[}\PYG{n+nx}{ubicacion}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{||}\PYG{+w}{ }\PYG{l+m+mf}{500}\PYG{p}{;}
+
+\PYG{+w}{            }\PYG{c+c1}{// Si hay movimiento y la luminosidad es baja, encendemos la luz automáticamente}
+\PYG{+w}{            }\PYG{k}{if}\PYG{p}{(}\PYG{n+nx}{luminosidadActual}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{l+m+mf}{200}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                }\PYG{n+nx}{notificarAlerta}\PYG{p}{(}\PYG{l+s+sb}{`💡 Está oscuro en }\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{ubicacion}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{ (}\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{luminosidadActual}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{ lux) y se ha detectado movimiento.`}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }
+\PYG{+w}{                    }\PYG{l+s+sb}{` \PYGZlt{}strong\PYGZgt{}¡Te encendiendo la luz!\PYGZlt{}/strong\PYGZgt{}`}\PYG{p}{);}
+
+\PYG{+w}{                }\PYG{k}{if}\PYG{p}{(}\PYG{n+nx}{estadoActuadores}\PYG{p}{.}\PYG{n+nx}{luz}\PYG{p}{[}\PYG{n+nx}{ubicacion}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{===}\PYG{+w}{ }\PYG{n+nx}{EstadoLuz}\PYG{p}{.}\PYG{n+nx}{APAGADA}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                    }\PYG{n+nx}{estadoActuadores}\PYG{p}{.}\PYG{n+nx}{luz}\PYG{p}{[}\PYG{n+nx}{ubicacion}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nx}{EstadoLuz}\PYG{p}{.}\PYG{n+nx}{ENCENDIDA}\PYG{p}{;}
+\PYG{+w}{                    }\PYG{n+nx}{io}\PYG{p}{.}\PYG{n+nx}{sockets}\PYG{p}{.}\PYG{n+nx}{emit}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}dashboard:update\PYGZhy{}actuadores\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{estadoActuadores}\PYG{p}{);}
+\PYG{+w}{                }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{            }\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{k}{else}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                }\PYG{n+nx}{console}\PYG{p}{.}\PYG{n+nx}{log}\PYG{p}{(}\PYG{l+s+sb}{`[AGENTE] Movimiento en }\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{ubicacion}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{, pero hay suficiente luz (}\PYG{l+s+si}{\PYGZdl{}\PYGZob{}}\PYG{n+nx}{luminosidadActual}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+sb}{ lux). No enciendo la bombilla.`}\PYG{p}{);}
+\PYG{+w}{            }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{    }\PYG{c+c1}{// Regla del Videoportero: }
+\PYG{+w}{    }\PYG{k}{if}\PYG{p}{(}\PYG{n+nx}{tipo}\PYG{+w}{ }\PYG{o}{===}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}Videovigilancia\PYGZsq{}}\PYG{+w}{ }\PYG{o}{\PYGZam{}\PYGZam{}}\PYG{+w}{ }\PYG{n+nx}{ubicacion}\PYG{+w}{ }\PYG{o}{===}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}Portal\PYGZsq{}}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }\PYG{k}{if}\PYG{p}{(}\PYG{n+nx}{valor}\PYG{+w}{ }\PYG{o}{===}\PYG{+w}{ }\PYG{l+m+mf}{1}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{+w}{ }\PYG{c+c1}{// Si se detecta movimiento en el portal, enviamos una alerta de que alguien está en la puerta.}
+
+\PYG{+w}{            }\PYG{c+c1}{// 1. Notificamos la alerta tanto en el dashboard como por Telegram}
+\PYG{+w}{            }\PYG{n+nx}{notificarAlerta}\PYG{p}{(}\PYG{l+s+sb}{`📹 \PYGZlt{}strong\PYGZgt{}[SEGURIDAD]\PYGZlt{}/strong\PYGZgt{} ¡Alerta de actividad en el Portal! La cámara de seguridad ha comenzado a grabar.`}\PYG{p}{);}
+
+\PYG{+w}{            }\PYG{c+c1}{// 2. Enviamos el GIF visual exclusivamente por Telegram}
+\PYG{+w}{            }\PYG{k}{if}\PYG{+w}{ }\PYG{p}{(}\PYG{n+nx}{miChatId}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                }\PYG{k+kd}{const}\PYG{+w}{ }\PYG{n+nx}{gifAlerta}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}https://media.giphy.com/media/Pag51BshRuVqg/giphy.gif\PYGZsq{}}\PYG{p}{;}\PYG{+w}{ }\PYG{c+c1}{// GIF de alerta de seguridad}
+\PYG{+w}{                }
+\PYG{+w}{                }\PYG{n+nx}{telegramBot}\PYG{p}{.}\PYG{n+nx}{sendAnimation}\PYG{p}{(}\PYG{n+nx}{miChatId}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{gifAlerta}\PYG{p}{,}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                    }\PYG{n+nx}{caption}\PYG{o}{:}\PYG{+w}{ }\PYG{l+s+s1}{\PYGZsq{}👀 Esto es lo que ha capturado la cámara de seguridad en tiempo real. 👀\PYGZsq{}}
+\PYG{+w}{                }\PYG{p}{\PYGZcb{}).}\PYG{k}{catch}\PYG{p}{(}\PYG{n+nx}{err}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{                    }\PYG{n+nx}{console}\PYG{p}{.}\PYG{n+nx}{error}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}[TELEGRAM ERROR] No se pudo enviar el GIF:\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{err}\PYG{p}{.}\PYG{n+nx}{message}\PYG{p}{);}
+\PYG{+w}{                }\PYG{p}{\PYGZcb{});}
+\PYG{+w}{            }\PYG{p}{\PYGZcb{}}
+\PYG{+w}{        }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{        }
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{}}
+
+\PYG{c+c1}{// ===========================================================================}
+\PYG{c+c1}{//   Cierre limpio de MongoDB al detener el proceso (Ctrl+C). }
+\PYG{c+c1}{// ===========================================================================}
+\PYG{c+c1}{// Detecta cuando pulsas Ctrl+C en la terminal para apagar el servidor }
+\PYG{c+c1}{// y se asegura de cerrar la conexión con MongoDB limpiamente antes de matar el proceso.}
+\PYG{n+nx}{process}\PYG{p}{.}\PYG{n+nx}{on}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}SIGINT\PYGZsq{}}\PYG{p}{,}\PYG{+w}{ }\PYG{k}{async}\PYG{+w}{ }\PYG{p}{()}\PYG{+w}{ }\PYG{p}{=\PYGZgt{}}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{	}\PYG{c+c1}{//Si la conexión con el servidor de mongoDB está activa, la cierra}
+\PYG{+w}{    }\PYG{k}{if}\PYG{p}{(}\PYG{n+nx}{mongoClient}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }\PYG{k}{await}\PYG{+w}{ }\PYG{n+nx}{mongoClient}\PYG{p}{.}\PYG{n+nx}{close}\PYG{p}{();}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}
+
+\PYG{+w}{	}\PYG{c+c1}{//Mata el proceso del servidor}
+\PYG{+w}{    }\PYG{n+nx}{process}\PYG{p}{.}\PYG{n+nx}{exit}\PYG{p}{(}\PYG{l+m+mf}{0}\PYG{p}{);}
+\PYG{p}{\PYGZcb{});}
+
+\PYG{c+c1}{// ===========================================================================}
+\PYG{c+c1}{//                  Arrancamos el sistema por completo}
+\PYG{c+c1}{// ===========================================================================}
+\PYG{n+nx}{startServer}\PYG{p}{();}
+\end{Verbatim}
