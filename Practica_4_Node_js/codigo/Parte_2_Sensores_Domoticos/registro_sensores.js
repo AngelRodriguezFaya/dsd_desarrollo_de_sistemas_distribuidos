@@ -4,6 +4,8 @@ const {readFile} = require('node:fs');
 const {MongoClient} = require('mongodb');
 const {Server} = require('socket.io');
 
+const TelegramBot = require('node-telegram-bot-api');
+
 // ===========================================================================
 //                  Configuración y variables globales.
 // ===========================================================================
@@ -50,6 +52,23 @@ const MAX_TEMP = 30.0; // grados Celsius
 const MIN_TEMP = 17.0; // grados Celsius
 const MAX_LUMINOSIDAD = 700; // Lux
 
+// ------- Configuración del bot de Telegram -------
+const TELEGRAM_TOKEN = '8702302349:AAHUwKTa4EM73Qedbv9qeDpPYKl3dvwu2sc';
+const telegramBot = new TelegramBot(TELEGRAM_TOKEN, {polling: true});
+
+// --- AÑADE ESTO PARA VER SI HAY ERRORES DE TELEGRAM ---
+telegramBot.on('polling_error', (error) => {
+    console.log('[ERROR TELEGRAM]', error.message);
+});
+
+let miChatId = null; // Variable para almacenar el chat ID del usuario que interactúa con el bot
+
+// Cuando el cliente hable por primera vez con el bot, guardamos su chat ID para enviarle alertas posteriormente.
+telegramBot.onText(/\/start/, (msg) => {
+    miChatId = msg.chat.id;
+    telegramBot.sendMessage(miChatId, '¡Hola! Soy tu asistente de domótica. Te enviaré alertas importantes sobre el estado de tu hogar.');
+    console.log(`[TELEGRAM] Usuario registrado para alertas: ${miChatId}`);
+});
 
 // ===========================================================================
 //                  Funciones para manejar MongoDB.
@@ -271,6 +290,18 @@ io.on('connection', (socket) => {
 // ===========================================================================
 //                  AGENTE DE CONTROL
 // ===========================================================================
+function notificarAlerta(mensaje) {
+    // 1. Enviar mensaje de alerta al dashboard
+    io.sockets.emit('dashboard:alert', mensaje);
+
+    // 2. Enviar mensaje de alerta por Telegram (si el usuario se ha registrado)
+    if (miChatId) {
+        telegramBot.sendMessage(miChatId, mensaje, {parse_mode: 'Markdown'});
+    } else {
+        console.log('[TELEGRAM] La Alerta ha sido retenida, no se ha inciado el bot con /start');
+    }
+}
+
 function ejecutarAgente(medida) {
     
     const valor = medida.value;
@@ -284,7 +315,9 @@ function ejecutarAgente(medida) {
         if(valor > MAX_TEMP && estadoActuadores.aireAcondicionado[ubicacion] === EstadoAC.APAGADO) {
             estadoActuadores.aireAcondicionado[ubicacion] = EstadoAC.ENCENDIDO;
             io.sockets.emit('dashboard:update-actuadores', estadoActuadores);
-            io.sockets.emit('dashboard:alert', `¡ALERTA! Temperatura máxima superada (${valor}°C)` + 
+
+            // Notificamos la alerta tanto en el dashboard como por Telegram
+            notificarAlerta(`⚠️ ¡ALERTA! Temperatura máxima superada (${valor}°C)` + 
                 ` en ${ubicacion}. Encendiendo A/C automáticamente.`);
         }
 
@@ -292,10 +325,12 @@ function ejecutarAgente(medida) {
         if(valor < MIN_TEMP && estadoActuadores.aireAcondicionado[ubicacion] === EstadoAC.ENCENDIDO) {
             estadoActuadores.aireAcondicionado[ubicacion] = EstadoAC.APAGADO;
             io.sockets.emit('dashboard:update-actuadores', estadoActuadores);
-            io.sockets.emit('dashboard:alert', `¡ALERTA! Temperatura por debajo del mínimo(${valor}°C)` + 
+            
+            notificarAlerta(`⚠️ ¡ALERTA! Temperatura por debajo del mínimo(${valor}°C)` + 
                 ` en ${ubicacion}. Apagando A/C automáticamente.`);
         }
     }
+    
 
     // Regla de control para la persiana
     if(tipo === 'Luminosidad') {
@@ -304,8 +339,10 @@ function ejecutarAgente(medida) {
         if(valor > MAX_LUMINOSIDAD && estadoActuadores.persiana[ubicacion] === EstadoPersiana.ABIERTA) {
             estadoActuadores.persiana[ubicacion] = EstadoPersiana.CERRADA;
             io.sockets.emit('dashboard:update-actuadores', estadoActuadores);
-            io.sockets.emit('dashboard:alert', `¡ALERTA! Luminosidad máxima superada (${valor} lux)` + 
+            
+            notificarAlerta(`⚠️ ¡ALERTA! Luminosidad máxima superada (${valor} lux)` + 
                 ` en ${ubicacion}. Bajando persiana automáticamente.`);
+
         }
     }
 }
