@@ -117,8 +117,8 @@
 					<option value="">Selecciona...</option>
                     <option value="Temperatura">Temperatura</option>
                     <option value="Luminosidad">Luminosidad</option>
-                    <!-- <option value="Apertura">Apertura</option>
-                    <option value="Calidad del aire">Calidad del aire</option> -->
+                    <option value="Gas">Gas</option>
+                    <option value="Movimiento">Movimiento</option>
                 </select>
 
                 <button type="submit">Registrar e Iniciar</button>
@@ -140,7 +140,7 @@
                 <hr style="width:100%; border:0; border-top:1px solid #ddd; margin:8px 0;">
                 
                 <!-- Toggle es un botón que funciona como un interruptor -->
-                <button id="btn-toggle-auto" class="secondary">Iniciar Simulación Automática (Cada 3s)</button>
+                <button id="btn-toggle-auto" class="secondary">Iniciar Simulación Automática (Cada 5s)</button>
             </div>
         </section>
     </main>
@@ -269,12 +269,12 @@
                 case 'Luminosidad':
                     measurementInput.value = 300; // Lux
                     break;
-                // case 'Apertura':
-                //     measurementInput.value = 0; // 0 cerrado, 1 abierto
-                //     break;
-                // case 'Calidad del aire':
-                //     measurementInput.value = 50; // Índice de calidad del aire
-                //     break;
+                case 'Gas':
+                    measurementInput.value = 0; // ppm (partes por millón)
+                    break;
+                case 'Movimiento':
+                    measurementInput.value = 0; // 0 o 1 para simular movimiento (0 no, 1 sí)
+                    break;
                 default:
                     measurementInput.value = 0;
             }
@@ -325,12 +325,12 @@
         });
 
 
-        // Envío automático cada 3 segundos al pulsar el botón de toggle
+        // Envío automático cada 5 segundos al pulsar el botón de toggle
         btnToggleAuto.addEventListener('click', () => {
             if (autoInterval) { // Si ya estaba funcionando, lo paramos
                 clearInterval(autoInterval);
                 autoInterval = null;
-                btnToggleAuto.textContent = "Iniciar Simulación Automática (Cada 3s)";
+                btnToggleAuto.textContent = "Iniciar Simulación Automática (Cada 5s)";
                 btnToggleAuto.classList.remove('secondary');
             } else {
                 // Si estaba parado, lo iniciamos
@@ -342,22 +342,29 @@
 
                     switch(activeSensor.type) {
                         case 'Temperatura':
-                            // Simulamos una lectura de temperatura entre 15 y 35 grados
-                            valorLeido = (Math.random() * 20 + 15).toFixed(1);
+                            // Simulamos una lectura de temperatura entre 7 y 35 grados
+                            valorLeido = (Math.random() * 28 + 7).toFixed(1);
                             break;
                         case 'Luminosidad':
-                            // Simulamos una lectura de luminosidad entre 100 y 1000 lux
-                            valorLeido = (Math.random() * 900 + 100).toFixed(1);
+                            // Simulamos una lectura de luminosidad entre 0 y 800 lux
+                            valorLeido = (Math.random() * 800).toFixed(1);
                             break;
-                        // case 'Apertura':
-                        // case 'Calidad del aire':
+                        case 'Gas':
+                            // Simulamos nivel de gas (ej. partículas por millón). Lo normal es cerca de 0, 
+                            // pero pondremos picos aleatorios para que salte la alarma.
+                            valorLeido = (Math.random() * 500).toFixed(1); 
+                            break;
+                        case 'Movimiento':
+                            // Simulamos detección de movimiento (0 o 1) el 40% de las veces
+                            valorLeido = Math.random() < 0.4 ? 1 : 0;
+                            break;
                         default:
                             break;
                     }
 
                     measurementInput.value = valorLeido; // Actualizamos el input con el valor simulado
                     enviarMedidaAlServidor(valorLeido); // Enviamos la medida al servidor
-                }, 3000);
+                }, 5000);
             }
         });
     </script>

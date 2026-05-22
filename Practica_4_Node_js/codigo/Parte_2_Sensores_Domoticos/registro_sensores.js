@@ -27,6 +27,16 @@ const EstadoPersiana = Object.freeze({
     CERRADA: 'CERRADA'
 });
 
+const EstadoAlarmaGas = Object.freeze({
+    INACTIVA: 'INACTIVA',
+    ACTIVA: 'ACTIVA'
+});
+
+const EstadoLuz = Object.freeze({
+    APAGADA: 'APAGADA',
+    ENCENDIDA: 'ENCENDIDA'
+});
+
 // ------- Variables globales compartidas para reutilizar la conexion y la coleccion a la base de datos. -------
 let mongoClient;        // Cliente de MongoDB
 let sensoresCollection; // Colección de MongoDB donde se almacenarán los sensores registrados. 
@@ -43,20 +53,34 @@ let estadoActuadores = {  // Estado actual de los actuadores, compartido para qu
         "Dormitorio 1": EstadoPersiana.ABIERTA,
         "Dormitorio 2": EstadoPersiana.ABIERTA,
         "Cocina": EstadoPersiana.ABIERTA,
-        "Baño": EstadoPersiana.ABIERTA
+        "Bano": EstadoPersiana.ABIERTA
+    },
+    alarmaGas: {
+        "Cocina": EstadoAlarmaGas.INACTIVA,
+    },
+    luz: {
+        "Salon": EstadoLuz.APAGADA,
+        "Dormitorio 1": EstadoLuz.APAGADA,
+        "Dormitorio 2": EstadoLuz.APAGADA,
+        "Cocina": EstadoLuz.APAGADA,
+        "Bano": EstadoLuz.APAGADA
     }
 };
 
+// Memoria para eventos complejos: Guardamos la última luminosidad conocida de cada zona
+let memoriaLuminosidad = {};
+
 // ------- Constantes/Umbrales para el agente de control -------
-const MAX_TEMP = 30.0; // grados Celsius
+const MAX_TEMP = 30.0;  // grados Celsius
 const MIN_TEMP = 17.0; // grados Celsius
 const MAX_LUMINOSIDAD = 700; // Lux
+const MAX_PPM_GAS = 300; // Partículas por millón (ppm)
 
 // ------- Configuración del bot de Telegram -------
 const TELEGRAM_TOKEN = '8702302349:AAHUwKTa4EM73Qedbv9qeDpPYKl3dvwu2sc';
 const telegramBot = new TelegramBot(TELEGRAM_TOKEN, {polling: true});
 
-// --- AÑADE ESTO PARA VER SI HAY ERRORES DE TELEGRAM ---
+// Para comprobar si hay errores en la conexión con Telegram
 telegramBot.on('polling_error', (error) => {
     console.log('[ERROR TELEGRAM]', error.message);
 });
@@ -270,7 +294,19 @@ io.on('connection', (socket) => {
         io.sockets.emit('dashboard:update-actuadores', estadoActuadores);
     });
 
-    // [Evento 5]: Enviar sensores existentes al abrir la página
+    // [Evento 5]: Control manual de la alarma de gas desde el dashboard
+    socket.on('ui:toggle-gas-alarm', (ubicacion) => {
+        if(!ubicacion)
+            return; // Si no se especifica una ubicación, no hacemos nada
+
+        estadoActuadores.alarmaGas[ubicacion] = 
+            (estadoActuadores.alarmaGas[ubicacion] === EstadoAlarmaGas.INACTIVA) ? EstadoAlarmaGas.ACTIVA : EstadoAlarmaGas.INACTIVA;
+            
+        console.log(`[MANUAL] Alarma de gas de ${ubicacion} cambiada a: ${estadoActuadores.alarmaGas[ubicacion]}`);
+        io.sockets.emit('dashboard:update-actuadores', estadoActuadores);
+    });
+
+    // [Evento 6]: Enviar sensores existentes al abrir la página
     socket.on('sensor:request-sensors', async () => {
         try {
             const listaSensores = await sensoresCollection.find().toArray();
@@ -279,6 +315,18 @@ io.on('connection', (socket) => {
         } catch(err) {
             console.error('[ERROR] Error obteniendo la lista de sensores de la base de datos:', err.message);
         }
+    });
+
+    // [Evento 6]: Control manual de la luz desde el dashboard
+    socket.on('ui:toggle-light', (ubicacion) => {
+        if(!ubicacion) 
+            return;
+
+        estadoActuadores.luz[ubicacion] = 
+            (estadoActuadores.luz[ubicacion] === EstadoLuz.APAGADA) ? EstadoLuz.ENCENDIDA : EstadoLuz.APAGADA;
+            
+        console.log(`[MANUAL] Luz de ${ubicacion} cambiada a: ${estadoActuadores.luz[ubicacion]}`);
+        io.sockets.emit('dashboard:update-actuadores', estadoActuadores);
     });
 
     // [Evento X]: Manejar la desconexión del cliente.
@@ -296,7 +344,7 @@ function notificarAlerta(mensaje) {
 
     // 2. Enviar mensaje de alerta por Telegram (si el usuario se ha registrado)
     if (miChatId) {
-        telegramBot.sendMessage(miChatId, mensaje, {parse_mode: 'Markdown'});
+        telegramBot.sendMessage(miChatId, mensaje, {parse_mode: 'HTML'});
     } else {
         console.log('[TELEGRAM] La Alerta ha sido retenida, no se ha inciado el bot con /start');
     }
@@ -311,23 +359,35 @@ function ejecutarAgente(medida) {
     // Reglas de control para el aire acondicionado basadas en la temperatura
     if(tipo === 'Temperatura') {
 
-        // Regla 1: Si la temperatura es mayor que MAX_TEMP -> Encender el A/C
-        if(valor > MAX_TEMP && estadoActuadores.aireAcondicionado[ubicacion] === EstadoAC.APAGADO) {
-            estadoActuadores.aireAcondicionado[ubicacion] = EstadoAC.ENCENDIDO;
-            io.sockets.emit('dashboard:update-actuadores', estadoActuadores);
+        // Regla 1: Si la temperatura es mayor que MAX_TEMP -> Alerta
+        if(valor > MAX_TEMP) {
+            let msg = `⚠️ <strong>¡ALERTA!</strong> Se ha detectado una temperatura (${valor}°C) por encima del máximo en ${ubicacion}.`;
 
-            // Notificamos la alerta tanto en el dashboard como por Telegram
-            notificarAlerta(`⚠️ ¡ALERTA! Temperatura máxima superada (${valor}°C)` + 
-                ` en ${ubicacion}. Encendiendo A/C automáticamente.`);
+            // Si tiene actuador (A/C) y está apagado, lo encendemos automáticamente
+            if(estadoActuadores.aireAcondicionado[ubicacion] === EstadoAC.APAGADO){
+                estadoActuadores.aireAcondicionado[ubicacion] = EstadoAC.ENCENDIDO;
+                io.sockets.emit('dashboard:update-actuadores', estadoActuadores);
+                // Notificamos la alerta tanto en el dashboard como por Telegram
+                msg = msg + ` <strong>Encendiendo A/C automáticamente.</strong>`;
+            }
+
+            // Enviamos la alerta al dashboard y por Telegram
+            notificarAlerta(msg);
         }
 
-        // Regla 2: Si la temperatura es menor que MIN_TEMP -> Apagar el A/C
-        if(valor < MIN_TEMP && estadoActuadores.aireAcondicionado[ubicacion] === EstadoAC.ENCENDIDO) {
-            estadoActuadores.aireAcondicionado[ubicacion] = EstadoAC.APAGADO;
-            io.sockets.emit('dashboard:update-actuadores', estadoActuadores);
+        // Regla 2: Si la temperatura es menor que MIN_TEMP -> Alerta
+        if(valor < MIN_TEMP) {
+            let msg = `⚠️ <strong>¡ALERTA!</strong> Se ha detectado una temperatura (${valor}°C) por debajo del mínimo en ${ubicacion}.`;
             
-            notificarAlerta(`⚠️ ¡ALERTA! Temperatura por debajo del mínimo(${valor}°C)` + 
-                ` en ${ubicacion}. Apagando A/C automáticamente.`);
+            // Si tiene actuador (A/C) y está encendido, lo apagamos automáticamente
+            if(estadoActuadores.aireAcondicionado[ubicacion] === EstadoAC.ENCENDIDO){
+                estadoActuadores.aireAcondicionado[ubicacion] = EstadoAC.APAGADO;
+                io.sockets.emit('dashboard:update-actuadores', estadoActuadores);
+                msg = msg + ` <strong>Apagando A/C automáticamente.</strong>`;
+            }
+
+            // Enviamos la alerta al dashboard y por Telegram
+            notificarAlerta(msg);
         }
     }
     
@@ -335,14 +395,67 @@ function ejecutarAgente(medida) {
     // Regla de control para la persiana
     if(tipo === 'Luminosidad') {
 
-        // Regla 3: Si la luminosidad es mayor que MAX_LUMINOSIDAD -> Bajar la persiana
-        if(valor > MAX_LUMINOSIDAD && estadoActuadores.persiana[ubicacion] === EstadoPersiana.ABIERTA) {
-            estadoActuadores.persiana[ubicacion] = EstadoPersiana.CERRADA;
-            io.sockets.emit('dashboard:update-actuadores', estadoActuadores);
-            
-            notificarAlerta(`⚠️ ¡ALERTA! Luminosidad máxima superada (${valor} lux)` + 
-                ` en ${ubicacion}. Bajando persiana automáticamente.`);
+        // Guardamos el valor de luminosidad en la memoria para esta ubicación, para poder usarlo en reglas más complejas si queremos.
+        memoriaLuminosidad[ubicacion] = valor;
 
+        // Regla 3: Si la luminosidad es mayor que MAX_LUMINOSIDAD -> Alerta
+        if(valor > MAX_LUMINOSIDAD) {
+            let msg = `⚠️ <strong>¡ALERTA!</strong> Luminosidad máxima superada (${valor} lux) en ${ubicacion}.`;
+
+            // Si tiene actuador (persiana) y está abierta, la cerramos automáticamente
+            if(estadoActuadores.persiana[ubicacion] === EstadoPersiana.ABIERTA) {
+                estadoActuadores.persiana[ubicacion] = EstadoPersiana.CERRADA;
+                io.sockets.emit('dashboard:update-actuadores', estadoActuadores);
+                msg = msg + ` <strong>Cerrando persiana automáticamente.</strong>`;
+            }
+            
+            // Enviamos la alerta al dashboard y por Telegram
+            notificarAlerta(msg);
+        }
+    }
+
+    // Regla de control para el gas
+    if(tipo === 'Gas') {
+        
+        // Regla 4: Si el nivel de gas es mayor que MAX_PPM_GAS -> Enviar alerta y sonar alarma
+        if(valor > MAX_PPM_GAS) {
+            let msg = `🚨 <strong>¡ALERTA CRÍTICA!</strong> 🚨 Se ha detectado un nivel de gas elevado (${valor} ppm)` + 
+                ` en ${ubicacion}.`;
+
+            // Si tiene actuador (alarma de gas) y está inactiva, la activamos automáticamente
+            if(estadoActuadores.alarmaGas[ubicacion] === EstadoAlarmaGas.INACTIVA) {
+                estadoActuadores.alarmaGas[ubicacion] = EstadoAlarmaGas.ACTIVA;
+                io.sockets.emit('dashboard:update-actuadores', estadoActuadores);
+                msg = msg + ` <strong>Se ha activado la alarma de gas. Por favor, revisa tu hogar inmediatamente.</strong>`;
+            }   
+
+            // Enviamos la alerta al dashboard y por Telegram
+            notificarAlerta(msg);
+        }         
+    }
+    
+    // Regla de control compleja: Si hay poca luz y se detecta movimiento, encender la luz automáticamente (si existe el actuador)
+    if(tipo === 'Movimiento') {
+
+        if(valor === 1) { // Si se detecta movimiento
+            // notificarAlerta(`👀 Movimiento detectado en ${ubicacion}.`);
+
+            // Comprobamos la luminosidad actual de esa ubicación en la memoria
+            // Si no tenemos un valor de luminosidad para esa ubicación, asumimos que está iluminada (500 lux)
+            const luminosidadActual = memoriaLuminosidad[ubicacion] || 500;
+
+            // Si hay movimiento y la luminosidad es baja, encendemos la luz automáticamente
+            if(luminosidadActual < 200) {
+                notificarAlerta(`💡 Está oscuro en ${ubicacion} (${luminosidadActual} lux) y se ha detectado movimiento.` + 
+                    ` <strong>¡Te encendiendo la luz!</strong>`);
+
+                if(estadoActuadores.luz[ubicacion] === EstadoLuz.APAGADA) {
+                    estadoActuadores.luz[ubicacion] = EstadoLuz.ENCENDIDA;
+                    io.sockets.emit('dashboard:update-actuadores', estadoActuadores);
+                }
+            } else {
+                console.log(`[AGENTE] Movimiento en ${ubicacion}, pero hay suficiente luz (${luminosidadActual} lux). No enciendo la bombilla.`);
+            }
         }
     }
 }

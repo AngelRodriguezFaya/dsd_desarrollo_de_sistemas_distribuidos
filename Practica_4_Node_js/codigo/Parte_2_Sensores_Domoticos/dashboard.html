@@ -182,11 +182,27 @@
             renderSensors();
         });
 
+        // 1. Función para renderizar las cards de sensores en el dashboard
         function renderSensors() {
             sensorsRealtime.innerHTML = '';
             for (const id in sensoresActivos) {
                 const s = sensoresActivos[id];
-                const unidad = s.type.toLowerCase() === 'temperatura' ? '°C' : ' Lux';
+                const tipo = s.type;
+                let unidad = '';
+
+                switch(tipo) {
+                    case 'Temperatura':
+                        unidad = '°C';
+                        break;
+                    case 'Luminosidad':
+                        unidad = ' lux';
+                        break;
+                    case 'Gas':
+                        unidad = ' ppm';
+                        break;
+                    default:
+                        break;
+                }       
                 
                 sensorsRealtime.innerHTML += `
                     <div class="sensor-box">
@@ -202,6 +218,8 @@
         socket.on('dashboard:update-actuadores', (estadoActuadores) => {
             const container = document.getElementById('actuadores-container');
             container.innerHTML = ''; // Limpiamos el contenido
+
+            console.log('Actualización de actuadores recibida:', estadoActuadores);
 
             // Extraemos dinámicamente TODAS las ubicaciones de TODOS los actuadores que existan
             const ubicaciones = [...new Set( Object.values(estadoActuadores).flatMap(actuador => Object.keys(actuador || {})) )];
@@ -223,7 +241,12 @@
 
                     htmlZonal += `
                         <div style="margin-bottom: 10px;">
-                            <span style="font-size:0.9rem; font-weight: bold;">Aire Acondicionado:</span>
+                            <span 
+                                style="
+                                    font-size:0.9rem; 
+                                    font-weight: bold;">
+                                Aire Acondicionado:
+                            </span>
                             <span 
                                 class="state-value ${acClass}" 
                                 style="font-size:1.1rem; margin-left:10px;">
@@ -247,8 +270,13 @@
                     const persianaEstado = estadoActuadores.persiana[ub];
                     const persianaClass = persianaEstado === 'ABIERTA' ? 'OPEN' : 'CLOSED';
                     htmlZonal += `
-                        <div>
-                            <span style="font-size:0.9rem;">Persiana:</span>
+                        <div style="margin-bottom: 10px;">
+                            <span 
+                                style="
+                                    font-size:0.9rem; 
+                                    font-weight: bold;">
+                                Persiana:
+                            </span>
                             <span 
                                 class="state-value ${persianaClass}" 
                                 style="font-size:1.1rem; margin-left:10px;">
@@ -261,6 +289,76 @@
                                     font-size:0.85rem; 
                                     margin-left:10px;">
                                 Conmutar Persiana
+                            </button>
+                        </div>
+                    `;
+                }
+
+                // 3. Si esta ubicación tiene Alarma de Gas la mostramos
+                if(estadoActuadores.alarmaGas && estadoActuadores.alarmaGas[ub] !== undefined) {
+                    tieneActuadores = true;
+                    const gasEstado = estadoActuadores.alarmaGas[ub];
+                    // Usamos la clase OFF (rojo) para ACTIVA (peligro) y ON (verde) para INACTIVA (seguro)
+                    const gasClass = gasEstado === 'ACTIVA' ? 'OFF' : 'ON';
+                    
+                    htmlZonal += `
+                        <div style="margin-bottom: 10px;">
+                            <span 
+                                style="
+                                    font-size:0.9rem; 
+                                    font-weight: bold;">
+                                Alarma de Gas:
+                            </span>
+                            <span 
+                                class="state-value ${gasClass}" 
+                                style="
+                                    font-size:1.1rem; 
+                                    margin-left:10px;">
+                                ${gasEstado}
+                            </span>
+                            <button 
+                                onclick="socket.emit('ui:toggle-gas-alarm', '${ub}')" 
+                                style="
+                                    padding: 4px 10px; 
+                                    font-size:0.85rem; 
+                                    margin-left:10px; 
+                                    background-color: #b91c1c;">
+                                Conmutar Alarma
+                            </button>
+                        </div>
+                    `;
+                }
+
+                // 4. Si esta ubicación tiene Luz la mostramos
+                if(estadoActuadores.luz && estadoActuadores.luz[ub] !== undefined) {
+                    tieneActuadores = true;
+                    const luzEstado = estadoActuadores.luz[ub];
+                    const luzClass = luzEstado === 'ENCENDIDA' ? 'ON' : 'OFF';
+                    
+                    htmlZonal += `
+                        <div style="margin-bottom: 10px;">
+                            <span 
+                                style="
+                                    font-size:0.9rem; 
+                                    font-weight: bold;">
+                                Luz:
+                            </span>
+                            <span 
+                                class="state-value ${luzClass}" 
+                                style="
+                                    font-size:1.1rem; 
+                                    margin-left:10px;">
+                                ${luzEstado}
+                            </span>
+                            <button 
+                                onclick="socket.emit('ui:toggle-light', '${ub}')" 
+                                style="
+                                    padding: 4px 10px; 
+                                    font-size:0.85rem; 
+                                    margin-left:10px;
+                                    background: #eab308;
+                                    color: #000;">
+                                Conmutar Luz
                             </button>
                         </div>
                     `;
