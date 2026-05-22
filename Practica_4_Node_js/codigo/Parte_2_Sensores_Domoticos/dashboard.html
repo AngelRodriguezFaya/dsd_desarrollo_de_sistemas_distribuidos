@@ -141,16 +141,9 @@
         </section>
 
         <section class="card">
-            <h2>⚙️ Control de Actuadores</h2>
-            <div style="margin-bottom: 20px;">
-                <label>Aire Acondicionado:</label>
-                <div id="state-ac" class="state-value OFF">APAGADO</div>
-                <button id="btn-toggle-ac">Conmutar A/C</button>
-            </div>
-            <div>
-                <label>Persiana Domótica:</label>
-                <div id="state-blind" class="state-value OPEN">ABIERTA</div>
-                <button id="btn-toggle-blind">Conmutar Persiana</button>
+            <h2>⚙️ Control de Actuadores por Zonas</h2>
+            <div id="actuadores-container">
+                <p style="color: #64748b;">Esperando actuadores del servidor...</p>
             </div>
         </section>
     </main>
@@ -168,12 +161,9 @@
 
         // Elementos del DOM
         const alertContainer = document.getElementById('alert-container');
-        const sensorsRealtime = document.getElementById('sensors-realtime');
-        const stateAc = document.getElementById('state-ac');
-        const stateBlind = document.getElementById('state-blind');
-        
-        const btnToggleAc = document.getElementById('btn-toggle-ac');
-        const btnToggleBlind = document.getElementById('btn-toggle-blind');
+        const sensorsRealtime = document.getElementById('sensors-realtime');        
+        // const btnToggleAc = document.getElementById('btn-toggle-ac');
+        // const btnToggleBlind = document.getElementById('btn-toggle-blind');
 
         // Estructura en memoria para no duplicar cards de sensores
         const sensoresActivos = {};
@@ -208,15 +198,82 @@
             }
         }
 
-        // 2. Escuchar cambios de estado en los Actuadores
+        // 2. Escuchar cambios de estado en los Actuadores por habitaciones
         socket.on('dashboard:update-actuadores', (estadoActuadores) => {
-            // Actualizar interfaz del Aire Acondicionado
-            stateAc.textContent = estadoActuadores.aireAcondicionado;
-            stateAc.className = `state-value ${estadoActuadores.aireAcondicionado === 'ENCENDIDO' ? 'ON' : 'OFF'}`;
+            const container = document.getElementById('actuadores-container');
+            container.innerHTML = ''; // Limpiamos el contenido
 
-            // Actualizar interfaz de la Persiana
-            stateBlind.textContent = estadoActuadores.persiana;
-            stateBlind.className = `state-value ${estadoActuadores.persiana === 'ABIERTA' ? 'OPEN' : 'CLOSED'}`;
+            // Extraemos dinámicamente TODAS las ubicaciones de TODOS los actuadores que existan
+            const ubicaciones = [...new Set( Object.values(estadoActuadores).flatMap(actuador => Object.keys(actuador || {})) )];
+
+            ubicaciones.forEach(ub => {
+                let tieneActuadores = false;
+
+                // Empezamos a mostrar la tarjeta de la ubicación
+                let htmlZonal = `
+                    <div style="border-bottom: 1px dashed #cbd5e1; padding-bottom: 10px; margin-bottom: 15px;">
+                        <h3>📍 Zona: ${ub}</h3>
+                `;
+
+                // 1. Si esta ubicación tiene Aire Acondicionado lo mostramos
+                if(estadoActuadores.aireAcondicionado && estadoActuadores.aireAcondicionado[ub] !== undefined) {
+                    tieneActuadores = true;
+                    const acEstado = estadoActuadores.aireAcondicionado[ub];
+                    const acClass = acEstado === 'ENCENDIDO' ? 'ON' : 'OFF';
+
+                    htmlZonal += `
+                        <div style="margin-bottom: 10px;">
+                            <span style="font-size:0.9rem; font-weight: bold;">Aire Acondicionado:</span>
+                            <span 
+                                class="state-value ${acClass}" 
+                                style="font-size:1.1rem; margin-left:10px;">
+                                ${acEstado}
+                            </span>
+                            <button 
+                                onclick="socket.emit('ui:toggle-ac', '${ub}')" 
+                                style="
+                                    padding: 4px 10px; 
+                                    font-size:0.85rem; 
+                                    margin-left:10px;">
+                                Conmutar A/C
+                            </button>
+                        </div>
+                    `;
+                }
+
+                // 2. Si esta ubicación tiene Persiana lo mostramos
+                if(estadoActuadores.persiana && estadoActuadores.persiana[ub] !== undefined) {
+                    tieneActuadores = true;
+                    const persianaEstado = estadoActuadores.persiana[ub];
+                    const persianaClass = persianaEstado === 'ABIERTA' ? 'OPEN' : 'CLOSED';
+                    htmlZonal += `
+                        <div>
+                            <span style="font-size:0.9rem;">Persiana:</span>
+                            <span 
+                                class="state-value ${persianaClass}" 
+                                style="font-size:1.1rem; margin-left:10px;">
+                                ${persianaEstado}
+                            </span>
+                            <button 
+                                onclick="socket.emit('ui:toggle-blind', '${ub}')" 
+                                style="
+                                    padding: 4px 10px; 
+                                    font-size:0.85rem; 
+                                    margin-left:10px;">
+                                Conmutar Persiana
+                            </button>
+                        </div>
+                    `;
+                }
+
+                // Si no tiene ningún actuador, mostramos un mensaje indicándolo
+                if (!tieneActuadores) {
+                    htmlZonal += `<p style="color:#94a3b8; font-size:0.85rem;">Sin actuadores en esta zona.</p>`;
+                }
+
+                htmlZonal += `</div>`;
+                container.innerHTML += htmlZonal;
+            });
         });
 
         // 3. Escuchar alertas disparadas por el Agente Lógico
@@ -231,13 +288,13 @@
         });
 
         // 4. Interacción manual: Pulsar botones para cambiar estados
-        btnToggleAc.addEventListener('click', () => {
-            socket.emit('ui:toggle-ac');
-        });
+        // btnToggleAc.addEventListener('click', () => {
+        //     socket.emit('ui:toggle-ac');
+        // });
 
-        btnToggleBlind.addEventListener('click', () => {
-            socket.emit('ui:toggle-blind');
-        });
+        // btnToggleBlind.addEventListener('click', () => {
+        //     socket.emit('ui:toggle-blind');
+        // });
     </script>
 </body>
 </html>

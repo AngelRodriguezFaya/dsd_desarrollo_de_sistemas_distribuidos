@@ -86,6 +86,15 @@
         <h1>Sensor domótico</h1>
 
         <section id="register-section">
+            <div class="panel-medidas" id="panel-existentes" style="margin-bottom: 20px;">
+                <h2>Cargar un dispositivo nuevo</h2>
+                <label for="select-sensores">¿Deseas usar un sensor ya creado anteriormente?</label>
+                <select id="select-sensores">
+                    <option value="">-- Selecciona un sensor de la base de datos --</option>
+                </select>
+                <button type="button" id="btn-cargar-existente">Cargar Sensor Seleccionado</button>
+            </div>
+
             <form id="register-form">
                 <h2>Registrar un dispositivo nuevo</h2>
 
@@ -95,10 +104,12 @@
                 <label for="location">Ubicación:</label>
                 <select id="location" name="location" required>
                     <option value="">Selecciona...</option>
-                    <option value="Salón">Salón</option>
+                    <option value="Salon">Salón</option>
                     <option value="Cocina">Cocina</option>
-                    <option value="Dormitorio">Dormitorio</option>
-                    <option value="Baño">Baño</option>
+                    <option value="Dormitorio 1">Dormitorio 1</option>
+                    <option value="Dormitorio 2">Dormitorio 2</option>
+                    <option value="Bano">Baño</option>
+                    <option value="Exterior">Exterior</option>
                 </select>
 
                 <label for="type">Tipo de Sensor:</label>
@@ -116,7 +127,7 @@
             <div id="status"></div>
         </section>
 
-        <section id="measurement-section" class="hidden">
+        <section id="measurement-section" class="hidden"> <!-- Panel de mediciones -->
             <div class="panel-medidas">
                 <h2>Panel del Dispositivo</h2>
                 <div id="sensor-info-card" class="info-sensor"></div>
@@ -138,7 +149,7 @@
 
     <script src="/socket.io/socket.io.js"></script> <!-- Lógica en JS de WebSockets -->
     <script>
-        const socket = io();
+        const socket = io(); // Conexión al servidor de WebSockets
 
         // Elementos del DOM
         const form = document.getElementById('register-form');
@@ -150,13 +161,68 @@
         const measurementInput = document.getElementById('measurement-value');
         const btnSendManual = document.getElementById('btn-send-manual');
         const btnToggleAuto = document.getElementById('btn-toggle-auto');
+        const btnCargarExistente = document.getElementById('btn-cargar-existente');
+        const selectSensores = document.getElementById('select-sensores');
 
         // Datos del sensor registrado
         let activeSensor = null; // Indica si el sensor está activo
         let autoInterval = null; // Para almacenar el intervalo de la simulación automática
 
         // ==============================================================
-        // Manejar el envio en el formulario de registro
+        //      CARGAR SENSORES EXISTENTES DESDE LA BASE DE DATOS
+        // ==============================================================
+
+        // 1. Nada más conectar, le pedimos al servidor los sensores que ya existen en MongoDB
+        socket.emit('sensor:request-sensors');
+
+        // 2. Escuchamos la respuesta del servidor con la lista de sensores antiguos
+        socket.on('sensor:response-sensors', (lista) => {
+            
+            // Limpiamos opciones antiguas excepto la primera
+            selectSensores.innerHTML = '<option value="">-- Selecciona un sensor de la base de datos --</option>';
+            
+            // Rellenamos el desplegable con los sensores de la BD
+            lista.forEach(sensor => {
+                const option = document.createElement('option');
+                // Guardamos el objeto entero como un string JSON para leerlo luego fácilmente
+                option.value = JSON.stringify(sensor);
+                option.textContent = `${sensor.name} (${sensor.type} en ${sensor.location})`;
+                selectSensores.appendChild(option);
+            });
+        });
+
+        // 3. Acción al pulsar el botón "Cargar Sensor Seleccionado"
+        btnCargarExistente.addEventListener('click', () => {
+            if (!selectSensores.value) 
+                return alert('Por favor, selecciona un sensor válido.');
+
+            // Convertimos el string JSON de nuevo a objeto
+            const sensorSeleccionado = JSON.parse(selectSensores.value);
+
+            // Asignamos el ID de Mongo y lo guardamos en activeSensor
+            activeSensor = {
+                _id: sensorSeleccionado._id,
+                name: sensorSeleccionado.name,
+                location: sensorSeleccionado.location,
+                type: sensorSeleccionado.type
+            };
+
+            // Ocultamos el registro y mostramos las medidas
+            registerSection.classList.add('hidden'); 
+            measurementSection.classList.remove('hidden'); 
+            
+            // Rellenamos la card de información al igual que si hubiéramos registrado un sensor nuevo.
+            sensorInfoCard.innerHTML = `
+                <strong>ID en la BD:</strong> ${activeSensor._id}<br>
+                <strong>Nombre:</strong> ${activeSensor.name}<br>
+                <strong>Tipo:</strong> ${activeSensor.type}<br>
+                <strong>Ubicación:</strong> ${activeSensor.location}<br>
+            `;
+        });
+
+
+        // ==============================================================
+        //      FORMULARIO DE REGISTRO DE SENSORES NUEVOS
         // ==============================================================
         form.addEventListener('submit', (event) => {
             event.preventDefault(); // Evita que se recargue la página
@@ -172,9 +238,7 @@
             socket.emit('sensor:register', payload);
         });
 
-        // ==============================================================
-        // Escuchamos los eventos que el servidor nos envíe
-        // ==============================================================
+        // ----- Escuchamos los eventos que el servidor nos envíe -----
 
         // Escuchamos la confirmacion de registro del sensor
         socket.on('sensor:registered', (sensor) => {
@@ -246,7 +310,7 @@
                 // Mostramos un mensaje de confirmación en el cliente
                 // Efecto visual temporal en el status para saber que se ha enviado
                 status.style.color = '#1e3a8a';
-                status.textContent = `[${new Date().toLocaleTimeString()}] Medida enviada: ${valor}`;
+                status.textContent = `[${new Date().toLocaleTimeString()}] Medida enviada: ${value}`;
             }
         }
 
@@ -278,8 +342,8 @@
 
                     switch(activeSensor.type) {
                         case 'Temperatura':
-                            // Simulamos una lectura de temperatura entre 15 y 30 grados
-                            valorLeido = (Math.random() * 15 + 15).toFixed(1);
+                            // Simulamos una lectura de temperatura entre 15 y 35 grados
+                            valorLeido = (Math.random() * 20 + 15).toFixed(1);
                             break;
                         case 'Luminosidad':
                             // Simulamos una lectura de luminosidad entre 100 y 1000 lux

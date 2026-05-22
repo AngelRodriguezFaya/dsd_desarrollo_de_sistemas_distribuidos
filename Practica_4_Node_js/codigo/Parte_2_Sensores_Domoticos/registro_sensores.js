@@ -29,13 +29,24 @@ const EstadoPersiana = Object.freeze({
 let mongoClient;        // Cliente de MongoDB
 let sensoresCollection; // Colección de MongoDB donde se almacenarán los sensores registrados. 
 let historialCollection; // Colección de MongoDB donde se almacenarán las mediciones de los sensores.
+
 let estadoActuadores = {  // Estado actual de los actuadores, compartido para que el agente de control y el dashboard puedan acceder a él.
-    aireAcondicionado: EstadoAC.APAGADO,
-    persiana: EstadoPersiana.ABIERTA
+    aireAcondicionado: {
+        "Salon": EstadoAC.APAGADO,
+        "Dormitorio 1": EstadoAC.APAGADO,
+        "Cocina": EstadoAC.APAGADO,
+    },
+    persiana: {
+        "Salon": EstadoPersiana.ABIERTA,
+        "Dormitorio 1": EstadoPersiana.ABIERTA,
+        "Dormitorio 2": EstadoPersiana.ABIERTA,
+        "Cocina": EstadoPersiana.ABIERTA,
+        "Baño": EstadoPersiana.ABIERTA
+    }
 };
 
 // ------- Constantes/Umbrales para el agente de control -------
-const MAX_TEMP = 32.0; // grados Celsius
+const MAX_TEMP = 30.0; // grados Celsius
 const MIN_TEMP = 17.0; // grados Celsius
 const MAX_LUMINOSIDAD = 700; // Lux
 
@@ -217,24 +228,41 @@ io.on('connection', (socket) => {
     //                  CONTROL MANUAL DESDE EL DASHBOARD
     // ===========================================================================
     // [Evento 3]: Control manual del AC desde el dashboard
-    socket.on('ui:toggle-ac', () => {
-        estadoActuadores.aireAcondicionado = 
-            (estadoActuadores.aireAcondicionado === EstadoAC.APAGADO) ? EstadoAC.ENCENDIDO : EstadoAC.APAGADO;
+    socket.on('ui:toggle-ac', (ubicacion) => {
+        if(!ubicacion)
+            return; // Si no se especifica una ubicación, no hacemos nada
+
+        estadoActuadores.aireAcondicionado[ubicacion] = 
+            (estadoActuadores.aireAcondicionado[ubicacion] === EstadoAC.APAGADO) ? EstadoAC.ENCENDIDO : EstadoAC.APAGADO;
         
-        console.log(`[MANUAL] Estado del A/C cambiado a: ${estadoActuadores.aireAcondicionado}`);
+        console.log(`[MANUAL] A/C de ${ubicacion} cambiado a: ${estadoActuadores.aireAcondicionado[ubicacion]}`);
         io.sockets.emit('dashboard:update-actuadores', estadoActuadores);
     });
 
     // [Evento 4]: Control manual de la persiana desde el dashboard
-    socket.on('ui:toggle-blind', () => {
-        estadoActuadores.persiana = 
-            (estadoActuadores.persiana === EstadoPersiana.ABIERTA) ? EstadoPersiana.CERRADA : EstadoPersiana.ABIERTA;
+    socket.on('ui:toggle-blind', (ubicacion) => {
+        if(!ubicacion)
+            return; // Si no se especifica una ubicación, no hacemos nada
+
+        estadoActuadores.persiana[ubicacion] = 
+            (estadoActuadores.persiana[ubicacion] === EstadoPersiana.ABIERTA) ? EstadoPersiana.CERRADA : EstadoPersiana.ABIERTA;
             
-        console.log(`[MANUAL] Estado de Persiana cambiado a: ${estadoActuadores.persiana}`);
+        console.log(`[MANUAL] Persiana de ${ubicacion} cambiada a: ${estadoActuadores.persiana[ubicacion]}`);
         io.sockets.emit('dashboard:update-actuadores', estadoActuadores);
     });
 
-    // [Evento 5]: Manejar la desconexión del cliente.
+    // [Evento 5]: Enviar sensores existentes al abrir la página
+    socket.on('sensor:request-sensors', async () => {
+        try {
+            const listaSensores = await sensoresCollection.find().toArray();
+            // Solamente los enviamos al cliente que lo ha solicitado
+            socket.emit('sensor:response-sensors', listaSensores);
+        } catch(err) {
+            console.error('[ERROR] Error obteniendo la lista de sensores de la base de datos:', err.message);
+        }
+    });
+
+    // [Evento X]: Manejar la desconexión del cliente.
     socket.on('disconnect', () => {
         console.log('El nodo ' + socket.id + ' se ha desconectado.');
     });
@@ -244,39 +272,45 @@ io.on('connection', (socket) => {
 //                  AGENTE DE CONTROL
 // ===========================================================================
 function ejecutarAgente(medida) {
+    
+    const valor = medida.value;
+    const tipo = medida.type;
+    const ubicacion = medida.location;
 
     // Reglas de control para el aire acondicionado basadas en la temperatura
-    if(medida.type === 'Temperatura') {
+    if(tipo === 'Temperatura') {
 
         // Regla 1: Si la temperatura es mayor que MAX_TEMP -> Encender el A/C
-        if(medida.value > MAX_TEMP && estadoActuadores.aireAcondicionado === EstadoAC.APAGADO) {
-            estadoActuadores.aireAcondicionado = EstadoAC.ENCENDIDO;
+        if(valor > MAX_TEMP && estadoActuadores.aireAcondicionado[ubicacion] === EstadoAC.APAGADO) {
+            estadoActuadores.aireAcondicionado[ubicacion] = EstadoAC.ENCENDIDO;
             io.sockets.emit('dashboard:update-actuadores', estadoActuadores);
-            io.sockets.emit('dashboard:alert', `¡ALERTA! Temperatura máxima superada (${medida.value}°C)` + 
-                `en ${medida.location}. Encendiendo A/C automáticamente.`);
+            io.sockets.emit('dashboard:alert', `¡ALERTA! Temperatura máxima superada (${valor}°C)` + 
+                ` en ${ubicacion}. Encendiendo A/C automáticamente.`);
         }
 
         // Regla 2: Si la temperatura es menor que MIN_TEMP -> Apagar el A/C
-        if(medida.value < MIN_TEMP && estadoActuadores.aireAcondicionado === EstadoAC.ENCENDIDO) {
-            estadoActuadores.aireAcondicionado = EstadoAC.APAGADO;
+        if(valor < MIN_TEMP && estadoActuadores.aireAcondicionado[ubicacion] === EstadoAC.ENCENDIDO) {
+            estadoActuadores.aireAcondicionado[ubicacion] = EstadoAC.APAGADO;
             io.sockets.emit('dashboard:update-actuadores', estadoActuadores);
-            io.sockets.emit('dashboard:alert', `¡ALERTA! Temperatura por debajo del mínimo(${medida.value}°C)` + 
-                `en ${medida.location}. Apagando A/C automáticamente.`);
+            io.sockets.emit('dashboard:alert', `¡ALERTA! Temperatura por debajo del mínimo(${valor}°C)` + 
+                ` en ${ubicacion}. Apagando A/C automáticamente.`);
         }
     }
 
     // Regla de control para la persiana
-    if(medida.type === 'Luminosidad') {
+    if(tipo === 'Luminosidad') {
 
         // Regla 3: Si la luminosidad es mayor que MAX_LUMINOSIDAD -> Bajar la persiana
-        if(medida.value > MAX_LUMINOSIDAD && estadoActuadores.persiana === EstadoPersiana.ABIERTA) {
-            estadoActuadores.persiana = EstadoPersiana.CERRADA;
+        if(valor > MAX_LUMINOSIDAD && estadoActuadores.persiana[ubicacion] === EstadoPersiana.ABIERTA) {
+            estadoActuadores.persiana[ubicacion] = EstadoPersiana.CERRADA;
             io.sockets.emit('dashboard:update-actuadores', estadoActuadores);
-            io.sockets.emit('dashboard:alert', `¡ALERTA! Luminosidad máxima superada (${medida.value} lux)` + 
-                `en ${medida.location}. Bajando persiana automáticamente.`);
+            io.sockets.emit('dashboard:alert', `¡ALERTA! Luminosidad máxima superada (${valor} lux)` + 
+                ` en ${ubicacion}. Bajando persiana automáticamente.`);
         }
     }
 }
+
+
 
 // ===========================================================================
 //   Cierre limpio de MongoDB al detener el proceso (Ctrl+C). 
